@@ -10,6 +10,7 @@ const CLAUDE_MODEL = Deno.env.get("CLAUDE_MODEL") || "claude-sonnet-5";
 const ALLOWED_ORIGINS = [
   "https://www.quenteebom.co.ao",
   "https://quenteebom.co.ao",
+  "https://quenteebom.netlify.app",
   "http://localhost:8141",
 ];
 
