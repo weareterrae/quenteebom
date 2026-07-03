@@ -117,7 +117,7 @@ const RECEITAS = [
       ['Prepara o chantilly', 'Bate o Chantilly em Pó com leite bem frio (taça fria ajuda!) até ficar firme.'],
       ['Monta', 'Camada de bolo, camada generosa de chantilly, outra camada de bolo e cobre tudo. Vermelho e branco — pura festa!'],
     ],
-    dicaBento: 'Apara as “costas” dos bolos com uma faca de serra para as camadas ficarem direitinhas — e as aparas são do padeiro. 😄',
+    dicaBento: 'Apara as “costas” dos bolos com uma faca de serra para as camadas ficarem direitinhas — e as aparas são do Chef. 😄',
   },
   {
     slug: 'bolo-marmore-caseiro', titulo: 'Bolo Mármore Caseiro',
@@ -453,7 +453,7 @@ const RECEITAS = [
       ['Monta camadas', 'Nos copos: camada de fruta, camada de creme, mais fruta, mais creme.'],
       ['Coroa', 'Termina com a amêndoa laminada tostada. Frio, fresco e pronto em 20 minutos. 🥭'],
     ],
-    dicaBento: 'Sem forno, sem fogão — este creme faz-se A FRIO. É a sobremesa de emergência do padeiro. ☀️',
+    dicaBento: 'Sem forno, sem fogão — este creme faz-se A FRIO. É a sobremesa de emergência do Chef. ☀️',
   },
   {
     slug: 'panados-crocantes', titulo: 'Panados Crocantes de Frango',
@@ -705,7 +705,7 @@ ${headerHTML()}
 <section class="phero" style="min-height:46vh;">
   <img src="/assets/img/dicas_hero.jpg" alt="Dicas Quente e Bom">
   <div class="wrap">
-    <div class="eyebrow">Os truques do padeiro</div>
+    <div class="eyebrow">Os truques do Chef</div>
     <h1>Dicas e Sugestões</h1>
     <p>Pequenos segredos que fazem grande diferença — do pão sempre fresco ao bolo que cresce direito.</p>
   </div>
