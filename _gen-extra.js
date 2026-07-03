@@ -3,6 +3,33 @@
 const fs = require('fs');
 const path = require('path');
 
+// categoria (rótulo do cartão) + tags (filtros) por receita
+const META = {
+  'rabanadas-de-brioche':                 { cat: 'Sobremesas', tags: ['Sobremesas', 'Rápido', 'Festa'] },
+  'bolo-de-cenoura-com-chocolate':        { cat: 'Bolos',      tags: ['Bolos'] },
+  'queques-de-laranja-com-chocolate':     { cat: 'Docinhos',   tags: ['Docinhos'] },
+  'red-velvet-de-festa':                  { cat: 'Bolos',      tags: ['Bolos', 'Festa'] },
+  'bolo-marmore-caseiro':                 { cat: 'Bolos',      tags: ['Bolos'] },
+  'bolo-de-ananas-invertido':             { cat: 'Bolos',      tags: ['Bolos', 'Festa'] },
+  'bolo-de-iogurte-com-coco':             { cat: 'Bolos',      tags: ['Bolos'] },
+  'pao-de-lo-recheado-da-pastelaria':     { cat: 'Bolos',      tags: ['Bolos', 'Festa'] },
+  'bolo-de-caramelo-com-nozes':           { cat: 'Bolos',      tags: ['Bolos'] },
+  'queques-com-coracao-de-chocolate-branco': { cat: 'Docinhos', tags: ['Docinhos', 'Festa'] },
+  'torta-de-chocolate-com-chantilly':     { cat: 'Bolos',      tags: ['Bolos', 'Festa'] },
+  'mousse-de-chocolate-negro':            { cat: 'Sobremesas', tags: ['Sobremesas', 'Sem forno'] },
+  'beijinhos-de-coco':                    { cat: 'Docinhos',   tags: ['Docinhos', 'Festa', 'Sem forno'] },
+  'brigadeiros-classicos':                { cat: 'Docinhos',   tags: ['Docinhos', 'Festa', 'Sem forno'] },
+  'salame-de-chocolate':                  { cat: 'Sobremesas', tags: ['Sobremesas', 'Festa', 'Sem forno'] },
+  'trufas-de-chocolate-branco-e-coco':    { cat: 'Docinhos',   tags: ['Docinhos', 'Festa', 'Sem forno'] },
+  'copos-de-creme-com-fruta':             { cat: 'Sobremesas', tags: ['Sobremesas', 'Sem forno', 'Rápido'] },
+  'mini-sandes-de-festa':                 { cat: 'Salgado',    tags: ['Salgado', 'Festa', 'Rápido'] },
+  'tostas-gourmet':                       { cat: 'Salgado',    tags: ['Salgado', 'Rápido'] },
+  'crocante-de-caju':                     { cat: 'Sobremesas', tags: ['Sobremesas', 'Rápido'] },
+  'panados-crocantes':                    { cat: 'Salgado',    tags: ['Salgado', 'Rápido'] },
+};
+const DESTAQUE = 'red-velvet-de-festa';
+const CHIPS = ['Todas', 'Bolos', 'Docinhos', 'Sobremesas', 'Salgado', 'Sem forno', 'Rápido', 'Festa'];
+
 const RECEITAS = [
   {
     slug: 'rabanadas-de-brioche', titulo: 'Rabanadas de Brioche',
@@ -520,23 +547,30 @@ function headHTML(titulo, desc, canon, ogimg) {
 <link rel="stylesheet" href="/assets/css/qeb.css">`;
 }
 
-// ---------- hub de receitas ----------
+// ---------- hub de receitas (estilo revista: destaque + pesquisa + filtros) ----------
 function hubReceitas() {
-  const cards = RECEITAS.map(r => `      <a class="rec-card" data-reveal href="/receitas/${r.slug}/">
-        <div class="im"><img src="${r.img}" alt="${r.titulo}" loading="lazy"></div>
+  const feat = RECEITAS.find(r => r.slug === DESTAQUE) || RECEITAS[0];
+  const chips = CHIPS.map((c, i) => `        <button class="chip${i === 0 ? ' on' : ''}" data-f="${c}">${c}</button>`).join('\n');
+  const cards = RECEITAS.filter(r => r.slug !== feat.slug).map(r => {
+    const m = META[r.slug] || { cat: 'Receita', tags: [] };
+    const q = (r.titulo + ' ' + m.cat + ' ' + r.produtos.map(p => p[0]).join(' ')).toLowerCase();
+    return `      <a class="rec-card" href="/receitas/${r.slug}/" data-tags="${m.tags.join('|')}" data-q="${q}">
+        <div class="im"><img src="${r.img}" alt="${r.titulo}" loading="lazy"><span class="tempo">⏱ ${r.tempo}</span></div>
         <div class="bd">
+          <div class="cat">${m.cat}</div>
           <h3>${r.titulo}</h3>
-          <div class="meta"><span class="pill">⏱ ${r.tempo}</span><span class="pill">${r.dif}</span></div>
         </div>
-      </a>`).join('\n');
+      </a>`;
+  }).join('\n');
+  const fm = META[feat.slug] || { cat: 'Receita', tags: [] };
   return `<!DOCTYPE html>
 <html lang="pt">
 <head>
-${headHTML('Receitas — Quente e Bom · Feito em Angola', 'Receitas simples e deliciosas com os produtos Quente e Bom — do lanche à festa, o Bento ensina.', '/receitas/', '/assets/img/rec_rabanadas.jpg')}
+${headHTML('Receitas — Quente e Bom · Feito em Angola', 'Receitas simples e deliciosas com os produtos Quente e Bom — do lanche à festa, o Bento ensina.', '/receitas/', '/assets/img/rec_redvelvet.jpg')}
 </head>
 <body>
 ${headerHTML()}
-<section class="phero">
+<section class="phero" style="min-height:38vh;">
   <img src="/assets/img/dicas_hero.jpg" alt="Receitas Quente e Bom">
   <div class="wrap">
     <div class="eyebrow">Da nossa cozinha para a tua</div>
@@ -544,16 +578,56 @@ ${headerHTML()}
     <p>Simples, deliciosas e com os produtos que já tens em casa. O Bento ensina — tu brilhas.</p>
   </div>
 </section>
-<section class="sec">
+<section class="sec" style="padding-top:56px;">
   <div class="wrap">
-    <div class="rec-grid">
+    <div class="rec-tools" data-reveal>
+      <div class="rec-search"><input type="search" id="recQ" placeholder="Procura por receita ou produto… ex.: chocolate"></div>
+      <div class="rec-chips" id="recChips">
+${chips}
+      </div>
+    </div>
+    <a class="rec-feat" data-reveal href="/receitas/${feat.slug}/">
+      <div class="bd">
+        <div class="eyebrow">⭐ Receita em destaque</div>
+        <h3>${feat.titulo}</h3>
+        <p>${feat.intro}</p>
+        <div class="meta"><span class="pill">⏱ ${feat.tempo}</span><span class="pill">${feat.dif}</span><span class="pill">${fm.cat}</span></div>
+      </div>
+      <div class="im"><img src="${feat.img}" alt="${feat.titulo}"></div>
+    </a>
+    <div class="rec-grid" id="recGrid">
 ${cards}
     </div>
+    <div class="rec-none" id="recNone">Nenhuma receita encontrada… mas o Bento aceita sugestões! 🧡</div>
   </div>
 </section>
 ${footerHTML()}
 <script src="/assets/js/site.js"></script>
 <script src="/assets/js/bento.js"></script>
+<script>
+(function(){
+  var q='', f='Todas';
+  var cards=[].slice.call(document.querySelectorAll('#recGrid .rec-card'));
+  function apply(){
+    var vis=0;
+    cards.forEach(function(c){
+      var okF = (f==='Todas') || (c.getAttribute('data-tags')||'').split('|').indexOf(f)>-1;
+      var okQ = !q || (c.getAttribute('data-q')||'').indexOf(q)>-1;
+      var show = okF && okQ;
+      c.classList.toggle('hide', !show);
+      if(show) vis++;
+    });
+    document.getElementById('recNone').style.display = vis ? 'none' : 'block';
+  }
+  document.getElementById('recQ').addEventListener('input', function(){ q=this.value.trim().toLowerCase(); apply(); });
+  document.querySelectorAll('#recChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      document.querySelectorAll('#recChips .chip').forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on'); f=ch.getAttribute('data-f'); apply();
+    });
+  });
+})();
+</script>
 </body>
 </html>
 `;
@@ -570,12 +644,15 @@ ${headHTML(`${r.titulo} — Receitas Quente e Bom`, r.intro, `/receitas/${r.slug
 </head>
 <body>
 ${headerHTML()}
-<section class="phero" style="min-height:46vh;">
-  <img src="${r.img}" alt="${r.titulo}">
+<section class="rec-head">
   <div class="wrap">
-    <div class="eyebrow">Receita · ${r.dif} · ${r.tempo}</div>
-    <h1>${r.titulo}</h1>
-    <p>${r.intro}</p>
+    <div>
+      <div class="eyebrow">Receitas · ${(META[r.slug] || {}).cat || 'Receita'}</div>
+      <h1>${r.titulo}</h1>
+      <p>${r.intro}</p>
+      <div class="meta"><span class="pill">⏱ ${r.tempo}</span><span class="pill">${r.dif}</span><span class="pill">🍽 ${r.rende}</span></div>
+    </div>
+    <div class="im"><img src="${r.img}" alt="${r.titulo}"></div>
   </div>
 </section>
 <section class="sec">
