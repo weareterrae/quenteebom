@@ -1022,7 +1022,7 @@ ${cards}
 </section>
 ${footerHTML()}
 <script src="/assets/js/site.js?v=4"></script>
-<script src="/assets/js/bento.js?v=4"></script>
+<script src="/assets/js/bento.js?v=5"></script>
 <script>
 (function(){
   var q='', f='Todas';
@@ -1101,7 +1101,7 @@ ${passos}
 </section>
 ${footerHTML()}
 <script src="/assets/js/site.js?v=4"></script>
-<script src="/assets/js/bento.js?v=4"></script>
+<script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>
 `;
@@ -1142,7 +1142,7 @@ ${cards}
 </section>
 ${footerHTML()}
 <script src="/assets/js/site.js?v=4"></script>
-<script src="/assets/js/bento.js?v=4"></script>
+<script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>
 `;

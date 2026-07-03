@@ -39,6 +39,16 @@
   window.openBento = function () { panel.classList.add('open'); input.focus(); };
 
   function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  // markdown leve: links [texto](url), URLs soltos, **bold** e quebras de linha
+  var LNK = ' style="color:inherit;text-decoration:underline;font-weight:700"';
+  function fmt(s) {
+    var h = esc(s);
+    h = h.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener"' + LNK + '>$1</a>');
+    h = h.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    h = h.replace(/(^|[^"'>])(https?:\/\/[^\s<]*[^\s<.,)!?])/g, '$1<a href="$2" target="_blank" rel="noopener"' + LNK + '>$2</a>');
+    h = h.replace(/(^|[\s(])((?:www\.)?quenteebom\.com(?:\/[^\s<]*[^\s<.,)!?])?)/g, '$1<a href="https://$2" target="_blank" rel="noopener"' + LNK + '>$2</a>');
+    return h.replace(/\n/g, '<br>');
+  }
   function bot(html) { body.insertAdjacentHTML('beforeend', '<div class="msg bot">' + html + '</div>'); body.scrollTop = body.scrollHeight; }
   function me(txt) { body.insertAdjacentHTML('beforeend', '<div class="msg me">' + esc(txt) + '</div>'); body.scrollTop = body.scrollHeight; }
 
@@ -61,8 +71,7 @@
         typing.remove();
         var reply = d.reply || 'Hmm, não percebi — podes repetir? 🧡';
         history.push({ role: 'assistant', content: reply });
-        // markdown leve: **bold** e quebras de linha
-        bot(esc(reply).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>'));
+        bot(fmt(reply));
       })
       .catch(function () {
         typing.remove();
