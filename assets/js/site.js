@@ -1,0 +1,73 @@
+/* Quente e Bom — comportamento partilhado */
+(function () {
+  // header
+  var hdr = document.getElementById('hdr');
+  if (hdr) {
+    var onScroll = function () { hdr.classList.toggle('scrolled', scrollY > 60); };
+    addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  // reveal
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.14 });
+  document.querySelectorAll('[data-reveal]').forEach(function (el) { io.observe(el); });
+
+  // living sun (homepage hero) — rises with scroll
+  var cv = document.getElementById('sun');
+  if (!cv) return;
+  var ctx = cv.getContext('2d'), W, H, mx = 0, my = 0;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function rz() {
+    var DPR = Math.min(devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W * DPR; cv.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  addEventListener('resize', rz); rz();
+  addEventListener('mousemove', function (e) {
+    mx = (e.clientX / innerWidth - 0.5); my = (e.clientY / innerHeight - 0.5);
+  }, { passive: true });
+
+  var t = 0;
+  function frame() {
+    t += 0.0045;
+    ctx.clearRect(0, 0, W, H);
+    // scroll progress inside the hero: 0 at top → sun risen; scrolling down sets the sun
+    var sc = Math.min(1, Math.max(0, scrollY / (H * 0.9)));
+    var rise = 1 - sc; // 1 = fully risen
+    var cx = W * 0.5 + mx * 40;
+    var cy = H * (0.46 + (1 - rise) * 0.38) + my * 24; // sinks as you scroll
+    var R = Math.max(70, Math.min(W, H) * (0.12 + rise * 0.03));
+    var glowA = 0.25 + rise * 0.30;
+
+    var glow = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 5);
+    glow.addColorStop(0, 'rgba(255,224,160,' + (glowA + 0.25) + ')');
+    glow.addColorStop(0.35, 'rgba(250,167,43,' + (glowA * 0.55) + ')');
+    glow.addColorStop(1, 'rgba(250,167,43,0)');
+    ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+
+    var rays = 30;
+    for (var i = 0; i < rays; i++) {
+      var a = t + i / rays * Math.PI * 2, lng = i % 2 === 0;
+      var inner = R * 1.22;
+      var outer = R * (lng ? 3.0 : 2.15) + Math.sin(t * 2.2 + i) * R * 0.14;
+      var w = lng ? 0.05 : 0.028;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a - w) * inner, cy + Math.sin(a - w) * inner);
+      ctx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
+      ctx.lineTo(cx + Math.cos(a + w) * inner, cy + Math.sin(a + w) * inner);
+      ctx.closePath();
+      var rg = ctx.createLinearGradient(cx, cy, cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
+      rg.addColorStop(0, 'rgba(254,198,74,' + (0.55 + rise * 0.3) + ')');
+      rg.addColorStop(1, 'rgba(226,78,27,0)');
+      ctx.fillStyle = rg; ctx.fill();
+    }
+    var core = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+    core.addColorStop(0, '#FFF8E8'); core.addColorStop(0.55, '#FEC64A'); core.addColorStop(1, '#F0901E');
+    ctx.fillStyle = core; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.fill();
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  frame();
+})();

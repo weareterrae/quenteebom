@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seja Revendedor — Quente e Bom · Produtos que vendem todos os dias</title>
+<meta name="description" content="Leve a Quente e Bom para a sua loja, café ou mercearia. Pão, bolos, biscoitos e snacks que vendem todos os dias — com um parceiro de confiança desde 2012.">
+<link rel="canonical" href="https://www.quenteebom.co.ao/revendedores/">
+<meta property="og:title" content="Seja Revendedor Quente e Bom">
+<meta property="og:description" content="Produtos que vendem todos os dias e clientes que voltam sempre.">
+<meta property="og:image" content="https://www.quenteebom.co.ao/assets/img/expositor_1.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/css/qeb.css">
+<style>
+  .rv-args{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .rv-arg{background:#fff;border:1px solid var(--line);border-radius:20px;padding:30px 26px;box-shadow:0 8px 20px rgba(38,21,10,.06);}
+  .rv-arg .n{font-family:var(--display);font-size:40px;color:var(--orange);line-height:1;}
+  .rv-arg h3{font-family:var(--display);font-size:21px;color:var(--ink);margin:12px 0 8px;}
+  .rv-arg p{font-size:15px;color:var(--muted);line-height:1.55;}
+  @media(max-width:820px){.rv-args{grid-template-columns:1fr;}}
+  .rv-prova{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .rv-prova img{border-radius:18px;aspect-ratio:3/4;object-fit:cover;width:100%;box-shadow:0 12px 28px rgba(38,21,10,.14);}
+  @media(max-width:820px){.rv-prova{grid-template-columns:1fr;} .rv-prova img{aspect-ratio:4/3;}}
+  .rv-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+  @media(max-width:680px){.rv-form-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header class="hdr solid" id="hdr">
+  <div class="wrap hrow">
+    <a href="/">
+      <img src="/assets/logos/logo_white_real.png" class="hlogo logo-w" alt="Quente e Bom">
+      <img src="/assets/logos/logo_color_trans.png" class="hlogo logo-c" alt="Quente e Bom">
+    </a>
+    <nav class="nav">
+      <a href="/#mundos">Produtos</a>
+      <a href="/#historia">História</a>
+      <a href="/revendedores/">Revendedores</a>
+      <a href="/#onde">Onde comprar</a>
+      <a href="#" class="cta" onclick="openBento();return false;">Falar com o Bento</a>
+    </nav>
+  </div>
+</header>
+
+<section class="phero">
+  <img src="/assets/img/expositor_2.jpg" alt="Expositor Quente e Bom num supermercado angolano">
+  <div class="wrap">
+    <div class="eyebrow">Para o seu negócio</div>
+    <h1>Produtos que vendem<br>todos os dias</h1>
+    <p>Loja, café, mercearia ou supermercado? Leve a Quente e Bom para as suas prateleiras e ganhe um parceiro de confiança — desde 2012.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-h" data-reveal>
+      <div class="eyebrow">Porquê a Quente e Bom</div>
+      <h2>Um parceiro que faz a prateleira girar</h2>
+    </div>
+    <div class="rv-args">
+      <div class="rv-arg" data-reveal><div class="n">80+</div><h3>Produtos para variar a banca</h3><p>Pão, bolos, biscoitos, snacks, tostas e ingredientes — uma gama completa para o seu cliente voltar sempre.</p></div>
+      <div class="rv-arg" data-reveal><div class="n">2012</div><h3>Marca de confiança</h3><p>Feito em Angola há mais de uma década, com qualidade constante e uma marca que as famílias reconhecem.</p></div>
+      <div class="rv-arg" data-reveal><div class="n">☀️</div><h3>Frescura que se vê</h3><p>Da nossa fábrica em Viana para a sua loja — produtos frescos, embalagens cuidadas e expositores que vendem sozinhos.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:0;">
+  <div class="wrap">
+    <div class="sec-h" data-reveal>
+      <div class="eyebrow">Nas lojas por todo o Angola</div>
+      <h2>Assim fica a sua prateleira</h2>
+    </div>
+    <div class="rv-prova" data-reveal>
+      <img src="/assets/img/expositor_1.jpg" alt="Expositor de pão Quente e Bom" loading="lazy">
+      <img src="/assets/img/expositor_2.jpg" alt="Expositor Quente e Bom em supermercado" loading="lazy">
+      <img src="/assets/img/expositor_3.jpg" alt="Expositor de produtos Quente e Bom" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="formulario" style="background:var(--cream-2);">
+  <div class="wrap" style="max-width:820px;">
+    <div class="sec-h ctr" data-reveal>
+      <div class="eyebrow">Comece hoje</div>
+      <h2>Torne-se revendedor</h2>
+      <p>Preencha e a nossa equipa comercial entra em contacto rapidinho.</p>
+    </div>
+    <form class="form-card" name="lead-revendedor" method="POST" action="/obrigado.html" data-netlify="true" netlify-honeypot="bot-field" id="rvForm" data-reveal>
+      <input type="hidden" name="form-name" value="lead-revendedor">
+      <p style="display:none;"><label>Não preencher: <input name="bot-field"></label></p>
+      <div class="rv-form-grid">
+        <div>
+          <label for="f-nome">O seu nome *</label>
+          <input id="f-nome" name="nome" required autocomplete="name">
+        </div>
+        <div>
+          <label for="f-negocio">Nome do negócio *</label>
+          <input id="f-negocio" name="negocio" required autocomplete="organization">
+        </div>
+        <div>
+          <label for="f-zona">Zona / província *</label>
+          <input id="f-zona" name="zona" required placeholder="ex.: Luanda — Viana">
+        </div>
+        <div>
+          <label for="f-whatsapp">WhatsApp *</label>
+          <input id="f-whatsapp" name="whatsapp" required inputmode="tel" placeholder="+244 ...">
+        </div>
+      </div>
+      <label for="f-msg">Que produtos lhe interessam? (opcional)</label>
+      <textarea id="f-msg" name="mensagem" rows="4" placeholder="ex.: pão de forma, bolos da avó e snacks"></textarea>
+      <div class="consent">
+        <input type="checkbox" required id="f-rgpd">
+        <label for="f-rgpd" style="all:unset;font-size:13.5px;color:var(--muted);">Autorizo o contacto da equipa Quente e Bom sobre este pedido.</label>
+      </div>
+      <button class="btn btn-orange" type="submit" style="width:100%;">Quero ser revendedor ☀️</button>
+      <div class="form-ok" id="formOk">Recebido! 🧡 Bem-vindo à família do pão fresquinho — falamos consigo muito em breve.</div>
+    </form>
+  </div>
+</section>
+
+<footer class="ft">
+  <div class="wrap">
+    <div class="ft-top">
+      <div style="max-width:280px;">
+        <img src="/assets/logos/logo_white_real.png" class="ft-logo" alt="Quente e Bom">
+        <p style="color:#c9b6a2;font-size:14px;">Todos os dias, uma delícia. Feito em Angola desde 2012.</p>
+      </div>
+      <div class="ft-col"><h5>Produtos</h5>
+        <a href="/pao/">Pão</a><a href="/cakes/">Cakes</a><a href="/bolos-da-avo/">Bolos da Avó</a><a href="/biscoitos/">Biscoitos</a><a href="/snacks/">Snacks</a><a href="/tostas/">Tostas</a><a href="/ingredientes/">Ingredientes</a>
+      </div>
+      <div class="ft-col"><h5>Marca</h5>
+        <a href="/#historia">A nossa história</a><a href="/revendedores/">Revendedores</a><a href="/#onde">Onde comprar</a>
+      </div>
+      <div class="ft-col"><h5>Contactos</h5>
+        <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>
+        <a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener">Instagram · @quenteebom</a>
+        <a href="https://www.facebook.com/quenteebomangola" target="_blank" rel="noopener">Facebook</a>
+      </div>
+    </div>
+    <div class="ft-bot">© 2026 Doce, Quente e Bom · Feito em Angola 🇦🇴</div>
+  </div>
+</footer>
+
+<script src="/assets/js/site.js"></script>
+<script src="/assets/js/bento.js"></script>
+<script>
+// submissão AJAX com sucesso inline (padrão Netlify)
+document.getElementById('rvForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var f = e.target, data = new FormData(f);
+  fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(data).toString() })
+    .then(function () { document.getElementById('formOk').style.display = 'block'; f.querySelector('button[type=submit]').disabled = true; })
+    .catch(function () { document.getElementById('formOk').style.display = 'block'; });
+});
+</script>
+</body>
+</html>
