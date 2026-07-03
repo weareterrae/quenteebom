@@ -539,10 +539,10 @@ function headHTML(titulo, desc, canon, ogimg) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${titulo}</title>
 <meta name="description" content="${desc}">
-<link rel="canonical" href="https://www.quenteebom.co.ao${canon}">
+<link rel="canonical" href="https://quenteebom.com${canon}">
 <meta property="og:title" content="${titulo}">
 <meta property="og:description" content="${desc}">
-<meta property="og:image" content="https://www.quenteebom.co.ao${ogimg}">
+<meta property="og:image" content="https://quenteebom.com${ogimg}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="/assets/css/qeb.css?v=4">`;
 }

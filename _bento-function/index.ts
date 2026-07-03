@@ -10,14 +10,7 @@ const CLAUDE_MODEL = Deno.env.get("CLAUDE_MODEL") || "claude-sonnet-5";
 const PROMPT_URL = "https://quenteebom.netlify.app/bento-prompt.txt";
 const PROMPT_TTL_MS = 5 * 60 * 1000;
 
-const FALLBACK_PROMPT = `És o Bento, o Chef da Quente e Bom — marca angolana de padaria e pastelaria, feita em Angola desde 2012 (fábrica em Viana, Luanda). Tom caloroso, português de Angola, respostas curtas com 1-2 emojis. A marca vende só a profissionais; o consumidor compra nos supermercados de todo o Angola (a oferta varia por loja — pede a zona). Revendedores → formulário em /revendedores/. Emprego → /recrutamento/. Receitas → https://www.quenteebom.co.ao/receitas/. Nunca inventes preços, moradas ou stocks. Assinatura: "Todos os dias, uma delícia." ☀️`;
-
-const ALLOWED_ORIGINS = [
-  "https://www.quenteebom.co.ao",
-  "https://quenteebom.co.ao",
-  "https://quenteebom.netlify.app",
-  "http://localhost:8141",
-];
+const FALLBACK_PROMPT = `És o Bento, o Chef da Quente e Bom — marca angolana de padaria e pastelaria, feita em Angola desde 2012 (fábrica em Viana, Luanda). Tom caloroso, português de Angola, respostas curtas com 1-2 emojis. A marca vende só a profissionais; o consumidor compra nos supermercados de todo o Angola (a oferta varia por loja — pede a zona). Revendedores → formulário em /revendedores/. Emprego → /recrutamento/. Receitas → https://quenteebom.com/receitas/. Nunca inventes preços, moradas ou stocks. Assinatura: "Todos os dias, uma delícia." ☀️`;
 
 let promptCache = { text: "", ts: 0 };
 
@@ -37,12 +30,10 @@ async function getPrompt(): Promise<string> {
   return promptCache.text || FALLBACK_PROMPT;
 }
 
-function cors(origin: string | null) {
-  const o = origin && ALLOWED_ORIGINS.some(a => origin.startsWith(a.replace(/:\d+$/, "")) || origin === a)
-    ? origin
-    : ALLOWED_ORIGINS[0];
+// Endpoint público sem credenciais → CORS aberto: mudanças de domínio nunca mais partem o chat.
+function cors(_origin: string | null) {
   return {
-    "Access-Control-Allow-Origin": o,
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "content-type",
     "Content-Type": "application/json",

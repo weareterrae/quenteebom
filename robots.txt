@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.quenteebom.co.ao/sitemap.xml
+Sitemap: https://quenteebom.com/sitemap.xml

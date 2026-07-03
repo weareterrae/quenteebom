@@ -229,10 +229,10 @@ ${cards}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${cat.nome} — Quente e Bom · Feito em Angola</title>
 <meta name="description" content="${cat.intro} ${nProds} produtos Quente e Bom, nos supermercados de todo o Angola.">
-<link rel="canonical" href="https://www.quenteebom.co.ao/${cat.slug}/">
+<link rel="canonical" href="https://quenteebom.com/${cat.slug}/">
 <meta property="og:title" content="${cat.nome} — Quente e Bom">
 <meta property="og:description" content="${cat.intro}">
-<meta property="og:image" content="https://www.quenteebom.co.ao${cat.hero}">
+<meta property="og:image" content="https://quenteebom.com${cat.hero}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="/assets/css/qeb.css?v=4">
 </head>
