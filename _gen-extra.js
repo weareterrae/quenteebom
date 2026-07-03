@@ -34,6 +34,7 @@ const META = {
   'bolo-de-caneca-de-chocolate':          { cat: 'Docinhos',   tags: ['Docinhos', 'Rápido'] },
   'espetadas-de-fruta-com-fondue':        { cat: 'Docinhos',   tags: ['Docinhos', 'Rápido', 'Sem forno', 'Festa'] },
   'panquecas-fofas':                      { cat: 'Docinhos',   tags: ['Docinhos', 'Rápido'] },
+  'gelado-de-banana-e-chocolate':         { cat: 'Sobremesas', tags: ['Sobremesas', 'Sem forno', 'Rápido'] },
 };
 const DESTAQUE = 'red-velvet-de-festa';
 const CHIPS = ['Todas', 'Bolos', 'Docinhos', 'Sobremesas', 'Salgado', 'Sem forno', 'Rápido', 'Festa'];
@@ -655,6 +656,26 @@ const RECEITAS = [
       ['Serve', 'Empilha bem alto, polvilha com açúcar em pó e rega com mel. Domingo perfeito. 🥞'],
     ],
     dicaBento: 'Não esmagues as panquecas com a espátula ao virar — o ar lá dentro é o segredo da fofura! ☀️',
+  },
+  {
+    slug: 'gelado-de-banana-e-chocolate', titulo: 'Gelado de Banana e Chocolate',
+    img: '/assets/img/rec_gelado.jpg',
+    tempo: '10 min + congelação', dif: 'Muito fácil', rende: '4 taças',
+    intro: 'Gelado cremoso feito em casa, sem máquina e sem natas — só bananas maduras, o nosso Chocolate Negro e um toque crocante de caju. O truque preferido do Chef para os dias de calor.',
+    produtos: [['Chocolate Negro 70%', '/ingredientes/'], ['Caju Torrado', '/snacks/']],
+    ingredientes: [
+      '4 bananas bem maduras, em rodelas',
+      '<b><a href="/ingredientes/">Chocolate Negro 70% Cacau</a> Quente e Bom</b> — 100 g, derretido',
+      '2–3 colheres de sopa de leite (se precisares de cremosidade)',
+      '<b><a href="/snacks/">Caju Torrado</a> Quente e Bom</b> — picado, para polvilhar',
+    ],
+    passos: [
+      ['Congela', 'Espalha as rodelas de banana num tabuleiro e leva ao congelador pelo menos 4 horas (ou de véspera).'],
+      ['Bate', 'Tritura a banana congelada no processador. Primeiro fica granulada — insiste 2–3 minutos, raspando as bordas, até virar um creme de gelado. Se precisar, junta o leite.'],
+      ['Rega', 'Serve em taças e rega com o chocolate derretido em fio — sobre o gelado frio, cria uma casquinha estaladiça.'],
+      ['Polvilha', 'Termina com o caju picado por cima. Serve logo, cremoso, ou leva 1 hora ao congelador para ficar mais firme. 🍌🍫'],
+    ],
+    dicaBento: 'Quanto mais madura a banana (bem pintadinha!), mais doce e cremoso fica o gelado — sem juntar açúcar nenhum. ☀️',
   },
 ];
 
