@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /equipa/
 
 Sitemap: https://quenteebom.com/sitemap.xml
