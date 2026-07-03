@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fale Connosco — Quente e Bom · Sugestões, elogios e reclamações</title>
+<meta name="description" content="A tua opinião faz-nos melhores. Envia sugestões, elogios, dúvidas ou reclamações à Quente e Bom — respondemos a todas as mensagens.">
+<link rel="canonical" href="https://quenteebom.com/contacto/">
+<meta property="og:title" content="Fale Connosco — Quente e Bom">
+<meta property="og:description" content="Sugestões, elogios, dúvidas ou reclamações — a tua opinião faz-nos melhores.">
+<meta property="og:image" content="https://quenteebom.com/assets/img/familia.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=4">
+<style>
+  .ct-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:start;}
+  @media(max-width:860px){.ct-grid{grid-template-columns:1fr;}}
+  .ct-side{display:flex;flex-direction:column;gap:18px;position:sticky;top:90px;}
+  .ct-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:0 8px 20px rgba(38,21,10,.06);}
+  .ct-card h3{font-family:var(--display);font-size:20px;color:var(--ink);margin-bottom:8px;}
+  .ct-card p{font-size:14.5px;color:var(--muted);line-height:1.55;}
+  .ct-card a{color:var(--orange-deep);font-weight:700;}
+  .ct-joaquim{display:flex;gap:14px;align-items:center;background:linear-gradient(150deg,var(--marigold),var(--orange));border:none;color:var(--brown);}
+  .ct-joaquim img{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:0 0 auto;}
+  .ct-joaquim h3{color:var(--brown);}
+  .ct-joaquim p{color:#5b3410;}
+  .tipo-chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px;}
+  .tchip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;transition:.2s;font-family:var(--sans);}
+  .tchip:hover{border-color:var(--orange);color:var(--orange-deep);}
+  .tchip.on{background:var(--orange);border-color:var(--orange);color:#fff;}
+  .reclama-extra{display:none;}
+  .reclama-extra.show{display:block;}
+  .ct-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+  @media(max-width:680px){.ct-form-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header class="hdr solid" id="hdr">
+  <div class="wrap hrow">
+    <a href="/">
+      <img src="/assets/logos/logo_white_real.png" class="hlogo logo-w" alt="Quente e Bom">
+      <img src="/assets/logos/logo_color_trans.png" class="hlogo logo-c" alt="Quente e Bom">
+    </a>
+    <nav class="nav">
+      <a href="/#mundos">Produtos</a>
+      <a href="/receitas/">Receitas</a>
+      <a href="/dicas/">Dicas</a>
+      <a href="/revendedores/">Revendedores</a>
+      <a href="/recrutamento/">Carreiras</a>
+      <a href="/contacto/">Contactos</a>
+      <a href="#" class="cta" onclick="openBento();return false;">Falar com o Joaquim</a>
+    </nav>
+  </div>
+</header>
+
+<section class="rec-head">
+  <div class="wrap" style="display:block;max-width:760px;">
+    <div class="eyebrow">Fale connosco</div>
+    <h1>A tua opinião faz-nos melhores</h1>
+    <p>Uma sugestão, um elogio, uma dúvida ou algo que não correu bem? Conta-nos. Lemos e respondemos a todas as mensagens — palavra de quem faz pão fresco todos os dias. 🧡</p>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:56px;">
+  <div class="wrap ct-grid">
+    <form class="form-card" name="contacto" method="POST" action="/obrigado.html" data-netlify="true" netlify-honeypot="bot-field" id="ctForm" data-reveal>
+      <input type="hidden" name="form-name" value="contacto">
+      <p style="display:none;"><label>Não preencher: <input name="bot-field"></label></p>
+
+      <label>Que tipo de mensagem é? *</label>
+      <div class="tipo-chips" id="tipoChips">
+        <button type="button" class="tchip on" data-t="Sugestão">💡 Sugestão</button>
+        <button type="button" class="tchip" data-t="Elogio">🧡 Elogio</button>
+        <button type="button" class="tchip" data-t="Dúvida">❓ Dúvida</button>
+        <button type="button" class="tchip" data-t="Reclamação">⚠️ Reclamação</button>
+      </div>
+      <input type="hidden" name="tipo" id="ct-tipo" value="Sugestão">
+
+      <div class="ct-form-grid">
+        <div>
+          <label for="ct-nome">O teu nome *</label>
+          <input id="ct-nome" name="nome" required autocomplete="name">
+        </div>
+        <div>
+          <label for="ct-email">Email *</label>
+          <input id="ct-email" name="email" type="email" required autocomplete="email">
+        </div>
+        <div>
+          <label for="ct-tel">Telefone / WhatsApp (opcional)</label>
+          <input id="ct-tel" name="telefone" inputmode="tel" placeholder="+244 ...">
+        </div>
+        <div>
+          <label for="ct-zona">Zona / província (opcional)</label>
+          <input id="ct-zona" name="zona" placeholder="ex.: Luanda — Talatona">
+        </div>
+      </div>
+
+      <div class="reclama-extra" id="reclamaExtra">
+        <div class="ct-form-grid">
+          <div>
+            <label for="ct-prod">Produto em causa</label>
+            <input id="ct-prod" name="produto" placeholder="ex.: Pão de Forma Simples">
+          </div>
+          <div>
+            <label for="ct-loja">Onde compraste</label>
+            <input id="ct-loja" name="local_compra" placeholder="supermercado / zona">
+          </div>
+        </div>
+      </div>
+
+      <label for="ct-msg">A tua mensagem *</label>
+      <textarea id="ct-msg" name="mensagem" rows="6" required placeholder="Conta-nos tudo — quanto mais detalhe, melhor conseguimos ajudar."></textarea>
+
+      <div class="consent">
+        <input type="checkbox" required id="ct-rgpd">
+        <label for="ct-rgpd" style="all:unset;font-size:13.5px;color:var(--muted);">Autorizo o contacto da Quente e Bom sobre esta mensagem.</label>
+      </div>
+      <button class="btn btn-orange" type="submit" id="ctBtn" style="width:100%;">Enviar mensagem ☀️</button>
+      <div class="form-ok" id="formOk">Recebido! 🧡 Obrigado por nos ajudares a ser melhores — vamos ler com atenção e responder-te em breve.</div>
+    </form>
+
+    <div class="ct-side" data-reveal>
+      <div class="ct-card ct-joaquim">
+        <img src="/assets/img/bento_face.jpg" alt="Joaquim, o Chef">
+        <div>
+          <h3>Precisas de resposta já?</h3>
+          <p>O Joaquim responde na hora — onde comprar, receitas e mais.</p>
+          <a href="#" onclick="openBento();return false;" style="color:var(--brown);text-decoration:underline;font-weight:800;">Falar com o Joaquim →</a>
+        </div>
+      </div>
+      <div class="ct-card">
+        <h3>📍 A nossa fábrica</h3>
+        <p>Estrada do Calumbo/Zango<br>Viana Park, Armazém 1Q8<br>Viana — Luanda, Angola</p>
+      </div>
+      <div class="ct-card">
+        <h3>📱 Redes sociais</h3>
+        <p><a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener">Instagram · @quenteebom</a><br>
+        <a href="https://www.facebook.com/quenteebomangola" target="_blank" rel="noopener">Facebook · Quente e Bom Angola</a></p>
+      </div>
+      <div class="ct-card">
+        <h3>🤝 Negócios</h3>
+        <p>Queres vender os nossos produtos? <a href="/revendedores/">Torna-te revendedor</a>.<br>Queres trabalhar connosco? <a href="/recrutamento/">Vê as carreiras</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="ft">
+  <div class="wrap">
+    <div class="ft-top">
+      <div style="max-width:280px;">
+        <img src="/assets/logos/logo_white_real.png" class="ft-logo" alt="Quente e Bom">
+        <p style="color:#c9b6a2;font-size:14px;">Todos os dias, uma delícia. Feito em Angola desde 2012.</p>
+      </div>
+      <div class="ft-col"><h5>Produtos</h5>
+        <a href="/pao/">Pão</a><a href="/cakes/">Cakes</a><a href="/bolos-da-avo/">Bolos da Avó</a><a href="/biscoitos/">Biscoitos</a><a href="/snacks/">Snacks</a><a href="/tostas/">Tostas</a><a href="/ingredientes/">Ingredientes</a>
+      </div>
+      <div class="ft-col"><h5>Marca</h5>
+        <a href="/#historia">A nossa história</a><a href="/receitas/">Receitas</a><a href="/dicas/">Dicas e sugestões</a><a href="/revendedores/">Revendedores</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a>
+      </div>
+      <div class="ft-col"><h5>Contactos</h5>
+        <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>
+        <a href="/contacto/">Fale connosco</a>
+        <a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener">Instagram · @quenteebom</a>
+        <a href="https://www.facebook.com/quenteebomangola" target="_blank" rel="noopener">Facebook</a>
+      </div>
+    </div>
+    <div class="ft-bot">© 2026 Doce, Quente e Bom · Feito em Angola 🇦🇴</div>
+  </div>
+</footer>
+
+<script src="/assets/js/site.js?v=4"></script>
+<script src="/assets/js/bento.js?v=4"></script>
+<script>
+// chips de tipo → campo escondido + campos extra para reclamação
+document.querySelectorAll('#tipoChips .tchip').forEach(function (c) {
+  c.addEventListener('click', function () {
+    document.querySelectorAll('#tipoChips .tchip').forEach(function (x) { x.classList.remove('on'); });
+    c.classList.add('on');
+    var t = c.getAttribute('data-t');
+    document.getElementById('ct-tipo').value = t;
+    document.getElementById('reclamaExtra').classList.toggle('show', t === 'Reclamação');
+  });
+});
+// submissão AJAX
+document.getElementById('ctForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var f = e.target, btn = document.getElementById('ctBtn');
+  btn.disabled = true; btn.textContent = 'A enviar…';
+  fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(new FormData(f)).toString() })
+    .then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      document.getElementById('formOk').style.display = 'block';
+      btn.textContent = 'Mensagem enviada ✓';
+      f.querySelectorAll('input,textarea,button.tchip').forEach(function (el) { el.disabled = true; });
+    })
+    .catch(function () {
+      btn.disabled = false; btn.textContent = 'Enviar mensagem ☀️';
+      alert('Não foi possível enviar. Verifica a ligação e tenta outra vez.');
+    });
+});
+</script>
+</body>
+</html>
