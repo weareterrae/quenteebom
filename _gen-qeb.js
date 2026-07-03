@@ -10,32 +10,32 @@ const CATS = [
     hero: '/assets/img/m_pao.jpg',
     grupos: [
       { t: 'Artesanal', items: [
-        ['pao-artesanal-9-cereais', 'Pão Artesanal 9 Cereais'],
-        ['pao-artesanal-centeio', 'Pão Artesanal de Centeio'],
-        ['pao-artesanal-integral', 'Pão Artesanal Integral'],
-        ['pao-artesanal-rustico', 'Pão Artesanal Rústico'],
+        ['pao-artesanal-9-cereais', 'Pão Artesanal 9 Cereais', 'Crosta rústica e miolo rico em cereais e sementes — pão a sério, de forno.'],
+        ['pao-artesanal-centeio', 'Pão Artesanal de Centeio', 'O sabor profundo do centeio, denso e aromático, para quem gosta de carácter.'],
+        ['pao-artesanal-integral', 'Pão Artesanal Integral', 'Farinha integral e fermentação com tempo — simples, honesto e cheio de fibra.'],
+        ['pao-artesanal-rustico', 'Pão Artesanal Rústico', 'Como o pão de antigamente: crosta estaladiça por fora, macio por dentro.'],
       ]},
       { t: 'Pão de Forma', items: [
-        ['pao-de-forma-simples', 'Pão de Forma Simples'],
-        ['pao-de-forma-9-cereais', 'Pão de Forma 9 Cereais'],
-        ['pao-de-forma-boa-linha', 'Pão de Forma Boa Linha'],
-        ['pao-de-forma-brioche', 'Pão de Forma Brioche'],
-        ['pao-de-forma-integral', 'Pão de Forma Integral'],
-        ['pao-de-forma-multicereais', 'Pão de Forma Multicereais'],
-        ['pao-de-forma-rustico', 'Pão de Forma Rústico'],
-        ['pao-de-forma-torradas-tostas', 'Especial Torradas e Tostas'],
+        ['pao-de-forma-simples', 'Pão de Forma Simples', 'O clássico lá de casa — fatias macias para torradas, sandes e tudo o resto.'],
+        ['pao-de-forma-9-cereais', 'Pão de Forma 9 Cereais', 'Nove cereais numa fatia fofa — energia boa para começar o dia.'],
+        ['pao-de-forma-boa-linha', 'Pão de Forma Boa Linha', 'Leve e equilibrado, para quem cuida da linha sem abrir mão do sabor.'],
+        ['pao-de-forma-brioche', 'Pão de Forma Brioche', 'Extra fofo e levemente adocicado — as manhãs ficam logo mais felizes.'],
+        ['pao-de-forma-integral', 'Pão de Forma Integral', 'Todo o sabor do trigo integral em fatias macias, dia após dia.'],
+        ['pao-de-forma-multicereais', 'Pão de Forma Multicereais', 'Mistura generosa de cereais e sementes, fatia a fatia.'],
+        ['pao-de-forma-rustico', 'Pão de Forma Rústico', 'O jeito prático do pão de forma com a alma do pão rústico.'],
+        ['pao-de-forma-torradas-tostas', 'Especial Torradas e Tostas', 'Feito para tostar: fatias que ficam douradas, crocantes e perfeitas.'],
       ]},
       { t: 'Super Fofo', items: [
-        ['super-fofo-trigo', 'Super Fofo Trigo'],
-        ['super-fofo-9-cereais', 'Super Fofo 9 Cereais'],
-        ['super-fofo-integral', 'Super Fofo Integral'],
+        ['super-fofo-trigo', 'Super Fofo Trigo', 'O nome diz tudo — fofinho de derreter, para sandes que desaparecem num instante.'],
+        ['super-fofo-9-cereais', 'Super Fofo 9 Cereais', 'A fofura de sempre com o bónus de nove cereais.'],
+        ['super-fofo-integral', 'Super Fofo Integral', 'Integral e super fofo ao mesmo tempo? Sim, é possível.'],
       ]},
       { t: 'Para todos os momentos', items: [
-        ['pao-de-hamburguer', 'Pão de Hambúrguer'],
-        ['pao-de-hot-dog', 'Pão de Hot Dog'],
-        ['pao-de-leite', 'Pão de Leite'],
-        ['mini-pao-de-leite', 'Mini Pão de Leite'],
-        ['croissants', 'Croissants'],
+        ['pao-de-hamburguer', 'Pão de Hambúrguer', 'Macio e dourado, aguenta o hambúrguer mais recheado sem se desfazer.'],
+        ['pao-de-hot-dog', 'Pão de Hot Dog', 'O parceiro oficial das cachorradas em família.'],
+        ['pao-de-leite', 'Pão de Leite', 'Doce na medida certa — o preferido dos lanches da escola.'],
+        ['mini-pao-de-leite', 'Mini Pão de Leite', 'Pequenos, fofos e irresistíveis: um nunca chega.'],
+        ['croissants', 'Croissants', 'Folhados e amanteigados, para um pequeno-almoço com ar de fim de semana.'],
       ]},
     ],
   },
@@ -45,18 +45,18 @@ const CATS = [
     hero: '/assets/img/m_cakes.jpg',
     grupos: [
       { t: 'Preparados para bolo', items: [
-        ['cake-laranja', 'Cake Laranja'],
-        ['cake-chocolate', 'Cake Chocolate'],
-        ['cake-cenoura', 'Cake Cenoura'],
-        ['cake-yogurte', 'Cake Yogurte'],
-        ['cake-caramelo', 'Cake Caramelo'],
-        ['cake-ananas', 'Cake Ananás'],
-        ['cake-red-velvet', 'Cake Red Velvet'],
+        ['cake-laranja', 'Cake Laranja', 'Bolo de laranja fresquinho e fofo, pronto num instante — rápido e fofo!'],
+        ['cake-chocolate', 'Cake Chocolate', 'Para os dias que pedem chocolate: intenso, húmido e fácil de fazer.'],
+        ['cake-cenoura', 'Cake Cenoura', 'O famoso bolo de cenoura, fofinho e dourado, sem complicações.'],
+        ['cake-yogurte', 'Cake Yogurte', 'Leve e macio como deve ser um bolo de iogurte — perfeito para o lanche.'],
+        ['cake-caramelo', 'Cake Caramelo', 'Doce de caramelo em forma de bolo, para adoçar qualquer tarde.'],
+        ['cake-ananas', 'Cake Ananás', 'Tropical e húmido, com aquele toque de ananás que sabe a festa.'],
+        ['cake-red-velvet', 'Cake Red Velvet', 'O clássico americano aveludado, agora fácil de fazer em casa.'],
       ]},
       { t: 'Pão de Ló e farinhas', items: [
-        ['pao-de-lo-tradicional', 'Pão de Ló Tradicional'],
-        ['pao-de-lo-chocolate', 'Pão de Ló Chocolate'],
-        ['farinha-brioche', 'Farinha Brioche'],
+        ['pao-de-lo-tradicional', 'Pão de Ló Tradicional', 'A base fofa de todas as festas — pronto para rechear e decorar.'],
+        ['pao-de-lo-chocolate', 'Pão de Ló Chocolate', 'O pão de ló de sempre, em versão chocolate para gulosos.'],
+        ['farinha-brioche', 'Farinha Brioche', 'A farinha certa para brioches caseiros fofos como nuvens.'],
       ]},
     ],
   },
@@ -66,21 +66,21 @@ const CATS = [
     hero: '/assets/img/m_bolos.jpg',
     grupos: [
       { t: 'Os clássicos', items: [
-        ['bolo-da-avo-cenoura', 'Bolo da Avó Cenoura'],
-        ['bolo-da-avo-chocolate', 'Bolo da Avó Chocolate'],
-        ['bolo-da-avo-laranja', 'Bolo da Avó Laranja'],
-        ['bolo-da-avo-marmore', 'Bolo da Avó Mármore'],
-        ['bolo-da-avo-frutas', 'Bolo da Avó de Frutas'],
-        ['bolo-da-avo-ginguba', 'Bolo da Avó de Ginguba'],
+        ['bolo-da-avo-cenoura', 'Bolo da Avó Cenoura', 'Húmido, dourado e com sabor a infância — o rei dos lanches em família.'],
+        ['bolo-da-avo-chocolate', 'Bolo da Avó Chocolate', 'Chocolate a sério em cada fatia, como a avó fazia.'],
+        ['bolo-da-avo-laranja', 'Bolo da Avó Laranja', 'Perfumado e fresco, com o sol da laranja lá dentro.'],
+        ['bolo-da-avo-marmore', 'Bolo da Avó Mármore', 'Baunilha e chocolate abraçados em espiral — o preferido lá de casa.'],
+        ['bolo-da-avo-frutas', 'Bolo da Avó de Frutas', 'Pedacinhos de fruta em massa fofa — cor e alegria na mesa.'],
+        ['bolo-da-avo-ginguba', 'Bolo da Avó de Ginguba', 'O sabor bem angolano da ginguba num bolo de casa.'],
       ]},
       { t: 'Especialidades', items: [
-        ['bolo-doce-de-ovos-ginguba', 'Bolo Doce de Ovos com Ginguba'],
-        ['bolo-chocolate-nozes', 'Bolo de Chocolate com Nozes'],
-        ['bolo-brigadeiro', 'Bolo de Brigadeiro'],
-        ['pao-de-lo', 'Pão de Ló'],
-        ['pao-de-lo-classico', 'Pão de Ló Clássico'],
-        ['pao-de-lo-chocolate-sublime', 'Pão de Ló Chocolate Sublime'],
-        ['bolo-rei-tradicional', 'Bolo Rei Tradicional'],
+        ['bolo-doce-de-ovos-ginguba', 'Bolo Doce de Ovos com Ginguba', 'Doce de ovos cremoso e crocante de ginguba — uma dupla irresistível.'],
+        ['bolo-chocolate-nozes', 'Bolo de Chocolate com Nozes', 'Chocolate intenso e nozes crocantes, para ocasiões especiais.'],
+        ['bolo-brigadeiro', 'Bolo de Brigadeiro', 'Para os muito gulosos: bolo com alma de brigadeiro.'],
+        ['pao-de-lo', 'Pão de Ló', 'Fofo, leve e clássico — combina com tudo e com todos.'],
+        ['pao-de-lo-classico', 'Pão de Ló Clássico', 'A receita tradicional, simples e sempre certeira.'],
+        ['pao-de-lo-chocolate-sublime', 'Pão de Ló Chocolate Sublime', 'Camadas fofas com chocolate sublime — o nome não engana.'],
+        ['bolo-rei-tradicional', 'Bolo Rei Tradicional', 'A estrela da quadra festiva, com frutas e tradição q.b.'],
       ]},
     ],
   },
@@ -90,13 +90,13 @@ const CATS = [
     hero: '/assets/img/m_biscoitos.jpg',
     grupos: [
       { t: 'Todos os sabores', items: [
-        ['biscoitos-de-ginguba', 'Biscoitos de Ginguba'],
-        ['biscoitos-de-laranja', 'Biscoitos de Laranja'],
-        ['biscoitos-de-canela', 'Biscoitos de Canela'],
-        ['biscoitos-de-limao', 'Biscoitos de Limão'],
-        ['biscoitos-areados', 'Biscoitos Areados'],
-        ['biscoitos-palmiers', 'Biscoitos Palmiers'],
-        ['linguas-de-veado', 'Línguas de Veado'],
+        ['biscoitos-de-ginguba', 'Biscoitos de Ginguba', 'Crocantes e cheios de ginguba — o sabor de Angola em cada dentada.'],
+        ['biscoitos-de-laranja', 'Biscoitos de Laranja', 'Frescos e perfumados, perfeitos para molhar no chá.'],
+        ['biscoitos-de-canela', 'Biscoitos de Canela', 'O clássico quentinho que enche a casa de aroma.'],
+        ['biscoitos-de-limao', 'Biscoitos de Limão', 'Um toque cítrico e alegre para a pausa do café.'],
+        ['biscoitos-areados', 'Biscoitos Areados', 'Desfazem-se na boca — simples e viciantes.'],
+        ['biscoitos-palmiers', 'Biscoitos Palmiers', 'Folhados, caramelizados e estaladiços: elegância em forma de biscoito.'],
+        ['linguas-de-veado', 'Línguas de Veado', 'Finas e crocantes, as companheiras de sempre do cafezinho.'],
       ]},
     ],
   },
@@ -106,11 +106,11 @@ const CATS = [
     hero: '/assets/img/m_snacks.jpg',
     grupos: [
       { t: 'Para levar', items: [
-        ['mix-frutos-secos', 'Mix de Frutos Secos'],
-        ['caju-torrado', 'Caju Torrado'],
-        ['caju-torrado-sal', 'Caju Torrado com Sal'],
-        ['amendoa-torrada', 'Amêndoa Torrada'],
-        ['amendoa-torrada-sal', 'Amêndoa Torrada com Sal'],
+        ['mix-frutos-secos', 'Mix de Frutos Secos', 'Caju, amêndoa, nozes e mais — um snack apetitoso e irresistível.'],
+        ['caju-torrado', 'Caju Torrado', 'Caju torrado no ponto, crocante e naturalmente delicioso.'],
+        ['caju-torrado-sal', 'Caju Torrado com Sal', 'O caju de sempre com aquele toque de sal que vicia.'],
+        ['amendoa-torrada', 'Amêndoa Torrada', 'Amêndoas torradas devagarinho, para um snack elegante e saudável.'],
+        ['amendoa-torrada-sal', 'Amêndoa Torrada com Sal', 'Crocantes, salgadas na medida — impossível comer só uma.'],
       ]},
     ],
   },
@@ -120,9 +120,9 @@ const CATS = [
     hero: '/assets/img/m_tostas.jpg',
     grupos: [
       { t: 'A escolha saudável', items: [
-        ['tostas-integrais', 'Tostas Integrais'],
-        ['tostas-multicereais', 'Tostas Multicereais'],
-        ['tostas-alfarroba', 'Tostas de Alfarroba'],
+        ['tostas-integrais', 'Tostas Integrais', 'Crocantes e ricas em fibra — a base leve para qualquer topping.'],
+        ['tostas-multicereais', 'Tostas Multicereais', 'Vários cereais numa tosta estaladiça, para dias equilibrados.'],
+        ['tostas-alfarroba', 'Tostas de Alfarroba', 'O toque naturalmente doce da alfarroba numa tosta diferente de todas.'],
       ]},
     ],
   },
@@ -132,32 +132,32 @@ const CATS = [
     hero: '/assets/img/m_ingr.jpg',
     grupos: [
       { t: 'Chocolates e cacau', items: [
-        ['chocolate-de-leite', 'Chocolate de Leite 34% Cacau'],
-        ['chocolate-negro', 'Chocolate Negro 70% Cacau'],
-        ['chocolate-branco', 'Chocolate Branco 30% Cacau'],
-        ['granulado-de-chocolate', 'Granulado de Chocolate'],
-        ['cacau-em-po', 'Cacau em Pó'],
+        ['chocolate-de-leite', 'Chocolate de Leite 34% Cacau', 'Cremoso e equilibrado — o sabor está nos detalhes.'],
+        ['chocolate-negro', 'Chocolate Negro 70% Cacau', 'Intenso e profundo, para sobremesas de chef.'],
+        ['chocolate-branco', 'Chocolate Branco 30% Cacau', 'Doce e suave, derrete que é uma maravilha.'],
+        ['granulado-de-chocolate', 'Granulado de Chocolate', 'Para cobrir bolos, brigadeiros e sorrisos.'],
+        ['cacau-em-po', 'Cacau em Pó', 'O coração de qualquer receita de chocolate a sério.'],
       ]},
       { t: 'Frutos secos e frutas', items: [
-        ['amendoa-com-pele', 'Amêndoa Com Pele'],
-        ['amendoa-sem-pele', 'Amêndoa Sem Pele'],
-        ['amendoa-laminada', 'Amêndoa Laminada'],
-        ['amendoa-palitada', 'Amêndoa Palitada'],
-        ['caju', 'Caju'],
-        ['nozes', 'Nozes'],
-        ['miolo-de-avela', 'Miolo de Avelã'],
-        ['sultanas', 'Sultanas'],
-        ['cereja-cristalizada', 'Cereja Cristalizada'],
-        ['coco-ralado', 'Coco Ralado'],
-        ['sementes-de-sesamo', 'Sementes de Sésamo'],
+        ['amendoa-com-pele', 'Amêndoa Com Pele', 'Inteira e natural, pronta para doces e decorações.'],
+        ['amendoa-sem-pele', 'Amêndoa Sem Pele', 'Branquinha e delicada, perfeita para massapão e bolos finos.'],
+        ['amendoa-laminada', 'Amêndoa Laminada', 'Lâminas finas para cobrir bolos e tartes com elegância.'],
+        ['amendoa-palitada', 'Amêndoa Palitada', 'Palitos crocantes para dar textura a qualquer sobremesa.'],
+        ['caju', 'Caju', 'O fruto seco mais amado de Angola, pronto a usar na cozinha.'],
+        ['nozes', 'Nozes', 'Miolo de noz para bolos, tartes e saladas cheias de personalidade.'],
+        ['miolo-de-avela', 'Miolo de Avelã', 'Avelãs inteiras para brownies, bolachas e chocolates caseiros.'],
+        ['sultanas', 'Sultanas', 'Passas douradas e macias, doces por natureza.'],
+        ['cereja-cristalizada', 'Cereja Cristalizada', 'O toque vermelho clássico dos bolos de festa.'],
+        ['coco-ralado', 'Coco Ralado', 'Aroma tropical para beijinhos, bolos e cocadas.'],
+        ['sementes-de-sesamo', 'Sementes de Sésamo', 'Para pães, bolachas e aquele crocante final.'],
       ]},
       { t: 'Bases da pastelaria', items: [
-        ['acucar-em-po', 'Açúcar em Pó'],
-        ['amido-de-milho', 'Amido de Milho'],
-        ['fermento-em-po', 'Fermento em Pó para Bolos'],
-        ['chantilly-em-po', 'Chantilly em Pó'],
-        ['creme-de-pasteleiro', 'Creme de Pasteleiro'],
-        ['pao-ralado', 'Pão Ralado'],
+        ['acucar-em-po', 'Açúcar em Pó', 'Finíssimo, para coberturas, glacés e polvilhar como neve.'],
+        ['amido-de-milho', 'Amido de Milho', 'O segredo dos cremes lisos e dos bolos mais leves.'],
+        ['fermento-em-po', 'Fermento em Pó para Bolos', 'A garantia de que o bolo cresce sempre bonito.'],
+        ['chantilly-em-po', 'Chantilly em Pó', 'Chantilly firme e fofo em minutos, sempre pronto a decorar.'],
+        ['creme-de-pasteleiro', 'Creme de Pasteleiro', 'O recheio cremoso das bolas de Berlim e mil-folhas caseiros.'],
+        ['pao-ralado', 'Pão Ralado', 'Douradinho e fino, para panados crocantes como deve ser.'],
       ]},
     ],
   },
@@ -208,9 +208,10 @@ function footerHTML() {
 
 function pageHTML(cat) {
   const grupos = cat.grupos.map(g => {
-    const cards = g.items.map(([slug, nome]) => `        <div class="prod" data-reveal>
+    const cards = g.items.map(([slug, nome, desc]) => `        <div class="prod" data-reveal>
           <div class="ph"><img src="/assets/produtos/${cat.slug}/${slug}.png" alt="${nome} — Quente e Bom" loading="lazy"></div>
           <h3>${nome}</h3>
+          <p class="sub">${desc || ''}</p>
         </div>`).join('\n');
     return `      <div class="strip-t"><h3>${g.t}</h3></div>
       <div class="prods">
@@ -276,12 +277,14 @@ ${footerHTML()}
 }
 
 let total = 0;
+let semDesc = 0;
 CATS.forEach(cat => {
   const dir = path.join(__dirname, cat.slug);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'index.html'), pageHTML(cat), 'utf8');
   const n = cat.grupos.reduce((s, g) => s + g.items.length, 0);
+  cat.grupos.forEach(g => g.items.forEach(i => { if (!i[2]) semDesc++; }));
   total += n;
   console.log(`${cat.slug}/index.html — ${n} produtos`);
 });
-console.log(`TOTAL: ${total} produtos em ${CATS.length} categorias`);
+console.log(`TOTAL: ${total} produtos em ${CATS.length} categorias · sem descrição: ${semDesc}`);
