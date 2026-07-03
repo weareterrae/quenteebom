@@ -1,4 +1,4 @@
-/* Bento — o Chef da Quente e Bom (widget partilhado).
+/* Joaquim — o Chef da Quente e Bom (widget partilhado).
    Com BENTO_ENDPOINT definido: chat de IA a sério (Supabase Edge Function + Claude).
    Sem endpoint / se falhar: fluxos guiados por botões (fallback). */
 (function () {
@@ -8,13 +8,13 @@
 
   var root = document.createElement('div');
   root.innerHTML =
-    '<button class="bento-btn" id="bentoBtn" aria-label="Falar com o Bento">' +
-    '<img src="/assets/img/bento_face.jpg" class="bento-btn-av" alt="">Falar com o Bento</button>' +
-    '<div class="bento-panel" id="bentoPanel" role="dialog" aria-label="Conversa com o Bento">' +
-    '<div class="bp-head"><div class="bp-av"><img src="/assets/img/bento_face.jpg" alt="Bento"></div>' +
-    '<div><b>Bento</b><span>O Chef · responde na hora</span></div></div>' +
+    '<button class="bento-btn" id="bentoBtn" aria-label="Falar com o Joaquim">' +
+    '<img src="/assets/img/bento_face.jpg" class="bento-btn-av" alt="">Falar com o Joaquim</button>' +
+    '<div class="bento-panel" id="bentoPanel" role="dialog" aria-label="Conversa com o Joaquim">' +
+    '<div class="bp-head"><div class="bp-av"><img src="/assets/img/bento_face.jpg" alt="Joaquim"></div>' +
+    '<div><b>Joaquim</b><span>O Chef · responde na hora</span></div></div>' +
     '<div class="bp-body" id="bpBody">' +
-    '<div class="msg bot">Olá! 🧡 Sou o Bento, o Chef da Quente e Bom. Como te posso ajudar hoje?</div></div>' +
+    '<div class="msg bot">Olá! 🧡 Sou o Joaquim, o Chef da Quente e Bom. Como te posso ajudar hoje?</div></div>' +
     '<div class="qbtns" id="bpBtns"></div>' +
     '<div class="bp-input" id="bpInputRow">' +
     '<input type="text" id="bpInput" placeholder="Escreve a tua pergunta…" maxlength="500" autocomplete="off">' +
@@ -48,7 +48,7 @@
     history.push({ role: 'user', content: text });
     var typing = document.createElement('div');
     typing.className = 'msg bot typing';
-    typing.textContent = 'O Bento está a escrever…';
+    typing.textContent = 'O Joaquim está a escrever…';
     body.appendChild(typing); body.scrollTop = body.scrollHeight;
 
     fetch(BENTO_ENDPOINT, {

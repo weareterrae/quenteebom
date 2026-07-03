@@ -176,7 +176,7 @@ function headerHTML() {
       <a href="/dicas/">Dicas</a>
       <a href="/revendedores/">Revendedores</a>
       <a href="/recrutamento/">Carreiras</a>
-      <a href="#" class="cta" onclick="openBento();return false;">Falar com o Bento</a>
+      <a href="#" class="cta" onclick="openBento();return false;">Falar com o Joaquim</a>
     </nav>
   </div>
 </header>`;

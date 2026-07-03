@@ -503,7 +503,7 @@ function headerHTML() {
       <a href="/dicas/">Dicas</a>
       <a href="/revendedores/">Revendedores</a>
       <a href="/recrutamento/">Carreiras</a>
-      <a href="#" class="cta" onclick="openBento();return false;">Falar com o Bento</a>
+      <a href="#" class="cta" onclick="openBento();return false;">Falar com o Joaquim</a>
     </nav>
   </div>
 </header>`;
@@ -566,7 +566,7 @@ function hubReceitas() {
   return `<!DOCTYPE html>
 <html lang="pt">
 <head>
-${headHTML('Receitas — Quente e Bom · Feito em Angola', 'Receitas simples e deliciosas com os produtos Quente e Bom — do lanche à festa, o Bento ensina.', '/receitas/', '/assets/img/rec_redvelvet.jpg')}
+${headHTML('Receitas — Quente e Bom · Feito em Angola', 'Receitas simples e deliciosas com os produtos Quente e Bom — do lanche à festa, o Joaquim ensina.', '/receitas/', '/assets/img/rec_redvelvet.jpg')}
 </head>
 <body>
 ${headerHTML()}
@@ -575,7 +575,7 @@ ${headerHTML()}
   <div class="wrap">
     <div class="eyebrow">Da nossa cozinha para a tua</div>
     <h1>Receitas</h1>
-    <p>Simples, deliciosas e com os produtos que já tens em casa. O Bento ensina — tu brilhas.</p>
+    <p>Simples, deliciosas e com os produtos que já tens em casa. O Joaquim ensina — tu brilhas.</p>
   </div>
 </section>
 <section class="sec" style="padding-top:56px;">
@@ -598,7 +598,7 @@ ${chips}
     <div class="rec-grid" id="recGrid">
 ${cards}
     </div>
-    <div class="rec-none" id="recNone">Nenhuma receita encontrada… mas o Bento aceita sugestões! 🧡</div>
+    <div class="rec-none" id="recNone">Nenhuma receita encontrada… mas o Joaquim aceita sugestões! 🧡</div>
   </div>
 </section>
 ${footerHTML()}
@@ -673,8 +673,8 @@ ${ings}
 ${passos}
       </ol>
       <div class="bento-tip">
-        <img src="/assets/img/bento_face.jpg" alt="Bento">
-        <div><b>Dica do Bento</b><p>${r.dicaBento}</p></div>
+        <img src="/assets/img/bento_face.jpg" alt="Joaquim">
+        <div><b>Dica do Joaquim</b><p>${r.dicaBento}</p></div>
       </div>
       <div style="margin-top:34px;"><a class="btn btn-orange" href="/receitas/">← Mais receitas</a></div>
     </div>
@@ -698,7 +698,7 @@ function pagDicas() {
   return `<!DOCTYPE html>
 <html lang="pt">
 <head>
-${headHTML('Dicas e Sugestões — Quente e Bom', 'Os truques do Bento para pão sempre fresco, torradas perfeitas, bolos fofos e lanches felizes.', '/dicas/', '/assets/img/dicas_hero.jpg')}
+${headHTML('Dicas e Sugestões — Quente e Bom', 'Os truques do Joaquim para pão sempre fresco, torradas perfeitas, bolos fofos e lanches felizes.', '/dicas/', '/assets/img/dicas_hero.jpg')}
 </head>
 <body>
 ${headerHTML()}
@@ -716,7 +716,7 @@ ${headerHTML()}
 ${cards}
     </div>
     <div class="bento-tip" style="margin-top:40px;" data-reveal>
-      <img src="/assets/img/bento_face.jpg" alt="Bento">
+      <img src="/assets/img/bento_face.jpg" alt="Joaquim">
       <div><b>Tens uma dúvida?</b><p>Pergunta-me! Estou aqui no canto do ecrã, sempre pronto a ajudar. 🧡</p></div>
     </div>
   </div>

@@ -1,7 +1,7 @@
 // Supabase Edge Function: bento-web (v2 — cérebro remoto)
 // O SYSTEM_PROMPT vive no site (https://quenteebom.netlify.app/bento-prompt.txt) e é
 // atualizado por git push — esta função vai buscá-lo sozinha (cache 5 min).
-// NUNCA mais é preciso re-colar esta função para mudar a personalidade/receitas do Bento.
+// NUNCA mais é preciso re-colar esta função para mudar a personalidade/receitas do Joaquim.
 // Secrets usados (já existem no projeto): ANTHROPIC_API_KEY, CLAUDE_MODEL (opcional)
 // Deploy: Supabase Dashboard → Edge Functions → bento-web → colar → Deploy (JWT verification OFF)
 
@@ -10,7 +10,7 @@ const CLAUDE_MODEL = Deno.env.get("CLAUDE_MODEL") || "claude-sonnet-5";
 const PROMPT_URL = "https://quenteebom.netlify.app/bento-prompt.txt";
 const PROMPT_TTL_MS = 5 * 60 * 1000;
 
-const FALLBACK_PROMPT = `És o Bento, o Chef da Quente e Bom — marca angolana de padaria e pastelaria, feita em Angola desde 2012 (fábrica em Viana, Luanda). Tom caloroso, português de Angola, respostas curtas com 1-2 emojis. A marca vende só a profissionais; o consumidor compra nos supermercados de todo o Angola (a oferta varia por loja — pede a zona). Revendedores → formulário em /revendedores/. Emprego → /recrutamento/. Receitas → https://quenteebom.com/receitas/. Nunca inventes preços, moradas ou stocks. Assinatura: "Todos os dias, uma delícia." ☀️`;
+const FALLBACK_PROMPT = `És o Joaquim, o Chef da Quente e Bom — marca angolana de padaria e pastelaria, feita em Angola desde 2012 (fábrica em Viana, Luanda). Tom caloroso, português de Angola, respostas curtas com 1-2 emojis. A marca vende só a profissionais; o consumidor compra nos supermercados de todo o Angola (a oferta varia por loja — pede a zona). Revendedores → formulário em /revendedores/. Emprego → /recrutamento/. Receitas → https://quenteebom.com/receitas/. Nunca inventes preços, moradas ou stocks. Assinatura: "Todos os dias, uma delícia." ☀️`;
 
 let promptCache = { text: "", ts: 0 };
 
