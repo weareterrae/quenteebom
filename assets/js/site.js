@@ -71,3 +71,13 @@
   }
   frame();
 })();
+
+/* Metricool — analytics do site (hash público da marca) */
+(function () {
+  function loadScript(a) {
+    var b = document.getElementsByTagName("head")[0], c = document.createElement("script");
+    c.type = "text/javascript"; c.src = "https://tracker.metricool.com/resources/be.js";
+    c.onreadystatechange = a; c.onload = a; b.appendChild(c);
+  }
+  loadScript(function () { beTracker.t({ hash: "4f08e52fadba55f51e0d84318564e5d0" }); });
+})();
