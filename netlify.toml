@@ -1,7 +1,29 @@
 [build]
   publish = "."
 
+# CSS e JS mudam com o design — cache curta, revalida sempre
 [[headers]]
-  for = "/assets/*"
+  for = "/assets/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# imagens e fontes são estáveis — cache longa
+[[headers]]
+  for = "/assets/img/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/produtos/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/font/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
