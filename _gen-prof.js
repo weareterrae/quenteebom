@@ -220,7 +220,7 @@ function gamaHTML(g){
     const rows = gr.items.map(([ref,nome,peso,cx]) =>
       `<tr><td class="n">${nome}</td><td>${peso}</td><td>${cx} un/caixa</td><td class="ref">${ref}</td></tr>`).join('\n');
     return `<div class="strip-t"><h3>${gr.t}</h3></div>
-<div class="gfoto" data-reveal><img src="${gr.foto}" alt="${gr.t} — Quente e Bom" loading="lazy" data-fkey="${gr.fkey}"></div>
+<div class="gfoto" data-reveal><img src="/assets/img/prof/${gr.fkey}.jpg" alt="${gr.t} — Quente e Bom" loading="lazy" data-fkey="${gr.fkey}"></div>
 <p class="ilus">Fotografia ilustrativa do produto.</p>
 <table class="spec">
 <tr><th>Produto</th><th>Peso</th><th>Caixa</th><th>Referência</th></tr>
