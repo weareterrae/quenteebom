@@ -916,6 +916,7 @@ function headerHTML() {
     </a>
     <nav class="nav">
       <a href="/#mundos">Produtos</a>
+      <a href="/profissional/">Profissional</a>
       <a href="/receitas/">Receitas</a>
       <a href="/dicas/">Dicas</a>
       <a href="/revendedores/">Revendedores</a>
