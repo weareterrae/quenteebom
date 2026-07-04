@@ -9,6 +9,12 @@
   <url><loc>https://quenteebom.com/tostas/</loc><priority>0.9</priority></url>
   <url><loc>https://quenteebom.com/ingredientes/</loc><priority>0.9</priority></url>
   <url><loc>https://quenteebom.com/revendedores/</loc><priority>0.9</priority></url>
+  <url><loc>https://quenteebom.com/profissional/</loc><priority>0.9</priority></url>
+  <url><loc>https://quenteebom.com/profissional/pao-pre-cozido/</loc><priority>0.8</priority></url>
+  <url><loc>https://quenteebom.com/profissional/pao-congelado/</loc><priority>0.8</priority></url>
+  <url><loc>https://quenteebom.com/profissional/pastelaria-massa-congelada/</loc><priority>0.8</priority></url>
+  <url><loc>https://quenteebom.com/profissional/pastelaria-pronta/</loc><priority>0.8</priority></url>
+  <url><loc>https://quenteebom.com/profissional/encomenda/</loc><priority>0.8</priority></url>
   <url><loc>https://quenteebom.com/receitas/</loc><priority>0.8</priority></url>
   <url><loc>https://quenteebom.com/receitas/rabanadas-de-brioche/</loc><priority>0.7</priority></url>
   <url><loc>https://quenteebom.com/receitas/bolo-de-cenoura-com-chocolate/</loc><priority>0.7</priority></url>

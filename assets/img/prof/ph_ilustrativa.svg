@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680">
+<rect width="1200" height="680" fill="#5B2A4A"/>
+<circle cx="600" cy="230" r="72" fill="#F6C440"/>
+<g stroke="#F6C440" stroke-width="10" stroke-linecap="round">
+<line x1="600" y1="120" x2="600" y2="90"/><line x1="600" y1="340" x2="600" y2="370"/>
+<line x1="490" y1="230" x2="460" y2="230"/><line x1="710" y1="230" x2="740" y2="230"/>
+<line x1="522" y1="152" x2="501" y2="131"/><line x1="678" y1="308" x2="699" y2="329"/>
+<line x1="522" y1="308" x2="501" y2="329"/><line x1="678" y1="152" x2="699" y2="131"/>
+</g>
+<text x="600" y="470" text-anchor="middle" font-family="Rockwell, Georgia, serif" font-weight="800" font-size="46" fill="#ffffff">Fotografia ilustrativa</text>
+<text x="600" y="530" text-anchor="middle" font-family="Rockwell, Georgia, serif" font-weight="800" font-size="46" fill="#F6C440">em preparação</text>
+</svg>
