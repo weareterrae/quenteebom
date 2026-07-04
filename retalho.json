@@ -1,0 +1,554 @@
+[
+  {
+    "mundo": "Pão",
+    "link": "/pao/",
+    "hero": "/assets/img/m_pao.jpg",
+    "intro": "Pão de forma, artesanal, super fofo e para todos os momentos — embalado e pronto para a prateleira.",
+    "items": [
+      [
+        "3005213",
+        "Pão de Forma Alfarroba",
+        "400 g",
+        "12",
+        1
+      ],
+      [
+        "3005212",
+        "Pão de Forma Prokorn",
+        "400 g",
+        "12",
+        1
+      ],
+      [
+        "3005211",
+        "Pão de Forma Shape",
+        "400 g",
+        "12",
+        1
+      ],
+      [
+        "3005214",
+        "Croissant Brioche",
+        "(4 × 90 g)",
+        "12",
+        0
+      ],
+      [
+        "3005207",
+        "Mini Pão de Leite",
+        "(8 × 50 g)",
+        "12",
+        0
+      ],
+      [
+        "3005218",
+        "Pão Artesanal 9 Cereais",
+        "500 g",
+        "6",
+        0
+      ],
+      [
+        "3005217",
+        "Pão Artesanal Centeio",
+        "500 g",
+        "6",
+        0
+      ],
+      [
+        "3005216",
+        "Pão Artesanal Integral",
+        "500 g",
+        "6",
+        0
+      ],
+      [
+        "3005215",
+        "Pão Artesanal Rústico",
+        "500 g",
+        "6",
+        0
+      ],
+      [
+        "300517046",
+        "Pão de Forma 9 Cereais",
+        "400 g",
+        "12",
+        0
+      ],
+      [
+        "3005209",
+        "Pão de Forma Boa Linha",
+        "400 g",
+        "12",
+        0
+      ],
+      [
+        "3005202",
+        "Pão de Forma Brioche",
+        "400 g",
+        "12",
+        0
+      ],
+      [
+        "300517043",
+        "Pão de Forma Especial Torradas",
+        "950 g",
+        "4",
+        0
+      ],
+      [
+        "300517045",
+        "Pão de Forma Integral",
+        "400 g",
+        "12",
+        0
+      ],
+      [
+        "3005203",
+        "Pão de Forma Integral",
+        "600 g",
+        "10",
+        0
+      ],
+      [
+        "3005210",
+        "Pão de Forma Multicereais",
+        "400 g",
+        "12",
+        0
+      ],
+      [
+        "3005208",
+        "Pão de Forma Rústico",
+        "600 g",
+        "10",
+        0
+      ],
+      [
+        "300517044",
+        "Pão de Forma Simples",
+        "400 g",
+        "12",
+        0
+      ],
+      [
+        "3005201",
+        "Pão de Forma Simples",
+        "600 g",
+        "10",
+        0
+      ],
+      [
+        "3005204",
+        "Pão de Hamburguer",
+        "(4 × 90 g)",
+        "12",
+        0
+      ],
+      [
+        "3005206",
+        "Pão de Leite",
+        "(4 × 90 g)",
+        "12",
+        0
+      ],
+      [
+        "3005205",
+        "Pão Hot Dog",
+        "(6 × 60 g)",
+        "12",
+        0
+      ],
+      [
+        "300517041",
+        "Super Fofo 9 Cereais sem Côdea",
+        "300 g",
+        "12",
+        0
+      ],
+      [
+        "300517042",
+        "Super Fofo Integral sem Côdea",
+        "300 g",
+        "12",
+        0
+      ],
+      [
+        "300517040",
+        "Super Fofo sem Côdea",
+        "300 g",
+        "12",
+        0
+      ]
+    ]
+  },
+  {
+    "mundo": "Cakes",
+    "link": "/cakes/",
+    "hero": "/assets/img/m_cakes.jpg",
+    "intro": "Preparados para bolo: o cliente leva e faz em casa, rápido e fofo.",
+    "items": [
+      [
+        "700010001",
+        "Cake Ananás",
+        "500 g",
+        "14",
+        0
+      ],
+      [
+        "700010002",
+        "Cake Caramelo",
+        "500 g",
+        "14",
+        0
+      ],
+      [
+        "700010003",
+        "Cake Cenoura",
+        "500 g",
+        "14",
+        0
+      ],
+      [
+        "700010004",
+        "Cake Chocolate",
+        "500 g",
+        "14",
+        0
+      ],
+      [
+        "700010005",
+        "Cake Iogurte",
+        "500 g",
+        "14",
+        0
+      ],
+      [
+        "700010006",
+        "Cake Laranja",
+        "500 g",
+        "14",
+        0
+      ],
+      [
+        "700010007",
+        "Cake Red Velvet",
+        "500 g",
+        "14",
+        0
+      ],
+      [
+        "700010008",
+        "Pão de Ló Chocolate",
+        "500 g",
+        "14",
+        0
+      ],
+      [
+        "700010009",
+        "Pão de Ló Tradicional",
+        "500 g",
+        "14",
+        0
+      ]
+    ]
+  },
+  {
+    "mundo": "Biscoitos",
+    "link": "/biscoitos/",
+    "hero": "/assets/img/m_biscoitos.jpg",
+    "intro": "Biscoitos secos angolanos — ginguba, laranja, canela e mais.",
+    "items": [
+      [
+        "500010031",
+        "Biscoito Areado",
+        "250 g",
+        "14",
+        0
+      ],
+      [
+        "500010034",
+        "Biscoito de Canela",
+        "250 g",
+        "14",
+        0
+      ],
+      [
+        "500010037",
+        "Biscoito de Ginguba",
+        "250 g",
+        "14",
+        0
+      ],
+      [
+        "500010035",
+        "Biscoito Frisado Laranja",
+        "250 g",
+        "14",
+        0
+      ],
+      [
+        "500010032",
+        "Biscoito Frisado Limão",
+        "250 g",
+        "14",
+        0
+      ],
+      [
+        "500010036",
+        "Linguas de Veado",
+        "250 g",
+        "14",
+        0
+      ],
+      [
+        "500010033",
+        "Palmiers Mini",
+        "250 g",
+        "14",
+        0
+      ]
+    ]
+  },
+  {
+    "mundo": "Tostas",
+    "link": "/tostas/",
+    "hero": "/assets/img/m_tostas.jpg",
+    "intro": "Tostas crocantes para o bem-estar — integrais, multicereais, alfarroba.",
+    "items": [
+      [
+        "500010044",
+        "Tostas Alfarroba",
+        "125 g",
+        "14",
+        0
+      ],
+      [
+        "500010045",
+        "Tostas Boa Linha",
+        "125 g",
+        "14",
+        1
+      ],
+      [
+        "500010041",
+        "Tostas De Trigo",
+        "125 g",
+        "14",
+        1
+      ],
+      [
+        "500010042",
+        "Tostas Integral",
+        "125 g",
+        "14",
+        0
+      ],
+      [
+        "500010043",
+        "Tostas Multicereais",
+        "125 g",
+        "14",
+        0
+      ]
+    ]
+  },
+  {
+    "mundo": "Snacks",
+    "link": "/snacks/",
+    "hero": "/assets/img/m_snacks.jpg",
+    "intro": "Frutos secos torrados e mix — energia natural para levar.",
+    "items": [
+      [
+        "700030004",
+        "Amêndoa Torrada",
+        "200 g",
+        "21",
+        1
+      ],
+      [
+        "700030005",
+        "Amêndoa Torrada com Sal",
+        "200 g",
+        "21",
+        1
+      ],
+      [
+        "700030002",
+        "Caju Torrado",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700030003",
+        "Caju Torrado com Sal",
+        "200 g",
+        "21",
+        1
+      ],
+      [
+        "700030001",
+        "Mix de Frutos Secos",
+        "200 g",
+        "21",
+        0
+      ]
+    ]
+  },
+  {
+    "mundo": "Ingredientes",
+    "link": "/ingredientes/",
+    "hero": "/assets/img/m_ingr.jpg",
+    "intro": "Chocolates, frutos secos, cacau, fermentos e mais para criar em casa.",
+    "items": [
+      [
+        "700020001",
+        "Açúcar em Pó",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020002",
+        "Amêndoa Laminada",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020003",
+        "Amêndoa Palitada",
+        "200 g",
+        "21",
+        1
+      ],
+      [
+        "700020004",
+        "Amêndoa Sem Pele",
+        "200 g",
+        "21",
+        1
+      ],
+      [
+        "700020005",
+        "Amido Milho",
+        "200 g",
+        "21",
+        1
+      ],
+      [
+        "700020006",
+        "Cacau em Pó",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020007",
+        "Caju",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020008",
+        "Chantilly em Pó",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020020",
+        "Chocolate Branco 30% Cacau",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020009",
+        "Chocolate de Leite 34%",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020010",
+        "Chocolate Negro 70%",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020011",
+        "Coco Ralado",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020012",
+        "Creme de Pasteleiro",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020013",
+        "Fermento em Pó para Bolos",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020014",
+        "Granulado de Chocolate",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020019",
+        "Miolo de Amêndoa com Pele",
+        "200 g",
+        "21",
+        1
+      ],
+      [
+        "700020018",
+        "Miolo de Avelã com Pele",
+        "200 g",
+        "21",
+        1
+      ],
+      [
+        "700020015",
+        "Nozes",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "700020016",
+        "Sementes Sésamo Sem Pele",
+        "200 g",
+        "21",
+        1
+      ],
+      [
+        "700020017",
+        "Sultanas",
+        "200 g",
+        "21",
+        0
+      ],
+      [
+        "500010004",
+        "Pão Ralado",
+        "500 g",
+        "24",
+        0
+      ]
+    ]
+  }
+]

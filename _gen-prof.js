@@ -129,6 +129,9 @@ const GAMAS = [
   },
 ];
 
+// Gama de PRATELEIRA (retalho embalado) — o supermercado só o tem se o pedir. Dados do ERP.
+const RETALHO = require('./retalho.json');
+
 const CSS_EXTRA = `<style>
 .spec{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 16px rgba(91,42,74,.07);margin:10px 0 34px}
 .spec th{background:#5B2A4A;color:#fff;text-align:left;padding:11px 14px;font-size:12.5px;letter-spacing:.6px;text-transform:uppercase}
@@ -252,22 +255,32 @@ function hubHTML(){
   <div class="gc"><h3>${g.nome}</h3><p>${g.intro}</p><span class="num">${n} artigos</span></div>
 </a>`;
   }).join('\n');
+  const retailCards = RETALHO.map(r => `<a class="gcard" href="${r.link}" data-reveal>
+  <img src="${r.hero}" alt="${r.mundo}">
+  <div class="gc"><h3>${r.mundo}</h3><p>${r.intro}</p><span class="num">${r.items.length} referências</span></div>
+</a>`).join('\n');
   const body = `<section class="phero">
   <img src="/assets/img/expositor_1.jpg" alt="Área Profissional Quente e Bom">
   <div class="wrap">
     <div class="eyebrow">Para padarias, supermercados, cafés e restaurantes</div>
     <h1>Área Profissional</h1>
-    <p>Pão quente todo o dia e vitrine sempre cheia — com pré-cozidos e congelados de produção própria, entregues em todo o Angola.</p>
+    <p>A gama Quente e Bom completa para o seu negócio: os produtos embalados para a prateleira e os pré-cozidos e congelados para forno — de produção própria e entregues em todo o Angola.</p>
   </div>
 </section>
 <section class="sec"><div class="wrap">
 <div class="prof-args" data-reveal>
-  <div class="pa"><b>Menos desperdício</b><br>Coze só o que vende: o resto fica no congelador, pronto para amanhã.</div>
+  <div class="pa"><b>A gama toda num pedido</b><br>Prateleira e congelados: peça tudo o que precisa numa só cotação.</div>
   <div class="pa"><b>Sem padeiro especializado</b><br>Do congelador ao forno em minutos, com instruções simples.</div>
   <div class="pa"><b>Cheiro de acabado de fazer</b><br>Pão e pastelaria quentes vendem mais — a qualquer hora do dia.</div>
   <div class="pa"><b>Produção própria em Viana</b><br>Fábrica em Luanda, entrega em todo o país, frescura garantida.</div>
 </div>
-<div class="strip-t"><h3>As nossas gamas profissionais</h3></div>
+<div class="strip-t"><h3>Gama de prateleira · produtos embalados</h3></div>
+<p style="color:#6b5060;margin:2px 2px 14px;max-width:840px">Toda a gama Quente e Bom para as prateleiras da sua loja — pão, cakes, biscoitos, tostas, snacks e ingredientes. <b>Os supermercados só os têm se os pedirem:</b> peça a cotação e escolha o que quer receber.</p>
+<div class="gcards">
+${retailCards}
+</div>
+<div class="strip-t" style="margin-top:12px"><h3>Congelados &amp; bake-off</h3></div>
+<p style="color:#6b5060;margin:2px 2px 14px;max-width:840px">Pão pré-cozido e pastelaria congelada para cozer na loja e encher a vitrine com cheiro de acabado de fazer.</p>
 <div class="gcards">
 ${cards}
 </div>
@@ -283,10 +296,21 @@ ${cards}
 }
 
 function encomendaHTML(){
-  const opts = [];
-  GAMAS.forEach(g => g.grupos.forEach(gr => gr.items.forEach(([ref,nome,peso,cx]) => {
-    opts.push(`<option value="${nome} ${peso} (${cx} un/cx) [${ref}]">${g.nome} — ${nome} · ${peso} · ${cx} un/caixa</option>`);
-  })));
+  let opts = '';
+  GAMAS.forEach(g => {
+    opts += `<optgroup label="Congelados · ${g.nome}">`;
+    g.grupos.forEach(gr => gr.items.forEach(([ref,nome,peso,cx]) => {
+      opts += `<option value="${nome} ${peso} (${cx} un/cx) [${ref}]">${nome} · ${peso} · ${cx} un/caixa</option>`;
+    }));
+    opts += `</optgroup>`;
+  });
+  RETALHO.forEach(r => {
+    opts += `<optgroup label="Prateleira · ${r.mundo}">`;
+    r.items.forEach(([ref,nome,peso,cx]) => {
+      opts += `<option value="${nome} ${peso} (${cx} un/cx) [${ref}]">${nome} · ${peso} · ${cx} un/caixa</option>`;
+    });
+    opts += `</optgroup>`;
+  });
   const body = `<section class="phero">
   <img src="/assets/img/expositor_1.jpg" alt="Pedido de cotação Quente e Bom">
   <div class="wrap">
@@ -301,7 +325,7 @@ function encomendaHTML(){
   <p style="display:none"><input name="bt"></p>
   <div class="strip-t"><h3>1 · A sua lista</h3></div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-    <select id="prod" style="flex:1;min-width:260px;padding:12px;border-radius:10px;border:1px solid #e5d5c0">${opts.join('')}</select>
+    <select id="prod" style="flex:1;min-width:260px;padding:12px;border-radius:10px;border:1px solid #e5d5c0">${opts}</select>
     <input id="qtd" type="number" min="1" value="1" style="width:90px;padding:12px;border-radius:10px;border:1px solid #e5d5c0" aria-label="Caixas">
     <button type="button" class="btn btn-sun" onclick="addItem()">Adicionar</button>
   </div>
