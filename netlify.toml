@@ -1,6 +1,17 @@
 [build]
   publish = "."
 
+# Revendedores fundiu-se na Área Profissional (jul/2026) — links antigos continuam a funcionar
+[[redirects]]
+  from = "/revendedores/"
+  to = "/profissional/revendedor/"
+  status = 301
+
+[[redirects]]
+  from = "/revendedores"
+  to = "/profissional/revendedor/"
+  status = 301
+
 # CSS e JS mudam com o design — cache curta, revalida sempre
 [[headers]]
   for = "/assets/css/*"

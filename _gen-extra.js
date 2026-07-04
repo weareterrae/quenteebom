@@ -919,7 +919,6 @@ function headerHTML() {
       <a href="/profissional/">Profissional</a>
       <a href="/receitas/">Receitas</a>
       <a href="/dicas/">Dicas</a>
-      <a href="/revendedores/">Revendedores</a>
       <a href="/recrutamento/">Carreiras</a>
       <a href="/contacto/">Contactos</a>
       <a href="#" class="cta" onclick="openBento();return false;">Falar com o Joaquim</a>
@@ -940,7 +939,7 @@ function footerHTML() {
         <a href="/pao/">Pão</a><a href="/cakes/">Cakes</a><a href="/bolos-da-avo/">Bolos da Avó</a><a href="/biscoitos/">Biscoitos</a><a href="/snacks/">Snacks</a><a href="/tostas/">Tostas</a><a href="/ingredientes/">Ingredientes</a>
       </div>
       <div class="ft-col"><h5>Marca</h5>
-        <a href="/#historia">A nossa história</a><a href="/receitas/">Receitas</a><a href="/dicas/">Dicas e sugestões</a><a href="/revendedores/">Revendedores</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a><a href="/#onde">Onde comprar</a>
+        <a href="/#historia">A nossa história</a><a href="/receitas/">Receitas</a><a href="/dicas/">Dicas e sugestões</a><a href="/profissional/">Área Profissional</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a><a href="/#onde">Onde comprar</a>
       </div>
       <div class="ft-col"><h5>Contactos</h5>
         <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>

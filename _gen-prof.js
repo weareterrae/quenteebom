@@ -9,7 +9,7 @@ const GAMAS = [
   {
     slug: 'pao-pre-cozido', nome: 'Pão Pré-cozido', eyebrow: 'Bake-off',
     intro: 'Pão quente todo o dia, sem desperdício: coze só o que vende, em 8–12 minutos, sem precisar de padeiro especializado.',
-    hero: '/assets/img/m_pao.jpg',
+    hero: '/assets/img/prof/baguetes_francesas.jpg',
     grupos: [
       { t: 'Baguetes francesas', foto: PH, fkey: 'baguetes_francesas', items: [
         ['300516012', 'Baguete Francesa', '240 g', 30],
@@ -40,7 +40,7 @@ const GAMAS = [
   {
     slug: 'pao-congelado', nome: 'Pão Pronto Congelado', eyebrow: 'Descongela e vende',
     intro: 'Pão pronto a servir: descongela e está na prateleira ou na cozinha — sem forno, sem quebras.',
-    hero: '/assets/img/m_pao.jpg',
+    hero: '/assets/img/prof/pao_pronto.jpg',
     grupos: [
       { t: 'Pão pronto', foto: PH, fkey: 'pao_pronto', items: [
         ['300517001', 'Pão de Cachorro', '4 × 75 g', 18],
@@ -51,7 +51,7 @@ const GAMAS = [
   {
     slug: 'pastelaria-massa-congelada', nome: 'Pastelaria em Massa Congelada', eyebrow: 'Do congelador ao forno',
     intro: 'Croissants, napolitanas e pastéis em massa crua: cozem na loja e enchem a vitrine com cheiro de acabado de fazer.',
-    hero: '/assets/img/m_bolos.jpg',
+    hero: '/assets/img/prof/croissants_napolitanas.jpg',
     grupos: [
       { t: 'Croissants e napolitanas', foto: PH, fkey: 'croissants_napolitanas', items: [
         ['400010054', 'Croissant Simples', '90 g', 120],
@@ -75,7 +75,7 @@ const GAMAS = [
   {
     slug: 'pastelaria-pronta', nome: 'Pastelaria Pronta Congelada', eyebrow: 'A vitrine sempre cheia',
     intro: 'Bolos e pastelaria prontos: descongelam em horas e vendem-se como acabados de fazer — dos Bolos da Avó aos bolos de festa por encomenda.',
-    hero: '/assets/img/m_bolos.jpg',
+    hero: '/assets/img/prof/bolos_festa.jpg',
     grupos: [
       { t: 'Bolos da Avó', foto: PH, fkey: 'bolos_da_avo', items: [
         ['40000097',  'Bolo da Avó Cenoura', '400 g', 14],
@@ -162,7 +162,6 @@ function headerHTML(){return `<header class="hdr solid" id="hdr">
       <a href="/#mundos">Produtos</a>
       <a href="/profissional/">Profissional</a>
       <a href="/receitas/">Receitas</a>
-      <a href="/revendedores/">Revendedores</a>
       <a href="/contacto/">Contactos</a>
       <a href="#" class="cta" onclick="openBento();return false;">Falar com o Joaquim</a>
     </nav>
@@ -177,10 +176,10 @@ function footerHTML(){return `<footer class="ft">
         <p style="color:#c9b6a2;font-size:14px;">Todos os dias, uma delícia. Feito em Angola desde 2012.</p>
       </div>
       <div class="ft-col"><h5>Área Profissional</h5>
-        <a href="/profissional/">Visão geral</a><a href="/profissional/pao-pre-cozido/">Pão Pré-cozido</a><a href="/profissional/pao-congelado/">Pão Pronto Congelado</a><a href="/profissional/pastelaria-massa-congelada/">Pastelaria em Massa</a><a href="/profissional/pastelaria-pronta/">Pastelaria Pronta</a><a href="/profissional/encomenda/">Pedido de cotação</a>
+        <a href="/profissional/">Visão geral</a><a href="/profissional/pao-pre-cozido/">Pão Pré-cozido</a><a href="/profissional/pao-congelado/">Pão Pronto Congelado</a><a href="/profissional/pastelaria-massa-congelada/">Pastelaria em Massa</a><a href="/profissional/pastelaria-pronta/">Pastelaria Pronta</a><a href="/profissional/encomenda/">Pedido de cotação</a><a href="/profissional/revendedor/">Quero ser revendedor</a>
       </div>
       <div class="ft-col"><h5>Marca</h5>
-        <a href="/#mundos">Produtos</a><a href="/receitas/">Receitas</a><a href="/revendedores/">Revendedores</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a>
+        <a href="/#mundos">Produtos</a><a href="/receitas/">Receitas</a><a href="/profissional/revendedor/">Revendedores</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a>
       </div>
       <div class="ft-col"><h5>Contactos</h5>
         <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>
@@ -273,8 +272,11 @@ function hubHTML(){
 ${cards}
 </div>
 <div style="background:#5B2A4A;color:#fff;border-radius:18px;padding:28px 32px;margin:26px 0;display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between">
-  <div style="max-width:560px"><b style="color:#F6C440">Como funciona?</b><br>Escolha os artigos, diga-nos as quantidades e a equipa comercial responde com a cotação e o plano de entregas. Simples assim.</div>
-  <a class="btn btn-sun" href="/profissional/encomenda/">Fazer pedido de cotação</a>
+  <div style="max-width:560px"><b style="color:#F6C440">Como funciona?</b><br>Escolha os artigos, diga-nos as quantidades e a equipa comercial responde com a cotação e o plano de entregas. Ainda não é nosso cliente? Torne-se revendedor em 2 minutos.</div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <a class="btn btn-sun" href="/profissional/encomenda/">Fazer pedido de cotação</a>
+    <a class="btn btn-sun" href="/profissional/revendedor/">Quero ser revendedor</a>
+  </div>
 </div>
 </div></section>`;
   return shell('Área Profissional — Quente e Bom · pré-cozidos e congelados', 'Pão pré-cozido, pão pronto congelado e pastelaria congelada para padarias, supermercados, cafés e restaurantes em todo o Angola.', '/profissional/', body);
@@ -337,6 +339,36 @@ document.querySelector('form').addEventListener('submit',function(e){
   return shell('Pedido de cotação — Área Profissional · Quente e Bom', 'Monte a sua lista de pré-cozidos e congelados Quente e Bom e receba a cotação da equipa comercial.', '/profissional/encomenda/', body);
 }
 
+function revendedorHTML(){
+  const body = `<section class="phero">
+  <img src="/assets/img/expositor_1.jpg" alt="Torne-se revendedor Quente e Bom">
+  <div class="wrap">
+    <div class="eyebrow">Área Profissional</div>
+    <h1>Torne-se revendedor</h1>
+    <p>Produtos que vendem todos os dias e clientes que voltam sempre. Preencha em 2 minutos — a equipa comercial responde rapidinho.</p>
+  </div>
+</section>
+<section class="sec"><div class="wrap" style="max-width:720px">
+<form class="fform" name="lead-revendedor" method="POST" action="/obrigado.html" data-netlify="true" netlify-honeypot="bot-field">
+  <input type="hidden" name="form-name" value="lead-revendedor">
+  <p style="display:none;"><label>Não preencher: <input name="bot-field"></label></p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <input name="nome" placeholder="O seu nome *" required autocomplete="name" style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
+    <input name="negocio" placeholder="Nome do negócio *" required autocomplete="organization" style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
+    <input name="zona" placeholder="Zona / província * (ex.: Luanda — Viana)" required style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
+    <input name="whatsapp" placeholder="WhatsApp * (+244 ...)" required inputmode="tel" style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
+  </div>
+  <textarea name="mensagem" rows="4" placeholder="Que produtos lhe interessam? (opcional — ex.: pão de forma, bolos da avó, pré-cozidos)" style="width:100%;margin-top:12px;padding:12px;border-radius:10px;border:1px solid #e5d5c0"></textarea>
+  <div style="display:flex;gap:8px;align-items:flex-start;margin:12px 0;font-size:13.5px;color:#6b5060">
+    <input type="checkbox" required id="f-rgpd" style="margin-top:3px">
+    <label for="f-rgpd">Autorizo o contacto da equipa Quente e Bom sobre este pedido.</label>
+  </div>
+  <div style="text-align:center"><button class="btn btn-sun" type="submit">Quero ser revendedor ☀️</button></div>
+</form>
+</div></section>`;
+  return shell('Torne-se revendedor — Quente e Bom', 'Leve os produtos Quente e Bom para a sua loja, café ou supermercado. Registo em 2 minutos e resposta rápida da equipa comercial.', '/profissional/revendedor/', body);
+}
+
 // escrever
 const base = path.join(__dirname, 'profissional');
 fs.mkdirSync(base, { recursive: true });
@@ -351,4 +383,7 @@ GAMAS.forEach(g => {
 fs.mkdirSync(path.join(base, 'encomenda'), { recursive: true });
 fs.writeFileSync(path.join(base, 'encomenda', 'index.html'), encomendaHTML(), 'utf8');
 console.log('profissional/encomenda/index.html — formulário');
+fs.mkdirSync(path.join(base, 'revendedor'), { recursive: true });
+fs.writeFileSync(path.join(base, 'revendedor', 'index.html'), revendedorHTML(), 'utf8');
+console.log('profissional/revendedor/index.html — formulário lead-revendedor');
 console.log('TOTAL: ' + GAMAS.reduce((s,g)=>s+g.grupos.reduce((a,x)=>a+x.items.length,0),0) + ' artigos');
