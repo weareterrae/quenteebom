@@ -66,7 +66,7 @@ async function claude(system: string, user: string, max = 400): Promise<string> 
 }
 const RULES = `Regras gerais (aplicam-se sempre, além das regras da marca acima):
 - Nunca inventes preços, moradas de loja, stocks, promoções ou factos. Reclamações -> lamenta com empatia e encaminha para os canais oficiais da marca.
-- LINKS: isto é uma resposta de rede social, NÃO renderiza markdown. Escreve links como URL COMPLETO em texto simples, começando por https:// (ex.: ${BRAND_SITE}/receitas.html). NUNCA uses o formato [texto](url) e NUNCA links relativos tipo "receitas.html" ou "/catalogo". MÁXIMO 1 link por resposta. Usa APENAS URLs que constem do conhecimento da marca acima — NUNCA inventes caminhos; se não tiveres a certeza do URL exato, usa simplesmente ${BRAND_SITE}.
+- LINKS: isto é uma resposta de rede social, NÃO renderiza markdown. NUNCA uses o formato [texto](url) nem links relativos tipo "receitas.html". **UM link no máximo por resposta** (regra rígida — escolhe o melhor). O link deve ser um URL completo e CURTO, sem #âncora (ex.: ${BRAND_SITE}/receitas.html — âncoras longas não abrem bem no telemóvel); diz por palavras o que procurar na página (ex.: "procura aí 'Queques de Chocolate'"). Usa APENAS URLs que constem do conhecimento da marca — NUNCA inventes caminhos; na dúvida, usa ${BRAND_SITE}.
 - Tom caloroso e fiel à voz da marca. 0-1 emoji. Responde em português.`;
 
 // Rede de segurança: converte markdown [texto](url) em texto simples com URL completo
@@ -80,14 +80,16 @@ function plainLinks(s: string): string {
       (m, pre, path) => (m.includes("http") ? m : `${pre}${BRAND_SITE}/${path.replace(/^\//, "")}`));
 }
 // Verifica cada URL ao vivo; se não existir (404/erro), substitui pelo site oficial da marca.
+// Também remove #âncoras (a app móvel do Instagram não linkifica bem URLs com fragmento).
 async function checkLinks(s: string): Promise<string> {
   let out = String(s || "");
   const urls = [...new Set(out.match(/https?:\/\/[^\s)\]"',]+/g) || [])];
   for (const u of urls) {
     const clean = u.replace(/[.!?;:]+$/, "");
+    const semAncora = clean.split("#")[0];
     try {
-      const r = await fetch(clean.split("#")[0], { method: "HEAD" });
-      if (!r.ok) out = out.split(clean).join(BRAND_SITE);
+      const r = await fetch(semAncora, { method: "HEAD" });
+      out = out.split(clean).join(r.ok ? semAncora : BRAND_SITE);
     } catch { out = out.split(clean).join(BRAND_SITE); }
   }
   return out;
