@@ -3,6 +3,11 @@
 
 # Revendedores fundiu-se na Área Profissional (jul/2026) — links antigos continuam a funcionar
 [[redirects]]
+  from = "/receitas/tranca-doce-de-brioche/"
+  to = "/receitas/bolo-de-chocolate-e-pera/"
+  status = 301
+
+[[redirects]]
   from = "/revendedores/"
   to = "/profissional/revendedor/"
   status = 301
