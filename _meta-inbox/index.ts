@@ -67,6 +67,8 @@ async function claude(system: string, user: string, max = 400): Promise<string> 
 const RULES = `Regras gerais (aplicam-se sempre, além das regras da marca acima):
 - Nunca inventes preços, moradas de loja, stocks, promoções ou factos. Reclamações -> lamenta com empatia e encaminha para os canais oficiais da marca.
 - LINKS: isto é uma resposta de rede social, NÃO renderiza markdown. NUNCA uses o formato [texto](url) nem links relativos tipo "receitas.html". **UM link no máximo por resposta** (regra rígida — escolhe o melhor). O link deve ser um URL completo e CURTO, sem #âncora (ex.: ${BRAND_SITE}/receitas.html — âncoras longas não abrem bem no telemóvel); diz por palavras o que procurar na página (ex.: "procura aí 'Queques de Chocolate'"). Usa APENAS URLs que constem do conhecimento da marca — NUNCA inventes caminhos; na dúvida, usa ${BRAND_SITE}.
+- NOME: se o nome do cliente for indicado e parecer um nome próprio real (ex.: "Ana", "Carlos M."), cumprimenta-o pelo PRIMEIRO nome na primeira frase ("Olá, Ana! ..."). Se for um nome de utilizador técnico (ex.: "xpto_2384"), não o uses.
+- Gramática: Angola é FEMININO — escreve sempre "toda a Angola" / "em toda a Angola" (nunca "todo o Angola" nem "toda Angola").
 - Tom caloroso e fiel à voz da marca. 0-1 emoji. Responde em português.`;
 
 // Rede de segurança: converte markdown [texto](url) em texto simples com URL completo
@@ -127,8 +129,9 @@ async function draftForComment(platform: string, text: string, author: string): 
   };
 }
 // mensagem privada -> uma resposta
-async function draftForMessage(platform: string, text: string): Promise<string> {
-  const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}. Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.\n${RULES}`;
+async function draftForMessage(platform: string, text: string, author = ""): Promise<string> {
+  const quem = author && !/^\d+$/.test(author) ? ` O cliente chama-se "${author}".` : "";
+  const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}.${quem} Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.\n${RULES}`;
   return tidyLinks(await checkLinks(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300)))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
 
@@ -335,9 +338,19 @@ Deno.serve(async (req) => {
     let payload: any; try { payload = JSON.parse(raw); } catch { return new Response("ok"); }
     for (const it of extract(payload)) {
       try {
+        // Em DMs só vem o id do remetente — ir buscar o nome à Meta para personalizar a resposta
+        if (it.kind === "message" && /^\d+$/.test(String(it.author || ""))) {
+          try {
+            const tk = await pageTok();
+            const ur = await fetch(`${GRAPH}/${it.author}?fields=name,first_name,username&access_token=${tk}`);
+            const uj = await ur.json();
+            const nome = uj?.first_name || uj?.name || uj?.username;
+            if (nome) it.author = String(nome);
+          } catch { /* fica o id */ }
+        }
         let pub = "", priv = "";
         if (it.kind === "comment") { const d = await draftForComment(it.platform, it.incoming, it.author); pub = d.pub; priv = d.priv; }
-        else { pub = await draftForMessage(it.platform, it.incoming); }
+        else { pub = await draftForMessage(it.platform, it.incoming, it.author); }
         const { data: ins } = await db.from("pending_replies").insert({
           platform: it.platform, kind: it.kind, account_id: it.account_id, target_id: it.target_id,
           recipient_id: it.recipient_id, author: it.author, incoming: it.incoming,
