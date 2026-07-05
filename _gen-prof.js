@@ -203,6 +203,14 @@ function shell(title, desc, canonical, body){
 <title>${title}</title>
 <meta name="description" content="${desc}">
 <link rel="canonical" href="https://quenteebom.com${canonical}">
+<meta property="og:title" content="${title}">
+<meta property="og:description" content="${desc}">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
 <link rel="stylesheet" href="/assets/css/qeb.css?v=4">
 ${CSS_EXTRA}
