@@ -230,7 +230,7 @@ ${cards}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${cat.nome} — Quente e Bom · Feito em Angola</title>
-<meta name="description" content="${cat.intro} ${nProds} produtos Quente e Bom, nos supermercados de todo o Angola.">
+<meta name="description" content="${cat.intro} ${nProds} produtos Quente e Bom, nos supermercados de toda a Angola.">
 <link rel="canonical" href="https://quenteebom.com/${cat.slug}/">
 <meta property="og:title" content="${cat.nome} — Quente e Bom">
 <meta property="og:description" content="${cat.intro}">

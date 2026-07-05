@@ -244,7 +244,7 @@ ${grupos}
   <a class="btn btn-sun" href="/profissional/encomenda/">Pedir cotação desta gama</a>
 </div>
 </div></section>`;
-  return shell(`${g.nome} — Área Profissional · Quente e Bom`, `${g.intro} ${n} artigos com entrega em todo o Angola.`, `/profissional/${g.slug}/`, body);
+  return shell(`${g.nome} — Área Profissional · Quente e Bom`, `${g.intro} ${n} artigos com entrega em toda a Angola.`, `/profissional/${g.slug}/`, body);
 }
 
 function hubHTML(){
@@ -264,7 +264,7 @@ function hubHTML(){
   <div class="wrap">
     <div class="eyebrow">Para padarias, supermercados, cafés e restaurantes</div>
     <h1>Área Profissional</h1>
-    <p>A gama Quente e Bom completa para o seu negócio: os produtos embalados para a prateleira e os pré-cozidos e congelados para forno — de produção própria e entregues em todo o Angola.</p>
+    <p>A gama Quente e Bom completa para o seu negócio: os produtos embalados para a prateleira e os pré-cozidos e congelados para forno — de produção própria e entregues em toda a Angola.</p>
   </div>
 </section>
 <section class="sec"><div class="wrap">
@@ -292,7 +292,7 @@ ${cards}
   </div>
 </div>
 </div></section>`;
-  return shell('Área Profissional — Quente e Bom · pré-cozidos e congelados', 'Pão pré-cozido, pão pronto congelado e pastelaria congelada para padarias, supermercados, cafés e restaurantes em todo o Angola.', '/profissional/', body);
+  return shell('Área Profissional — Quente e Bom · pré-cozidos e congelados', 'Pão pré-cozido, pão pronto congelado e pastelaria congelada para padarias, supermercados, cafés e restaurantes em toda a Angola.', '/profissional/', body);
 }
 
 function encomendaHTML(){
