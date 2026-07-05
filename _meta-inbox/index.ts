@@ -146,18 +146,12 @@ async function publish(row: any): Promise<{ ok: boolean; detail: string }> {
     const pubUrl = `${GRAPH}/${row.target_id}/${row.platform === "Instagram" ? "replies" : "comments"}`;
     const r1 = await post(pubUrl, { message: row.reply });
     results.push("publica:" + r1.detail); allOk = allOk && r1.ok;
-    // 2) mensagem PRIVADA à pessoa que comentou
-    let r2;
-    if (row.platform === "Instagram") {
-      // IG: private reply usa o id da conta IG (account_id) e recipient={comment_id}
-      r2 = await post(`${GRAPH}/${row.account_id}/messages`, {
-        recipient: JSON.stringify({ comment_id: row.target_id }),
-        message: JSON.stringify({ text: row.private_reply }),
-      });
-    } else {
-      // FB: private_replies do próprio comentário
-      r2 = await post(`${GRAPH}/${row.target_id}/private_replies`, { message: row.private_reply });
-    }
+    // 2) mensagem PRIVADA à pessoa que comentou — IG e FB: via a PÁGINA (/me/messages com o
+    //    token da Página), recipient={comment_id}. Enviar pelo id da conta IG dá "(#3) capability".
+    const r2 = await post(`${GRAPH}/me/messages`, {
+      recipient: JSON.stringify({ comment_id: row.target_id }),
+      message: JSON.stringify({ text: row.private_reply }),
+    });
     results.push("privada:" + r2.detail); allOk = allOk && r2.ok;
   } else {
     // resposta a mensagem privada existente — janela padrão de 24h (RESPONSE).
