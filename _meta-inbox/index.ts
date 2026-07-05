@@ -64,7 +64,21 @@ async function claude(system: string, user: string, max = 400): Promise<string> 
   const j = await r.json();
   return (j?.content?.[0]?.text || "").trim();
 }
-const RULES = `Regras: nunca inventes preços, moradas de loja ou stocks. Reclamação -> lamenta com empatia e encaminha para quenteebom.com/contacto. "Onde comprar" -> estamos nos supermercados de toda a Angola, pede a zona. Revendedor -> quenteebom.com/profissional/revendedor/. Tom caloroso, português de Angola, 0-1 emoji.`;
+const RULES = `Regras gerais (aplicam-se sempre, além das regras da marca acima):
+- Nunca inventes preços, moradas de loja, stocks, promoções ou factos. Reclamações -> lamenta com empatia e encaminha para os canais oficiais da marca.
+- LINKS: isto é uma resposta de rede social, NÃO renderiza markdown. Escreve links como URL COMPLETO em texto simples, começando por https:// (ex.: ${BRAND_SITE}/receitas.html). NUNCA uses o formato [texto](url) e NUNCA links relativos tipo "receitas.html" ou "/catalogo". Máximo 1 link por resposta, e só quando ajuda mesmo; na dúvida aponta ${BRAND_SITE}.
+- Tom caloroso e fiel à voz da marca. 0-1 emoji. Responde em português.`;
+
+// Rede de segurança: converte markdown [texto](url) em texto simples com URL completo
+function plainLinks(s: string): string {
+  return String(s || "")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, t, u) => {
+      const abs = /^https?:\/\//i.test(u) ? u : `${BRAND_SITE}/${String(u).replace(/^\//, "")}`;
+      return `${t} — ${abs}`;
+    })
+    .replace(/(^|[\s(])\/?((?:receitas|catalogo|foodcost|cotacao|formacao|dicas|contacto|profissional|revendedor)[\w\-\/]*\.?h?t?m?l?#?[\w\-]*)/gi,
+      (m, pre, path) => (m.includes("http") ? m : `${pre}${BRAND_SITE}/${path.replace(/^\//, "")}`));
+}
 
 // comentário -> gera resposta PÚBLICA + mensagem PRIVADA
 async function draftForComment(platform: string, text: string, author: string): Promise<{ pub: string; priv: string }> {
@@ -72,7 +86,7 @@ async function draftForComment(platform: string, text: string, author: string): 
   const out = await claude(sys, `Comentário do cliente: """${text}"""`, 500);
   try {
     const j = JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}") + 1));
-    if (j.publica && j.privada) return { pub: String(j.publica).trim(), priv: String(j.privada).trim() };
+    if (j.publica && j.privada) return { pub: plainLinks(String(j.publica).trim()), priv: plainLinks(String(j.privada).trim()) };
   } catch { /* fallback abaixo */ }
   // fallback SEGURO: nunca usar o texto cru do modelo (pode divagar) — resposta genérica calorosa
   return {
@@ -83,7 +97,7 @@ async function draftForComment(platform: string, text: string, author: string): 
 // mensagem privada -> uma resposta
 async function draftForMessage(platform: string, text: string): Promise<string> {
   const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}. Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.\n${RULES}`;
-  return (await claude(sys, `Mensagem do cliente: """${text}"""`, 300)) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
+  return plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300)) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
 
 // ---------- email ----------
