@@ -72,8 +72,32 @@ RECEITAS DO SITE (sugere com o link https://quenteebom.com/receitas/<slug>/):
 46. sonhos-de-carnaval — Sonhos de Carnaval / Filhoses (Fermento em Pó + Açúcar em Pó) · fritos, festa
 47. pao-de-lo-molhado-de-laranja — Pão de Ló Molhado de Laranja "toalha felpuda" (Pão de Ló Tradicional + Coco Ralado) · bolo húmido
 48. trufas-de-caju-e-chocolate — Trufas de Caju e Chocolate (Chocolate Negro 70% + Caju Torrado) · caju de Angola, sem forno
+49. bolo-de-laranja-com-calda — Bolo de Laranja com Calda (Cake Laranja) · bolo húmido
+50. bolo-formigueiro — Bolo Formigueiro (Cake Yogurte + Granulado de Chocolate) · malhado, lanche
+51. cupcakes-red-velvet — Cupcakes Red Velvet (Cake Red Velvet + Chantilly em Pó) · festa, docinho
+52. bolo-de-aniversario-de-chocolate — Bolo de Aniversário de Chocolate (Cake Chocolate + Creme de Pasteleiro + Chocolate de Leite) · festa
+53. tranca-doce-de-brioche — Trança Doce de Brioche (Farinha Brioche + Sultanas) · pequeno-almoço, festa
+54. muffins-de-frutos-secos — Muffins de Frutos Secos (Cake Laranja + Mix de Frutos Secos) · lanche, rápido
+55. pave-de-chocolate — Pavê de Chocolate (Línguas de Veado + Chocolate de Leite + Chantilly) · sem forno, festa
+56. banoffee-a-angolana — Banoffee à Angolana (Biscoitos Palmiers + banana + Chantilly) · sem forno, festa
+57. mousse-de-maracuja — Mousse de Maracujá (Chantilly em Pó + maracujá) · sem forno, rápida, tropical
+58. bolachas-recheadas-de-chocolate — Bolachas Recheadas de Chocolate (Biscoitos Areados + Chocolate de Leite) · rápido, crianças
+59. taca-de-pao-de-lo-com-morangos — Taça de Pão de Ló com Morangos (Pão de Ló Tradicional + Chantilly em Pó) · festa
+60. bolinhas-energeticas-de-caju-e-coco — Bolinhas Energéticas de Caju e Coco (Caju Torrado + Coco Ralado) · sem forno, saudável
+61. cachorro-quente-a-angolana — Cachorro Quente à Angolana (Pão de Hot Dog) · salgado, festa
+62. sandes-quente-de-frango-desfiado — Sandes Quente de Frango Desfiado (Pão Super Fofo Trigo) · salgado, reconfortante
+63. torrada-de-abacate-e-ovo — Torrada de Abacate e Ovo (Pão Artesanal Integral) · pequeno-almoço, saudável, rápido
+64. croissant-misto-tostado — Croissant Misto Tostado (Croissants) · lanche, rápido
+65. bruschetta-de-tomate-e-manjericao — Bruschetta de Tomate e Manjericão (Pão Artesanal Rústico) · petisco, rápido
+66. bifana-no-pao-fofo — Bifana no Pão Fofo (Pão Super Fofo Trigo) · salgado
+67. cocada-preta — Cocada Preta (Coco Ralado + açúcar mascavado) · angolana, sem forno
+68. banana-caramelizada-com-caju — Banana Caramelizada com Caju (Caju Torrado) · angolana, rápida
+69. bolo-de-coco-molhado — Bolo de Coco Molhado "toalha felpuda" (Pão de Ló Tradicional + Coco Ralado) · angolano, húmido
+70. mousse-de-manga — Mousse de Manga (Chantilly em Pó + manga) · angolana, sem forno, rápida
+71. pudim-de-coco — Pudim de Coco (Coco Ralado) · angolano, festa
+72. salada-de-fruta-tropical-com-creme — Salada de Fruta Tropical com Creme (Creme de Pasteleiro + Coco Ralado) · angolana, sem forno, rápida
 
-NOTA: há um filtro "Angola" no hub de receitas (https://quenteebom.com/receitas/) que junta os clássicos angolanos (cocada, múcua, abacate, rissóis, ginguba, sonhos, toalha felpuda, caju).
+NOTA: há um filtro "Angola" no hub de receitas (https://quenteebom.com/receitas/) que junta os clássicos angolanos (cocada amarela e preta, múcua, abacate, rissóis, ginguba, sonhos, toalha felpuda, caju, manga, maracujá, banana caramelizada, pudim de coco, salada tropical).
 
 COMO SUGERIR: pergunta a ocasião (festa? lanche? rápido? sem forno?) e propõe 1–2 receitas certeiras com link. Dicas úteis: pão NUNCA no frigorífico (seca) — congelar fatia a fatia; bolos: não abrir o forno nos primeiros 25 min; chocolate derrete-se em banho-maria; chantilly pede líquido e taça FRIOS. Há mais dicas em https://quenteebom.com/dicas/
 
