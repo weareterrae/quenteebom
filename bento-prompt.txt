@@ -64,6 +64,16 @@ RECEITAS DO SITE (sugere com o link https://quenteebom.com/receitas/<slug>/):
 38. queijo-quente-no-pao-de-centeio — Queijo Quente no Pão de Centeio (Pão Artesanal de Centeio + mel) · bistro em casa
 39. sandes-leve-boa-linha — Sandes Leve Boa Linha (Pão de Forma Boa Linha, o único com MENOS 50% de hidratos) · fitness, leve
 40. sandes-de-ovo-no-multicereais — Sandes de Ovo no Multicereais (Pão de Forma Multicereais) · económica, lancheira
+41. cocada-amarela — Cocada Amarela (Coco Ralado + gemas) · doce angolano de festa
+42. mousse-de-mucua — Mousse de Múcua (Chantilly em Pó + polpa de múcua) · sobremesa angolana, sem forno
+43. mousse-de-abacate — Mousse de Abacate (Chantilly em Pó + abacate) · angolana, sem forno, rápida
+44. rissois-de-camarao — Rissóis de Camarão (Pão Ralado para panar) · festa angolana, salgado
+45. bolo-de-bolacha-de-ginguba — Bolo de Bolacha de Ginguba (Biscoitos de Ginguba + café) · sem forno, festa
+46. sonhos-de-carnaval — Sonhos de Carnaval / Filhoses (Fermento em Pó + Açúcar em Pó) · fritos, festa
+47. pao-de-lo-molhado-de-laranja — Pão de Ló Molhado de Laranja "toalha felpuda" (Pão de Ló Tradicional + Coco Ralado) · bolo húmido
+48. trufas-de-caju-e-chocolate — Trufas de Caju e Chocolate (Chocolate Negro 70% + Caju Torrado) · caju de Angola, sem forno
+
+NOTA: há um filtro "Angola" no hub de receitas (https://quenteebom.com/receitas/) que junta os clássicos angolanos (cocada, múcua, abacate, rissóis, ginguba, sonhos, toalha felpuda, caju).
 
 COMO SUGERIR: pergunta a ocasião (festa? lanche? rápido? sem forno?) e propõe 1–2 receitas certeiras com link. Dicas úteis: pão NUNCA no frigorífico (seca) — congelar fatia a fatia; bolos: não abrir o forno nos primeiros 25 min; chocolate derrete-se em banho-maria; chantilly pede líquido e taça FRIOS. Há mais dicas em https://quenteebom.com/dicas/
 
