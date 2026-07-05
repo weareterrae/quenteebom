@@ -121,9 +121,22 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
 function escapeHtml(s: string) { return (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!)); }
 
 // ---------- publicar (Graph API) ----------
+// A Meta exige o token da PÁGINA para publicar (o do system user só serve para ler/gerir).
+// Trocamos o token do system user pelo da Página via me/accounts (com cache de 50 min).
+let _pageTok = ""; let _pageTokAt = 0;
+async function pageTok(): Promise<string> {
+  if (_pageTok && Date.now() - _pageTokAt < 3000000) return _pageTok;
+  try {
+    const r = await fetch(`${GRAPH}/me/accounts?fields=access_token&access_token=${PAGE_TOKEN}`);
+    const j = await r.json();
+    _pageTok = j?.data?.[0]?.access_token || PAGE_TOKEN; _pageTokAt = Date.now();
+  } catch { _pageTok = PAGE_TOKEN; }
+  return _pageTok;
+}
 async function post(url: string, body: Record<string, string>) {
+  const tk = await pageTok();
   const r = await fetch(url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ access_token: PAGE_TOKEN, ...body }) });
+    body: new URLSearchParams({ access_token: tk, ...body }) });
   const j = await r.json(); return { ok: r.ok && !j.error, detail: JSON.stringify(j) };
 }
 async function publish(row: any): Promise<{ ok: boolean; detail: string }> {
