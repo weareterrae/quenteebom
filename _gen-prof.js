@@ -203,7 +203,7 @@ function shell(title, desc, canonical, body){
 <title>${title}</title>
 <meta name="description" content="${desc}">
 <link rel="canonical" href="https://quenteebom.com${canonical}">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
 <link rel="stylesheet" href="/assets/css/qeb.css?v=4">
 ${CSS_EXTRA}
 </head>

@@ -235,7 +235,7 @@ ${cards}
 <meta property="og:title" content="${cat.nome} — Quente e Bom">
 <meta property="og:description" content="${cat.intro}">
 <meta property="og:image" content="https://quenteebom.com${cat.hero}">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
 <link rel="stylesheet" href="/assets/css/qeb.css?v=4">
 </head>
 <body>
