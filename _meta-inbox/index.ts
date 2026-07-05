@@ -160,11 +160,13 @@ async function publish(row: any): Promise<{ ok: boolean; detail: string }> {
     }
     results.push("privada:" + r2.detail); allOk = allOk && r2.ok;
   } else {
-    // resposta a mensagem privada existente
+    // resposta a mensagem privada existente — janela padrão de 24h (RESPONSE).
+    // Nota: a etiqueta HUMAN_AGENT (janela de 7 dias) exige aprovação da Meta via App Review;
+    // sem ela dá "(#10) App doesn't have Human Agent Tag Access". Pedir mais tarde se fizer falta.
     const r = await post(`${GRAPH}/me/messages`, {
       recipient: JSON.stringify({ id: row.recipient_id }),
       message: JSON.stringify({ text: row.reply }),
-      messaging_type: "MESSAGE_TAG", tag: "HUMAN_AGENT",
+      messaging_type: "RESPONSE",
     });
     results.push(r.detail); allOk = r.ok;
   }
