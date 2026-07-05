@@ -12,6 +12,27 @@
   to = "/profissional/revendedor/"
   status = 301
 
+# URLs intuitivos (labels do menu) → páginas reais
+[[redirects]]
+  from = "/carreiras/*"
+  to = "/recrutamento/"
+  status = 301
+
+[[redirects]]
+  from = "/carreiras"
+  to = "/recrutamento/"
+  status = 301
+
+[[redirects]]
+  from = "/contactos/*"
+  to = "/contacto/"
+  status = 301
+
+[[redirects]]
+  from = "/contactos"
+  to = "/contacto/"
+  status = 301
+
 # CSS e JS mudam com o design — cache curta, revalida sempre
 [[headers]]
   for = "/assets/css/*"
