@@ -186,6 +186,28 @@ function extract(payload: any): Array<any> {
 Deno.serve(async (req) => {
   const url = new URL(req.url);
 
+  // ADMIN: instala a app na Página (subscribed_apps) — necessário para receber eventos REAIS.
+  // GET /subscribe?key=<META_VERIFY_TOKEN>  (protegida; idempotente)
+  if (req.method === "GET" && url.pathname.endsWith("/subscribe") && url.searchParams.get("key") === VERIFY_TOKEN) {
+    const j = (o: unknown) => new Response(JSON.stringify(o, null, 2), { headers: { "content-type": "application/json" } });
+    const accR = await fetch(`${GRAPH}/me/accounts?fields=id,name,access_token&access_token=${PAGE_TOKEN}`);
+    const acc = await accR.json();
+    if (acc?.error) return j({ step: "me/accounts", error: acc.error });
+    const out: Record<string, unknown> = {};
+    for (const page of acc?.data || []) {
+      const r = await fetch(`${GRAPH}/${page.id}/subscribed_apps`, {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ access_token: page.access_token, subscribed_fields: "feed" }),
+      });
+      const rj = await r.json();
+      const chk = await fetch(`${GRAPH}/${page.id}/subscribed_apps?fields=subscribed_fields&access_token=${page.access_token}`);
+      const cj = await chk.json();
+      out[page.name || page.id] = { subscribe: rj, atual: cj?.data ?? cj?.error?.message };
+    }
+    return j(out);
+  }
+
   if (req.method === "GET" && url.searchParams.get("hub.mode") === "subscribe") {
     if (url.searchParams.get("hub.verify_token") === VERIFY_TOKEN)
       return new Response(url.searchParams.get("hub.challenge") || "", { status: 200 });
