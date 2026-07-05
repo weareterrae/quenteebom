@@ -3,6 +3,8 @@
 Sistema de resposta a comentários e mensagens do Facebook/Instagram com **aprovação humana**:
 o Joaquim redige a resposta, recebes um **email com botão "Aprovar e enviar"**, e só quando carregas é publicada.
 
+**Regra de ouro:** a cada **comentário**, o sistema responde SEMPRE de duas formas — (1) resposta **pública** ao comentário + (2) **mensagem privada (DM)** à mesma pessoa — as duas no mesmo clique. A cada **mensagem privada** recebida, uma resposta privada.
+
 Arquitetura: Webhook Meta → Edge Function Supabase (`meta-inbox`) → Claude (cérebro do Joaquim) → email (Resend) → clique → Graph API publica.
 
 > ⚠️ Nunca colar tokens/segredos no chat. Todos vão para os **Secrets** do Supabase.
