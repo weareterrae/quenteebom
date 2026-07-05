@@ -25,6 +25,10 @@ const FROM_EMAIL   = env("FROM_EMAIL", "Joaquim da Quente e Bom <inbox@quenteebo
 const HMAC_SECRET  = env("HMAC_SECRET");
 const FN_BASE      = env("FN_BASE");
 const PROMPT_URL   = env("PROMPT_URL", "https://quenteebom.com/bento-prompt.txt");
+// Identidade da marca (por deployment) — defaults = Quente e Bom
+const BRAND        = env("BRAND_NAME", "Quente e Bom");
+const BRAND_BG     = env("BRAND_BG", "#5B2A4A");     // fundo do cabeçalho + texto do botão
+const BRAND_ACCENT = env("BRAND_ACCENT", "#F6C440"); // realces + fundo do botão
 
 const db = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"));
 
@@ -91,18 +95,18 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
   const link = `${FN_BASE}/send?id=${p.id}&sig=${p.sig}`;
   const badge = p.kind === "comment" ? "Comentário" : "Mensagem privada";
   const answers = p.kind === "comment"
-    ? box("Resposta pública ao comentário", p.pub, "#F6C440", "#CC5A08") + box("Mensagem privada (DM) para a pessoa", p.priv, "#F6C440", "#CC5A08")
-    : box("Resposta sugerida pelo Joaquim", p.pub, "#F6C440", "#CC5A08");
+    ? box("Resposta pública ao comentário", p.pub, BRAND_ACCENT, BRAND_BG) + box("Mensagem privada (DM) para a pessoa", p.priv, BRAND_ACCENT, BRAND_BG)
+    : box("Resposta sugerida", p.pub, BRAND_ACCENT, BRAND_BG);
   const html = `
   <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#3A2030">
-    <div style="background:#5B2A4A;color:#fff;border-radius:14px;padding:18px 22px">
-      <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#F6C440;font-weight:700">Quente e Bom · ${p.platform} · ${badge}</div>
+    <div style="background:${BRAND_BG};color:#fff;border-radius:14px;padding:18px 22px">
+      <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:${BRAND_ACCENT};font-weight:700">${BRAND} · ${p.platform} · ${badge}</div>
       <div style="font-size:18px;font-weight:700;margin-top:4px">Nova interação de ${p.author || "um cliente"}</div>
     </div>
     ${box("Recebido", p.incoming)}
     ${answers}
     <div style="text-align:center;margin:22px 0">
-      <a href="${link}" style="background:#F6C440;color:#5B2A4A;font-weight:800;text-decoration:none;padding:14px 34px;border-radius:999px;font-size:16px;display:inline-block">Aprovar e enviar ${p.kind === "comment" ? "(resposta + DM)" : ""} ☀️</a>
+      <a href="${link}" style="background:${BRAND_ACCENT};color:${BRAND_BG};font-weight:800;text-decoration:none;padding:14px 34px;border-radius:999px;font-size:16px;display:inline-block">Aprovar e enviar ${p.kind === "comment" ? "(resposta + DM)" : ""} ☀️</a>
     </div>
     <div style="font-size:12.5px;color:#9b8290;text-align:center">Só é publicado quando carregas no botão. Se não quiseres responder, ignora este email.</div>
   </div>`;
