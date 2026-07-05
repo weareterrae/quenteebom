@@ -287,12 +287,15 @@ Deno.serve(async (req) => {
 });
 
 function htmlPage(msg: string, ok: boolean) {
-  return new Response(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <div style="font-family:-apple-system,Segoe UI,Arial;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FBF6EE;margin:0">
+  return new Response(`<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${BRAND}</title></head>
+<body style="margin:0">
+  <div style="font-family:-apple-system,Segoe UI,Arial;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FBF6EE">
     <div style="text-align:center;max-width:440px;padding:40px">
       <div style="font-size:48px">${ok ? "☀️" : "⚠️"}</div>
-      <h1 style="color:#5B2A4A;font-family:Georgia,serif">${msg}</h1>
-      <p style="color:#6b5060">Podes fechar esta página. Quente e Bom · todos os dias, uma delícia.</p>
+      <h1 style="color:${BRAND_BG};font-family:Georgia,serif">${msg}</h1>
+      <p style="color:#6b5060">Podes fechar esta página. ${BRAND}.</p>
     </div>
-  </div>`, { headers: { "content-type": "text/html; charset=utf-8" } });
+  </div>
+</body></html>`, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
