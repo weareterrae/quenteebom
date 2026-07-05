@@ -195,12 +195,21 @@ Deno.serve(async (req) => {
     if (acc?.error) return j({ step: "me/accounts", error: acc.error });
     const out: Record<string, unknown> = {};
     for (const page of acc?.data || []) {
-      const r = await fetch(`${GRAPH}/${page.id}/subscribed_apps`, {
+      // tenta feed+messages; se o token ainda não tiver pages_messaging, cai para só feed
+      let r = await fetch(`${GRAPH}/${page.id}/subscribed_apps`, {
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ access_token: page.access_token, subscribed_fields: "feed" }),
+        body: new URLSearchParams({ access_token: page.access_token, subscribed_fields: "feed,messages" }),
       });
-      const rj = await r.json();
+      let rj = await r.json();
+      if (rj?.error) {
+        r = await fetch(`${GRAPH}/${page.id}/subscribed_apps`, {
+          method: "POST",
+          headers: { "content-type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ access_token: page.access_token, subscribed_fields: "feed" }),
+        });
+        rj = { fallback_so_feed: await r.json(), erro_feed_messages: rj.error?.message };
+      }
       const chk = await fetch(`${GRAPH}/${page.id}/subscribed_apps?fields=subscribed_fields&access_token=${page.access_token}`);
       const cj = await chk.json();
       out[page.name || page.id] = { subscribe: rj, atual: cj?.data ?? cj?.error?.message };
