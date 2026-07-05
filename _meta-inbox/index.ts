@@ -76,8 +76,22 @@ function plainLinks(s: string): string {
       const abs = /^https?:\/\//i.test(u) ? u : `${BRAND_SITE}/${String(u).replace(/^\//, "")}`;
       return `${t} — ${abs}`;
     })
-    .replace(/(^|[\s(])\/?((?:receitas|catalogo|foodcost|cotacao|formacao|dicas|contacto|profissional|revendedor)[\w\-\/]*\.?h?t?m?l?#?[\w\-]*)/gi,
+    // só converte tokens que PARECEM caminhos (têm .htm ou uma /): nunca palavras normais como "receitas"
+    .replace(/(^|[\s(])\/?((?:receitas|catalogo|foodcost|cotacao|formacao|dicas|contacto|profissional|revendedor)[\w\-]*(?:\.html?|\/[\w\-\/]+)(?:#[\w\-]*)?)/gi,
       (m, pre, path) => (m.includes("http") ? m : `${pre}${BRAND_SITE}/${path.replace(/^\//, "")}`));
+}
+// Arruma os links: se houver um link específico (com caminho), as ocorrências do domínio "solto"
+// (normalmente resultado de um URL inventado que foi corrigido) passam a "o nosso site".
+function tidyLinks(s: string): string {
+  let out = String(s || "");
+  const urls = out.match(/https?:\/\/[^\s)\]"',]+/g) || [];
+  const temEspecifico = urls.some((u) => { try { return new URL(u).pathname.replace(/\/$/, "").length > 1; } catch { return false; } });
+  if (temEspecifico) {
+    out = out.replace(/https?:\/\/[\w.\-]+\/?(?=$|[\s,.!?:;)])/g, (m) => {
+      try { return new URL(m).pathname.replace(/\/$/, "").length > 1 ? m : "o nosso site"; } catch { return m; }
+    });
+  }
+  return out;
 }
 // Verifica cada URL ao vivo; se não existir (404/erro), substitui pelo site oficial da marca.
 // Também remove #âncoras (a app móvel do Instagram não linkifica bem URLs com fragmento).
@@ -102,8 +116,8 @@ async function draftForComment(platform: string, text: string, author: string): 
   try {
     const j = JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}") + 1));
     if (j.publica && j.privada) return {
-      pub: await checkLinks(plainLinks(String(j.publica).trim())),
-      priv: await checkLinks(plainLinks(String(j.privada).trim())),
+      pub: tidyLinks(await checkLinks(plainLinks(String(j.publica).trim()))),
+      priv: tidyLinks(await checkLinks(plainLinks(String(j.privada).trim()))),
     };
   } catch { /* fallback abaixo */ }
   // fallback SEGURO: nunca usar o texto cru do modelo (pode divagar) — resposta genérica calorosa
@@ -115,7 +129,7 @@ async function draftForComment(platform: string, text: string, author: string): 
 // mensagem privada -> uma resposta
 async function draftForMessage(platform: string, text: string): Promise<string> {
   const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}. Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.\n${RULES}`;
-  return (await checkLinks(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300)))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
+  return tidyLinks(await checkLinks(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300)))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
 
 // ---------- email ----------
