@@ -29,6 +29,7 @@ const PROMPT_URL   = env("PROMPT_URL", "https://quenteebom.com/bento-prompt.txt"
 const BRAND        = env("BRAND_NAME", "Quente e Bom");
 const BRAND_BG     = env("BRAND_BG", "#5B2A4A");     // fundo do cabeçalho + texto do botão
 const BRAND_ACCENT = env("BRAND_ACCENT", "#F6C440"); // realces + fundo do botão
+const BRAND_SITE   = env("BRAND_SITE", "https://quenteebom.com"); // site da marca (página /inbox.html de confirmação)
 
 const db = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"));
 
@@ -217,6 +218,16 @@ Deno.serve(async (req) => {
     return j(out);
   }
 
+  // ADMIN: últimas 5 interações com estado/erro (diagnóstico de envios)
+  // GET /last?key=<META_VERIFY_TOKEN>
+  if (req.method === "GET" && url.pathname.endsWith("/last") && url.searchParams.get("key") === VERIFY_TOKEN) {
+    const { data, error } = await db.from("pending_replies")
+      .select("created_at,platform,kind,author,status,detail,incoming")
+      .order("created_at", { ascending: false }).limit(5);
+    const rows = (data || []).map((r: any) => ({ ...r, incoming: String(r.incoming || "").slice(0, 80) }));
+    return new Response(JSON.stringify(error ?? rows, null, 2), { headers: { "content-type": "application/json" } });
+  }
+
   // ADMIN: leituras de teste para carimbar os testing requirements do use case Instagram
   // GET /igtest?key=<META_VERIFY_TOKEN>  (só-leitura; usar published_posts, não /feed)
   if (req.method === "GET" && url.pathname.endsWith("/igtest") && url.searchParams.get("key") === VERIFY_TOKEN) {
@@ -286,16 +297,9 @@ Deno.serve(async (req) => {
   return new Response("meta-inbox ok");
 });
 
+// O gateway do Supabase força text/plain (anti-phishing) — por isso a confirmação
+// é uma página estática no site da marca, para onde redirecionamos.
 function htmlPage(msg: string, ok: boolean) {
-  return new Response(`<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${BRAND}</title></head>
-<body style="margin:0">
-  <div style="font-family:-apple-system,Segoe UI,Arial;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FBF6EE">
-    <div style="text-align:center;max-width:440px;padding:40px">
-      <div style="font-size:48px">${ok ? "☀️" : "⚠️"}</div>
-      <h1 style="color:${BRAND_BG};font-family:Georgia,serif">${msg}</h1>
-      <p style="color:#6b5060">Podes fechar esta página. ${BRAND}.</p>
-    </div>
-  </div>
-</body></html>`, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+  const to = `${BRAND_SITE}/inbox.html?ok=${ok ? 1 : 0}&m=${encodeURIComponent(msg)}`;
+  return new Response(null, { status: 302, headers: { Location: to } });
 }
