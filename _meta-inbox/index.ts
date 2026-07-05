@@ -243,6 +243,36 @@ Deno.serve(async (req) => {
     return j({ ok: !!commentId, pageId, postId, commentId, ...steps });
   }
 
+  // TESTE só-leitura para "carimbar" os requisitos de teste do use case Instagram
+  // (pages_read_engagement, instagram_basic, instagram_manage_comments, business_management). Remover depois de publicar.
+  if (req.method === "GET" && url.pathname.endsWith("/igtest") && url.searchParams.get("key") === VERIFY_TOKEN) {
+    const j = (o: unknown) => new Response(JSON.stringify(o, null, 2), { headers: { "content-type": "application/json" } });
+    const g = async (path: string, tk: string) => {
+      const r = await fetch(`${GRAPH}/${path}${path.includes("?") ? "&" : "?"}access_token=${tk}`);
+      return await r.json();
+    };
+    const s: Record<string, unknown> = {};
+    const acc = await g("me/accounts?fields=id,name,access_token,instagram_business_account{id,username}", PAGE_TOKEN);
+    if (acc?.error) return j({ step: "me/accounts", error: acc.error });
+    const page = (acc?.data || [])[0];
+    const pageTok = page?.access_token || PAGE_TOKEN;
+    const pageId = page?.id;
+    const igId = page?.instagram_business_account?.id;
+    s["pageId"] = pageId; s["igId"] = igId || "sem conta IG ligada à Página";
+    // pages_read_engagement (leitura do feed)
+    if (pageId) { const f = await g(`${pageId}/published_posts?limit=1&fields=id`, pageTok); s["pages_read_engagement"] = f?.error?.message || "ok"; }
+    // business_management
+    const biz = await g("me/businesses?fields=id,name", PAGE_TOKEN); s["business_management"] = biz?.error?.message || "ok";
+    // instagram_basic + instagram_manage_comments
+    if (igId) {
+      const ig = await g(`${igId}?fields=id,username`, pageTok); s["instagram_basic"] = ig?.error?.message || ("ok:" + (ig?.username || ""));
+      const media = await g(`${igId}/media?limit=1&fields=id`, pageTok); const mid = media?.data?.[0]?.id;
+      s["media"] = mid ? "ok" : (media?.error?.message || "sem media");
+      if (mid) { const cm = await g(`${mid}/comments?limit=1&fields=id`, pageTok); s["instagram_manage_comments"] = cm?.error?.message || "ok"; }
+    }
+    return j(s);
+  }
+
   if (req.method === "GET" && url.searchParams.get("hub.mode") === "subscribe") {
     if (url.searchParams.get("hub.verify_token") === VERIFY_TOKEN)
       return new Response(url.searchParams.get("hub.challenge") || "", { status: 200 });

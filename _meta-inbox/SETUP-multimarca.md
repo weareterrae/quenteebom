@@ -35,8 +35,9 @@ Todas as funções de um projeto Supabase **partilham os mesmos secrets**. Como 
 6. Testing requirements + **Publish** (a verificação do negócio: Água Minda não precisa; Massa Prima em revisão ~2 dias).
 7. Testar com o botão "Test" → confirmar email com a voz certa.
 
-## Estado (2026-07-05)
+## Estado (2026-07-05, fim do dia)
 - Código generalizado ✅ · Voz Kianda publicada ✅ · Voz Chef Prima confirmada ✅
-- Água Minda: negócio **não precisa de verificação** → pode ser a primeira a publicar depois da QeB.
-- Massa Prima: verificação do negócio **em revisão** (~2 dias úteis).
-- Quente e Bom: à espera da **access verification** (in review) → depois Publish.
+- **ÁGUA MINDA — SETUP COMPLETO (opção A):** app "Água Minda Bot" (portefólio Agua Minda, use cases IG + Page, SEM content_publish); system user "Água Minda Inbox" (Employee) com Página+IG+App; token com 7 permissões (incl. `business_management` — necessária para o testing! foi preciso regenerar); projeto Supabase **`bxnxyrzjfyqvogcahrvh`** (org Terrae) com função `meta-inbox` + tabela + secrets (BRAND_NAME=Água Minda, BRAND_BG #0d2b52, ACCENT #C9A24B, PROMPT_URL kianda-prompt.txt, VERIFY=aguaminda-minda-2026); webhooks IG `comments`+`messages` subscritos e verificados; **teste E2E OK** (email com cores navy/dourado e voz da Kianda 💧). Testing requirements IG carimbados via rota **`/igtest`** (só-leitura; `/feed` dá #10 → usar `published_posts`); `pages_manage_engagement` REMOVIDO (IG-first, FB público = fase 2). **FALTA:** badges "Testing complete" (até 24h) → **Publish** (sem verificação a bloquear!) → limpar rotas `/igtest` e `?debug=1`.
+- Massa Prima: verificação do negócio **em revisão** (~2 dias úteis) → depois replicar o mesmo guião.
+- Quente e Bom: à espera da **access verification** (in review, submetida 3 Jul, ~5 dias úteis; prazo-limite 3 Set) → depois Publish.
+- ⚠️ Lição: incluir SEMPRE `business_management` no token do system user (o testing exige-o) e testar leituras com `published_posts`, não `/feed`.
