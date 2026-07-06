@@ -236,7 +236,7 @@ ${cards}
 <meta property="og:description" content="${cat.intro}">
 <meta property="og:image" content="https://quenteebom.com${cat.hero}">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=5">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=6">
 </head>
 <body>
 

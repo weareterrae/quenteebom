@@ -278,6 +278,22 @@ a{text-decoration:none;color:inherit;}
 .dica p{font-size:15.5px;color:var(--muted);line-height:1.6;}
 .dica p b{color:var(--orange-deep);}
 
+/* ---------- onde comprar (fita de prateleiras) ---------- */
+.onde{background:var(--cream-2);padding:96px 0;overflow:hidden;}
+.onde .sec-h{margin-bottom:40px;}
+.shelf-belt{transform:rotate(-2deg);margin:0 -3%;}
+.shelf-track{display:flex;width:max-content;animation:belt 46s linear infinite;will-change:transform;}
+.shelf-belt:hover .shelf-track{animation-play-state:paused;}
+.shelf-card{position:relative;flex:0 0 auto;width:clamp(230px,26vw,330px);aspect-ratio:4/3;border-radius:18px;overflow:hidden;box-shadow:0 14px 30px rgba(38,21,10,.14);margin-right:16px;}
+.shelf-card img{width:100%;height:100%;object-fit:cover;}
+.shelf-card .pill{position:absolute;left:12px;bottom:12px;background:rgba(255,246,234,.93);}
+@keyframes belt{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+@media(prefers-reduced-motion:reduce){.shelf-track{animation:none;}}
+.onde-foot{max-width:720px;text-align:center;margin-top:44px;margin-left:auto;margin-right:auto;}
+.onde-foot p{color:var(--muted);font-size:16px;line-height:1.65;}
+.onde-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px;}
+@media(max-width:640px){.onde{padding:64px 0;}.onde .sec-h{margin-bottom:26px;}.onde-foot{margin-top:28px;}.shelf-card{margin-right:10px;}}
+
 /* ============================================================
    MOBILE — menu hambúrguer + afinação de espaçamentos
    ============================================================ */
