@@ -236,7 +236,7 @@ ${cards}
 <meta property="og:description" content="${cat.intro}">
 <meta property="og:image" content="https://quenteebom.com${cat.hero}">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=4">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=5">
 </head>
 <body>
 
@@ -272,7 +272,7 @@ ${grupos}
 
 ${footerHTML()}
 
-<script src="/assets/js/site.js?v=4"></script>
+<script src="/assets/js/site.js?v=5"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>

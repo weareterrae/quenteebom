@@ -277,3 +277,89 @@ a{text-decoration:none;color:inherit;}
 .dica h3{font-family:var(--display);font-size:21px;color:var(--ink);margin:12px 0 8px;}
 .dica p{font-size:15.5px;color:var(--muted);line-height:1.6;}
 .dica p b{color:var(--orange-deep);}
+
+/* ============================================================
+   MOBILE — menu hambúrguer + afinação de espaçamentos
+   ============================================================ */
+
+/* ---------- menu móvel (construído pelo site.js) ---------- */
+.nav-burger{display:none;background:none;border:none;cursor:pointer;padding:10px 0 10px 12px;}
+.nav-burger span{display:block;width:26px;height:3px;border-radius:2px;background:#fff;margin:5px 0;transition:.3s;}
+.hdr.scrolled .nav-burger span,.hdr.solid .nav-burger span,.hdr.menu-open .nav-burger span{background:var(--ink);}
+.hdr.menu-open .nav-burger span:nth-child(1){transform:translateY(8px) rotate(45deg);}
+.hdr.menu-open .nav-burger span:nth-child(2){opacity:0;}
+.hdr.menu-open .nav-burger span:nth-child(3){transform:translateY(-8px) rotate(-45deg);}
+.hdr.menu-open{background:rgba(255,246,234,.97);box-shadow:0 6px 26px rgba(38,21,10,.08);}
+.hdr.menu-open .logo-w{display:none;}
+.hdr.menu-open .logo-c{display:block;}
+.mnav{display:none;}
+.mnav-veil{display:none;}
+@media(max-width:900px){
+  .nav{gap:10px;}
+  .nav .cta{padding:9px 14px;font-size:13px;}
+  .nav-burger{display:block;}
+  .mnav{display:block;position:fixed;top:0;left:0;right:0;z-index:45;background:var(--cream);box-shadow:0 30px 60px rgba(38,21,10,.25);border-radius:0 0 24px 24px;padding:88px 24px 24px;transform:translateY(-110%);transition:.35s cubic-bezier(.2,.7,.2,1);}
+  .mnav.open{transform:none;}
+  .mnav a{display:block;font-family:var(--display);font-size:23px;color:var(--ink);padding:13px 0;border-bottom:1px solid var(--line);}
+  .mnav a.cta{background:var(--orange);color:#fff;text-align:center;border-radius:999px;font-family:var(--sans);font-weight:800;font-size:16px;padding:14px;margin-top:18px;border-bottom:none;}
+  .mnav-veil{display:block;position:fixed;inset:0;z-index:40;background:rgba(38,21,10,.45);opacity:0;pointer-events:none;transition:.3s;}
+  .mnav-veil.on{opacity:1;pointer-events:auto;}
+}
+
+/* ---------- afinação geral em ecrã pequeno ---------- */
+@media(max-width:640px){
+  .wrap{padding:0 20px;}
+  .hrow{height:68px;}
+  .hlogo{height:36px;}
+  .hdr.scrolled .hrow,.hdr.solid .hrow{height:60px;}
+  .sec{padding:64px 0;}
+  .sec-h{margin-bottom:34px;}
+  .sec-h p{font-size:15.5px;}
+  .manifesto{padding:72px 20px;}
+  .manifesto .sub{font-size:15.5px;}
+  .hero{min-height:560px;}
+  .hero-sub{font-size:16px;margin-top:18px;}
+  .hero-btns{margin-top:26px;gap:10px;}
+  .btn{padding:14px 22px;font-size:14.5px;}
+  .phero .wrap{padding-top:118px;padding-bottom:34px;}
+  .phero p{font-size:15.5px;}
+  .mundos{grid-template-columns:1fr 1fr;gap:12px;}
+  .m-ingr{grid-column:1 / -1;}
+  .mundo{padding:16px;border-radius:16px;}
+  .mundo .lbl{font-size:20px;}
+  .prods{grid-template-columns:1fr 1fr;gap:12px;}
+  .prod{padding:16px 12px;border-radius:16px;}
+  .prod h3{font-size:15.5px;}
+  .prod .sub{font-size:12.5px;}
+  .prod .tag{font-size:10px;letter-spacing:1px;}
+  .strip-t{margin:38px 0 16px;}
+  .strip-t h3{font-size:20px;white-space:normal;}
+  .warmth{min-height:64vh;}
+  .warmth p{font-size:15.5px;}
+  .stats{gap:8px;margin-top:26px;}
+  .stat{padding:12px 16px;border-radius:12px;}
+  .stat b{font-size:26px;}
+  .b2b .wrap{padding-top:64px;padding-bottom:64px;gap:26px;}
+  .b2b p{font-size:15.5px;}
+  .bento-sec{padding:64px 0;}
+  .bento-grid{gap:22px;}
+  .bento-txt p{font-size:15.5px;}
+  .rec-tools{gap:12px;margin-bottom:24px;}
+  .rec-feat .bd{padding:24px 20px;}
+  .rec-grid{gap:12px;}
+  .rec-head{padding:100px 0 40px;}
+  .rec-head .wrap{gap:22px;}
+  .rec-head p{font-size:15px;}
+  .rec-layout{gap:26px;}
+  .ing-card{padding:20px;position:static;}
+  .steps li{padding:0 0 22px 54px;}
+  .steps li::before{width:38px;height:38px;font-size:18px;}
+  .steps li::after{left:18px;top:40px;}
+  .form-card{padding:24px 18px;}
+  .dicas-grid{gap:12px;}
+  .dica{padding:20px;}
+  .ft{padding:48px 0 24px;}
+  .ft-top{gap:26px;}
+  .bento-btn{right:14px;bottom:14px;}
+  .bento-panel{right:12px;bottom:84px;max-width:calc(100vw - 24px);}
+}

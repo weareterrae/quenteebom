@@ -8,6 +8,32 @@
     onScroll();
   }
 
+  // menu móvel (hambúrguer) — clona os links da nav existente
+  var nav = hdr && hdr.querySelector('.nav');
+  if (nav) {
+    var burger = document.createElement('button');
+    burger.className = 'nav-burger';
+    burger.setAttribute('aria-label', 'Abrir menu');
+    burger.innerHTML = '<span></span><span></span><span></span>';
+    nav.appendChild(burger);
+    var panel = document.createElement('nav');
+    panel.className = 'mnav';
+    nav.querySelectorAll('a').forEach(function (a) { panel.appendChild(a.cloneNode(true)); });
+    var veil = document.createElement('div');
+    veil.className = 'mnav-veil';
+    document.body.appendChild(veil);
+    document.body.appendChild(panel);
+    function setMenu(open) {
+      hdr.classList.toggle('menu-open', open);
+      panel.classList.toggle('open', open);
+      veil.classList.toggle('on', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+    burger.addEventListener('click', function () { setMenu(!panel.classList.contains('open')); });
+    veil.addEventListener('click', function () { setMenu(false); });
+    panel.addEventListener('click', function (e) { if (e.target.tagName === 'A') setMenu(false); });
+  }
+
   // reveal
   var io = new IntersectionObserver(function (es) {
     es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });

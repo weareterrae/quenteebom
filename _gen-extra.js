@@ -1654,7 +1654,7 @@ function headHTML(titulo, desc, canon, ogimg) {
 <meta property="og:description" content="${desc}">
 <meta property="og:image" content="https://quenteebom.com${ogimg}">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=4">`;
+<link rel="stylesheet" href="/assets/css/qeb.css?v=5">`;
 }
 
 // ---------- hub de receitas (estilo revista: destaque + pesquisa + filtros) ----------
@@ -1712,7 +1712,7 @@ ${cards}
   </div>
 </section>
 ${footerHTML()}
-<script src="/assets/js/site.js?v=4"></script>
+<script src="/assets/js/site.js?v=5"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 <script>
 (function(){
@@ -1791,7 +1791,7 @@ ${passos}
   </div>
 </section>
 ${footerHTML()}
-<script src="/assets/js/site.js?v=4"></script>
+<script src="/assets/js/site.js?v=5"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>
@@ -1832,7 +1832,7 @@ ${cards}
   </div>
 </section>
 ${footerHTML()}
-<script src="/assets/js/site.js?v=4"></script>
+<script src="/assets/js/site.js?v=5"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>
