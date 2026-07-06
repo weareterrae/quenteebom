@@ -91,8 +91,13 @@ function tidyLinks(s: string): string {
   const urls = out.match(/https?:\/\/[^\s)\]"',]+/g) || [];
   const temEspecifico = urls.some((u) => { try { return new URL(u).pathname.replace(/\/$/, "").length > 1; } catch { return false; } });
   if (temEspecifico) {
-    out = out.replace(/https?:\/\/[\w.\-]+\/?(?=$|[\s,.!?:;)])/g, (m) => {
-      try { return new URL(m).pathname.replace(/\/$/, "").length > 1 ? m : "o nosso site"; } catch { return m; }
+    // ⚠️ tem de apanhar o URL INTEIRO (mesmo charset da deteção acima). O regex antigo
+    // ([\w.\-]+ com lookahead que incluía ".") podia parar antes de ".com" e transformava
+    // "https://massaprima.com/catalogo.html" em "o nosso site.com/catalogo.html" — bug real em produção.
+    out = out.replace(/https?:\/\/[^\s)\]"',]+/g, (m) => {
+      const clean = m.replace(/[.!?;:]+$/, ""); // pontuação final fora do URL
+      const tail = m.slice(clean.length);
+      try { return (new URL(clean).pathname.replace(/\/$/, "").length > 1 ? clean : "o nosso site") + tail; } catch { return m; }
     });
   }
   return out;
@@ -176,7 +181,7 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
     <div style="text-align:center;margin:22px 0">
       <a href="${link}" style="background:${BRAND_ACCENT};color:${BRAND_BG};font-weight:800;text-decoration:none;padding:14px 34px;border-radius:999px;font-size:16px;display:inline-block">Aprovar e enviar ${p.kind === "comment" ? "(resposta + DM)" : ""} ☀️</a>
     </div>
-    <div style="font-size:12.5px;color:#9b8290;text-align:center">Só é publicado quando carregas no botão. Se não quiseres responder, ignora este email. · v2</div>
+    <div style="font-size:12.5px;color:#9b8290;text-align:center">Só é publicado quando carregas no botão. Se não quiseres responder, ignora este email. · v3</div>
   </div>`;
   await fetch("https://api.resend.com/emails", {
     method: "POST",
