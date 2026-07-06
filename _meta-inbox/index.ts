@@ -70,7 +70,8 @@ const RULES = `Regras gerais (aplicam-se sempre, além das regras da marca acima
 - NOME: se o nome do cliente for indicado e parecer um nome próprio real (ex.: "Ana", "Carlos M."), cumprimenta-o pelo PRIMEIRO nome na primeira frase ("Olá, Ana! ..."). Se for um nome de utilizador técnico (ex.: "xpto_2384"), não o uses.
 - Gramática: Angola é FEMININO — escreve sempre "toda a Angola" / "em toda a Angola" (nunca "todo o Angola" nem "toda Angola").
 - PORTUGUÊS EUROPEU/DE ANGOLA, nunca do Brasil: "Olá" (nunca "Oi"), "pequeno-almoço" (nunca "café da manhã"), "fresquinho/gelado" (nunca "geladinho"), ênclise ("encontras-me", nunca "me encontras"), "casa de banho", "autocarro", "telemóvel".
-- Tom caloroso e fiel à voz da marca. 0-1 emoji. Responde em português.`;
+- Tom caloroso e fiel à voz da marca. 0-1 emoji. Responde em português.
+- DOMÍNIO: o único site da marca é ${BRAND_SITE}. NUNCA escrevas domínios genéricos ou de exemplo ("site.com", "exemplo.com", "nossosite.com", "o nosso site.com/...") — isso é um erro grave. Se deres um link, escreve o URL COMPLETO começando por https:// e pertencente a ${BRAND_SITE}.`;
 
 // Rede de segurança: converte markdown [texto](url) em texto simples com URL completo
 function plainLinks(s: string): string {
@@ -96,6 +97,22 @@ function tidyLinks(s: string): string {
   }
   return out;
 }
+// Rede de segurança 2: apanha DOMÍNIOS INVENTADOS sem protocolo (ex.: "site.com/catalogo.html",
+// "exemplo.com") que escapam ao checkLinks (que só valida URLs com https://). Qualquer domínio
+// fora da allowlist é substituído: mantém a página se for conhecida, senão aponta para o site da marca.
+function fixFakeDomains(s: string): string {
+  const brandHost = (() => { try { return new URL(BRAND_SITE).hostname.replace(/^www\./, ""); } catch { return ""; } })();
+  const ALLOW = [brandHost, "quenteebom.com", "quenteebom.co.ao", "massaprima.com", "aguaminda.com", "facebook.com", "instagram.com", "wa.me"].filter(Boolean);
+  const allowed = (h: string) => ALLOW.some((a) => h === a || h.endsWith("." + a));
+  return String(s || "").replace(
+    /(https?:\/\/)?\b([a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:com|pt|co\.ao|ao|net|org|io))((?:\/[\w\-.%#]*)*)/gi,
+    (m, _proto, host, path) => {
+      const h = String(host).toLowerCase().replace(/^www\./, "");
+      if (allowed(h)) return m;
+      const page = String(path || "").match(/(receitas|catalogo|foodcost|cotacao|formacao|dicas|contacto|profissional|revendedor)[\w\-]*\.html?/i);
+      return page ? `${BRAND_SITE}/${page[0]}` : BRAND_SITE;
+    });
+}
 // Verifica cada URL ao vivo; se não existir (404/erro), substitui pelo site oficial da marca.
 // Também remove #âncoras (a app móvel do Instagram não linkifica bem URLs com fragmento).
 async function checkLinks(s: string): Promise<string> {
@@ -119,8 +136,8 @@ async function draftForComment(platform: string, text: string, author: string): 
   try {
     const j = JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}") + 1));
     if (j.publica && j.privada) return {
-      pub: tidyLinks(await checkLinks(plainLinks(String(j.publica).trim()))),
-      priv: tidyLinks(await checkLinks(plainLinks(String(j.privada).trim()))),
+      pub: tidyLinks(await checkLinks(fixFakeDomains(plainLinks(String(j.publica).trim())))),
+      priv: tidyLinks(await checkLinks(fixFakeDomains(plainLinks(String(j.privada).trim())))),
     };
   } catch { /* fallback abaixo */ }
   // fallback SEGURO: nunca usar o texto cru do modelo (pode divagar) — resposta genérica calorosa
@@ -133,7 +150,7 @@ async function draftForComment(platform: string, text: string, author: string): 
 async function draftForMessage(platform: string, text: string, author = ""): Promise<string> {
   const quem = author && !/^\d+$/.test(author) ? ` O cliente chama-se "${author}".` : "";
   const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}.${quem} Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.\n${RULES}`;
-  return tidyLinks(await checkLinks(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300)))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
+  return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300))))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
 
 // ---------- email ----------
@@ -159,7 +176,7 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
     <div style="text-align:center;margin:22px 0">
       <a href="${link}" style="background:${BRAND_ACCENT};color:${BRAND_BG};font-weight:800;text-decoration:none;padding:14px 34px;border-radius:999px;font-size:16px;display:inline-block">Aprovar e enviar ${p.kind === "comment" ? "(resposta + DM)" : ""} ☀️</a>
     </div>
-    <div style="font-size:12.5px;color:#9b8290;text-align:center">Só é publicado quando carregas no botão. Se não quiseres responder, ignora este email.</div>
+    <div style="font-size:12.5px;color:#9b8290;text-align:center">Só é publicado quando carregas no botão. Se não quiseres responder, ignora este email. · v2</div>
   </div>`;
   await fetch("https://api.resend.com/emails", {
     method: "POST",
