@@ -12,6 +12,7 @@ const FICHEIRO = 'C:/Users/sandr/OneDrive/Ambiente de Trabalho/Quente & Bom - 20
 
 // Whitelist aprovada pelo Sandro (2026-07-07): padrão na faturação → insígnia pública
 const INSIGNIAS = [
+  ['Kero', /accord/i],
   ['Candando', /conticash/i],
   ['Maxi', /^CND\b|CND -/i],
   ['Kibabo', /stoka/i],
@@ -77,6 +78,7 @@ const compraram = new Set(vpf.slice(2).map(r => String(r[3] || '')));
 const grupoAtivo = nome => { const i = INSIGNIAS.find(([, re]) => re.test(nome)); return i && mapa[i[0]] && Object.keys(mapa[i[0]]).length; };
 const adormecidos = cl.slice(2)
   .filter(r => /Distribuição Moderna/i.test(String(r[4] || '')) && String(r[1] || '') && !compraram.has(String(r[0] || '')))
+  .filter(r => !/zahara/i.test(String(r[1]))) // Zahara extinta (Sandro 07/07) — Kero é agora Accord Group
   .map(r => `<li><b>${String(r[1]).trim()}</b> (nº ${r[0]})${grupoAtivo(String(r[1])) ? ' <span style="color:#8a7157;font-size:12px">— o grupo compra por outra entidade; possível conta antiga</span>' : ' <span style="color:#b03030;font-size:12px">— grupo inteiro sem compras!</span>'}</li>`);
 
 const html = `<!DOCTYPE html>
