@@ -74,7 +74,7 @@ const GAMAS = [
   },
   {
     slug: 'pastelaria-pronta', nome: 'Pastelaria Pronta Congelada', eyebrow: 'A vitrine sempre cheia',
-    intro: 'Bolos e pastelaria prontos: descongelam em horas e vendem-se como acabados de fazer — dos Bolos da Avó aos bolos de festa por encomenda.',
+    intro: 'Bolos e pastelaria prontos: descongelam em horas e vendem-se como acabados de fazer — dos Bolos da Avó aos bolos de festa grandes.',
     hero: '/assets/img/prof/bolos_festa.jpg',
     grupos: [
       { t: 'Bolos da Avó', foto: PH, fkey: 'bolos_da_avo', items: [
@@ -97,7 +97,7 @@ const GAMAS = [
         ['400010092', 'Bolo da Avó Frutas', '400 g', 14],
         ['400010093', 'Bolo da Avó Ginguba', '400 g', 14],
       ]},
-      { t: 'Bolos de festa e por encomenda', foto: PH, fkey: 'bolos_festa', items: [
+      { t: 'Bolos de festa', foto: PH, fkey: 'bolos_festa', items: [
         ['400010099', 'Bolo de Aniversário', '1000 g', 4],
         ['400010036', 'Bolo de Aniversário', '1500 g', 1],
         ['400020008', 'Bolo Brigadeiro', '1000 g', 2],
