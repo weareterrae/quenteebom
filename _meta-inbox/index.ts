@@ -151,10 +151,29 @@ async function draftForComment(platform: string, text: string, author: string): 
     priv: `Olá! 🧡 Vimos o teu comentário e quisemos agradecer por aqui. Se precisares de alguma coisa — saber onde encontrar os nossos produtos ou tirar uma dúvida — é só dizeres!`,
   };
 }
+// histórico recente da conversa com este remetente (para respostas seguidas, não "primeiro contacto")
+async function convoHistory(recipientId: string): Promise<string> {
+  if (!recipientId) return "";
+  try {
+    const desde = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+    const { data } = await db.from("pending_replies")
+      .select("incoming,reply,status,created_at")
+      .eq("kind", "message").eq("recipient_id", recipientId)
+      .gte("created_at", desde)
+      .order("created_at", { ascending: false }).limit(4);
+    if (!data?.length) return "";
+    return data.reverse().map((r: any) =>
+      `Cliente: ${r.incoming}` + (r.status === "sent" && r.reply ? `\nTu respondeste: ${r.reply}` : "")
+    ).join("\n");
+  } catch { return ""; }
+}
 // mensagem privada -> uma resposta
-async function draftForMessage(platform: string, text: string, author = ""): Promise<string> {
+async function draftForMessage(platform: string, text: string, author = "", history = ""): Promise<string> {
   const quem = author && !/^\d+$/.test(author) ? ` O cliente chama-se "${author}".` : "";
-  const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}.${quem} Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.\n${RULES}`;
+  const ctx = history
+    ? `\n\nHISTÓRICO RECENTE DESTA CONVERSA (mais antigo primeiro):\n${history}\n\nREGRA CRÍTICA: estás a MEIO de uma conversa a decorrer — NÃO voltes a cumprimentar (nada de "Olá"), NÃO te reapresentes, NÃO repitas o que já disseste. Responde de forma natural e seguida, usando o contexto acima.`
+    : "";
+  const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}.${quem} Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.${ctx}\n${RULES}`;
   return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300))))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
 
@@ -373,7 +392,10 @@ Deno.serve(async (req) => {
         }
         let pub = "", priv = "";
         if (it.kind === "comment") { const d = await draftForComment(it.platform, it.incoming, it.author); pub = d.pub; priv = d.priv; }
-        else { pub = await draftForMessage(it.platform, it.incoming, it.author); }
+        else {
+          const hist = await convoHistory(String(it.recipient_id || ""));
+          pub = await draftForMessage(it.platform, it.incoming, it.author, hist);
+        }
         const { data: ins } = await db.from("pending_replies").insert({
           platform: it.platform, kind: it.kind, account_id: it.account_id, target_id: it.target_id,
           recipient_id: it.recipient_id, author: it.author, incoming: it.incoming,
