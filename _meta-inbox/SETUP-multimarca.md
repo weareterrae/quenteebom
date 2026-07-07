@@ -2,6 +2,13 @@
 
 O **mesmo `index.ts`** serve as 3 marcas (código generalizado: `BRAND_NAME`, `BRAND_BG`, `BRAND_ACCENT` por variável; a voz vem do `PROMPT_URL`; os tokens vêm dos secrets). Só muda a **configuração por deployment**.
 
+## 🎯 PLANO ATIVO (decisão do Sandro, 2026-07-07): consolidar numa app única
+1. **À espera**: App Review da app "Quente e Bom Inbox" submetida 07/07 (pages_messaging + 10 outras, Advanced Access; resposta 1-5 dias úteis por email). NÃO mexer em nada até ao veredito.
+2. **Quando aprovar** → piloto de consolidação: partilhar Página+IG da Minda (e depois MP) com o negócio QeB via Parceiros (QeB é Tech Provider verificado) → atribuir ao system user → token novo (cobre as 3 páginas) → refatorar `index.ts` para multi-marca (mapa `entry.id → config da marca` — a antiga "Opção C") → deploy na função da QeB → `/subscribe` por página → testar por marca.
+3. **Se funcionar** → migrar tudo, e SÓ DEPOIS apagar as apps "Água Minda Bot"/"Massa Prima Bot" e os projetos Supabase `bxnxyrzjfyqvogcahrvh`/`swrwomjsleosbckrsjco` (Lição 8: nada de deixar bots fantasma).
+4. **Se a review for rejeitada** → corrigir e resubmeter na QeB antes de replicar o pedido nas outras apps (arquitetura atual de 3 apps continua a funcionar entretanto; único canal fechado ao público é o Messenger FB).
+- Riscos aceites: ponto único de falha (1 token para 3 marcas) e limite Resend (~100 emails/dia) partilhado até verificar domínio.
+
 ## Config por marca
 
 | Variável | Quente e Bom | Água Minda | Massa Prima |
