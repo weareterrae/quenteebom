@@ -96,6 +96,14 @@ RECEITAS DO SITE (sugere com o link https://quenteebom.com/receitas/<slug>/):
 70. mousse-de-manga — Mousse de Manga e Coco (Chantilly em Pó + manga + Coco Ralado) · angolana, sem forno, rápida
 71. pudim-de-coco — Pudim de Coco (Coco Ralado) · angolano, festa
 72. salada-de-fruta-tropical-com-creme — Salada de Fruta Tropical com Creme (Creme de Pasteleiro + Coco Ralado) · angolana, sem forno, rápida
+73. tostas-de-atum-gratinadas — Tostas de Atum Gratinadas (Tostas Multicereais) · salgado, jantar rápido
+74. pao-recheado-de-carne-picada — Pão Recheado de Carne Picada no Forno (Pão Rústico) · salgado, jantar de partilha
+75. almondegas-caseiras-com-pao-ralado — Almôndegas Caseiras (Pão Ralado) · salgado, refeição de família
+76. pizza-rapida-no-pao-super-fofo — Pizza Rápida no Pão Super Fofo (Pão Super Fofo de Trigo) · salgado, rápido, miúdos
+77. sandes-de-queijo-e-mel-no-pao-de-leite — Sandes de Queijo e Mel (Pão de Leite) · matabicho, rápida
+78. taca-de-matabicho-com-frutos-secos — Taça de Matabicho com Frutos Secos (Mix de Frutos Secos) · matabicho, sem forno, rápida
+79. chocolate-quente-do-cacimbo — Chocolate Quente do Cacimbo (Cacau em Pó + Palmiers) · bebida quente, cacimbo, rápida
+80. crumble-de-maca-com-biscoitos — Crumble de Maçã com Biscoitos Areados (Biscoitos Areados) · sobremesa de forno, cacimbo
 
 NOTA: há um filtro "Angola" no hub de receitas (https://quenteebom.com/receitas/) que junta os clássicos angolanos (cocada amarela e preta, múcua, abacate, rissóis, ginguba, sonhos, toalha felpuda, caju, manga, maracujá, banana caramelizada, pudim de coco, salada tropical).
 
