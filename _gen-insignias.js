@@ -71,6 +71,14 @@ const buracos = INSIGNIAS.flatMap(([nome]) => {
   return mundos.filter(w => !m[w]).map(w => `<li><b>${nome}</b> não comprou <b>${w}</b></li>`);
 });
 
+// Clientes ADORMECIDOS: Distribuição Moderna na carteira sem qualquer fatura no ano
+const cl = XLSX.utils.sheet_to_json(wb.Sheets['Tab.CL'], { header: 1, defval: '' });
+const compraram = new Set(vpf.slice(2).map(r => String(r[3] || '')));
+const grupoAtivo = nome => { const i = INSIGNIAS.find(([, re]) => re.test(nome)); return i && mapa[i[0]] && Object.keys(mapa[i[0]]).length; };
+const adormecidos = cl.slice(2)
+  .filter(r => /Distribuição Moderna/i.test(String(r[4] || '')) && String(r[1] || '') && !compraram.has(String(r[0] || '')))
+  .map(r => `<li><b>${String(r[1]).trim()}</b> (nº ${r[0]})${grupoAtivo(String(r[1])) ? ' <span style="color:#8a7157;font-size:12px">— o grupo compra por outra entidade; possível conta antiga</span>' : ' <span style="color:#b03030;font-size:12px">— grupo inteiro sem compras!</span>'}</li>`);
+
 const html = `<!DOCTYPE html>
 <html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow"><title>Insígnias × Mundos — interno</title>
@@ -85,7 +93,9 @@ ${linhas}
 </table></div>
 <h2 style="font-family:var(--display);margin:34px 0 10px">🎯 Buracos (oportunidades de venda)</h2>
 <ul style="line-height:1.9;font-size:15px">${buracos.join('\n')}</ul>
-<p style="margin-top:26px;color:var(--muted);font-size:13.5px">Nota fixa: o grupo Noble (Nossa Casa) também opera as lojas <b>Angomart</b> — confirmar se a Quente e Bom lá entra.</p>
+<h2 style="font-family:var(--display);margin:34px 0 10px">😴 Clientes adormecidos — Distribuição Moderna sem UMA fatura este ano (${adormecidos.length})</h2>
+<ul style="line-height:1.9;font-size:15px">${adormecidos.join('\n')}</ul>
+<p style="margin-top:26px;color:var(--muted);font-size:13.5px">Nota: o grupo Noble (Nossa Casa) opera as lojas <b>Angomart</b> — as 7 contas Angomart estão a zero, confirmando que a Quente e Bom não entra lá. Venda cruzada prioritária.</p>
 </body></html>`;
 
 fs.mkdirSync('equipa/insignias', { recursive: true });
