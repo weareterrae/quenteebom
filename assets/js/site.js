@@ -120,3 +120,14 @@ fbq('track', 'PageView');
 if (location.pathname.indexOf('/receitas/') === 0 && location.pathname.length > 11) {
   fbq('trackCustom', 'VerReceita', { pagina: location.pathname });
 }
+// Lead: página de agradecimento = sucesso de qualquer formulário Netlify (revendedor, cotação, contacto, candidatura)
+if (/\/obrigado(\.html)?$/.test(location.pathname)) {
+  fbq('track', 'Lead');
+  var _t = new URLSearchParams(location.search).get('t');
+  if (_t) fbq('trackCustom', 'LeadB2B', { tipo: _t }); // revendedor / cotacao — o lead comercial que vale dinheiro
+}
+// Contacto: abrir o chat do Joaquim é o principal sinal de interesse (não há wa.me/tel no site)
+document.addEventListener('click', function (e) {
+  var el = e.target && e.target.closest && e.target.closest('[onclick*="openBento"]');
+  if (el && window.fbq) fbq('track', 'Contact', { metodo: 'joaquim' });
+}, true);
