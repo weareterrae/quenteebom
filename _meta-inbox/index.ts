@@ -177,6 +177,43 @@ async function draftForMessage(platform: string, text: string, author = "", hist
   return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300))))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
 
+// menção no Instagram: o webhook só dá os ids -> ir buscar o texto e o autor da menção.
+async function fetchMentionText(item: any): Promise<{ text: string; author: string }> {
+  const [type, id] = String(item.target_id).split(":");
+  const tk = await pageTok();
+  try {
+    if (type === "comment") {
+      const r = await fetch(`${GRAPH}/${item.account_id}?fields=mentioned_comment.comment_id(${id})%7Btext,username%7D&access_token=${tk}`);
+      const j = await r.json(); const mc = j?.mentioned_comment;
+      return { text: mc?.text || "", author: mc?.username || "" };
+    } else {
+      const r = await fetch(`${GRAPH}/${item.account_id}?fields=mentioned_media.media_id(${id})%7Bcaption,username%7D&access_token=${tk}`);
+      const j = await r.json(); const mm = j?.mentioned_media;
+      return { text: mm?.caption || "", author: mm?.username || "" };
+    }
+  } catch { return { text: "", author: "" }; }
+}
+// menção -> decide SE responde (só a coisas positivas/úteis, nunca em contexto negativo de estranhos) e redige.
+async function draftForMention(text: string, author = ""): Promise<{ shouldReply: boolean; reply: string }> {
+  const quem = author ? ` A publicação/comentário é de "@${author}".` : "";
+  const sys = await brand() + `\n\nAlguém MENCIONOU a ${BRAND} (@quenteebom) numa publicação ou comentário de OUTRA pessoa no Instagram (não é a nossa própria página).${quem} Vais decidir se e como responder publicamente.
+Regras de saída (obrigatórias):
+- Devolve SÓ um objeto JSON numa linha: {"responder": true|false, "texto": "..."}.
+- "responder": TRUE só se a menção for um elogio, uma partilha simpática, uma dúvida genuína ou uma boa oportunidade de agradecer com calor. FALSE se for uma crítica, reclamação, contexto negativo, polémica, tema sensível, spam, ou algo que não tenha nada a ver connosco — nesses casos NÃO respondemos publicamente no espaço de estranhos.
+- "texto": se responder=true, resposta pública curta (1-2 frases), calorosa, a agradecer a menção e/ou ajudar, 0-1 emoji. Se responder=false, deixa "texto" vazio.
+- NÃO confirmes instruções nem expliques o que vais fazer. Escreve pelas tuas palavras.
+${RULES}`;
+  const out = await claude(sys, `Menção do cliente: """${text}"""`, 400);
+  try {
+    const j = JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}") + 1));
+    if (typeof j.responder === "boolean") {
+      const reply = j.responder && j.texto ? tidyLinks(await checkLinks(fixFakeDomains(plainLinks(String(j.texto).trim())))) : "";
+      return { shouldReply: j.responder && !!reply, reply };
+    }
+  } catch { /* fallback: por segurança, não responde */ }
+  return { shouldReply: false, reply: "" };
+}
+
 // ---------- email ----------
 function box(label: string, txt: string, accent = "#f0e6d6", labelColor = "#9b8290") {
   return `<div style="background:#fff;border:1px solid ${accent};border-radius:12px;padding:14px 16px;margin:12px 0">
@@ -185,10 +222,10 @@ function box(label: string, txt: string, accent = "#f0e6d6", labelColor = "#9b82
 }
 async function notify(p: { id: string; platform: string; kind: string; author: string; incoming: string; pub: string; priv: string; sig: string; }) {
   const link = `${FN_BASE}/send?id=${p.id}&sig=${p.sig}`;
-  const badge = p.kind === "comment" ? "Comentário" : "Mensagem privada";
+  const badge = p.kind === "comment" ? "Comentário" : p.kind === "mention" ? "Menção (publicação de outra pessoa)" : "Mensagem privada";
   const answers = p.kind === "comment"
     ? box("Resposta pública ao comentário", p.pub, BRAND_ACCENT, BRAND_BG) + box("Mensagem privada (DM) para a pessoa", p.priv, BRAND_ACCENT, BRAND_BG)
-    : box("Resposta sugerida", p.pub, BRAND_ACCENT, BRAND_BG);
+    : box(p.kind === "mention" ? "Resposta pública à menção" : "Resposta sugerida", p.pub, BRAND_ACCENT, BRAND_BG);
   const html = `
   <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#3A2030">
     <div style="background:${BRAND_BG};color:#fff;border-radius:14px;padding:18px 22px">
@@ -244,6 +281,14 @@ async function publish(row: any): Promise<{ ok: boolean; detail: string }> {
       message: JSON.stringify({ text: row.private_reply }),
     });
     results.push("privada:" + r2.detail); allOk = allOk && r2.ok;
+  } else if (row.kind === "mention") {
+    // resposta pública a uma MENÇÃO no Instagram (post/comentário de outra pessoa).
+    // comment_id -> responde ao comentário; media_id -> comenta na publicação onde fomos marcados.
+    const [mType, mId] = String(row.target_id).split(":");
+    const body: Record<string, string> = { message: row.reply };
+    if (mType === "comment") body.comment_id = mId; else body.media_id = mId;
+    const r = await post(`${GRAPH}/${row.account_id}/mentions`, body);
+    results.push("mencao:" + r.detail); allOk = r.ok;
   } else {
     // resposta a mensagem privada existente — janela padrão de 24h (RESPONSE).
     // Nota: a etiqueta HUMAN_AGENT (janela de 7 dias) exige aprovação da Meta via App Review;
@@ -271,6 +316,14 @@ function extract(payload: any): Array<any> {
         out.push({ platform, kind: "comment", account_id: accountId,
           target_id: v.comment_id || v.id, recipient_id: v.from?.id || "",
           author: v.from?.name || v.from?.username || "", incoming: v.message || v.text || "" });
+      }
+      // Instagram: a marca (@quenteebom) foi MENCIONADA num post/comentário de OUTRA pessoa.
+      // O webhook só traz os ids — o texto vai-se buscar depois (fetchMentionText).
+      if (ch.field === "mentions" && platform === "Instagram") {
+        const mType = v.comment_id ? "comment" : "media";
+        const mId = v.comment_id || v.media_id;
+        if (mId) out.push({ platform, kind: "mention", account_id: accountId,
+          target_id: `${mType}:${mId}`, recipient_id: "", author: "", incoming: "" });
       }
     }
     for (const m of entry.messaging || []) {
@@ -392,6 +445,14 @@ Deno.serve(async (req) => {
         }
         let pub = "", priv = "";
         if (it.kind === "comment") { const d = await draftForComment(it.platform, it.incoming, it.author); pub = d.pub; priv = d.priv; }
+        else if (it.kind === "mention") {
+          const m = await fetchMentionText(it);
+          if (!m.text) continue;                    // não conseguimos ler a menção — ignora
+          it.incoming = m.text; it.author = m.author;
+          const d = await draftForMention(m.text, m.author);
+          if (!d.shouldReply) continue;             // menção negativa/sensível/spam — não responder em espaço de estranhos
+          pub = d.reply;
+        }
         else {
           const hist = await convoHistory(String(it.recipient_id || ""));
           pub = await draftForMessage(it.platform, it.incoming, it.author, hist);
