@@ -200,7 +200,7 @@ async function fetchMentionText(item: any): Promise<{ text: string; author: stri
 async function draftForMention(text: string, author = "", context = ""): Promise<{ shouldReply: boolean; reply: string }> {
   const quem = author ? ` A publicação/comentário é de "@${author}".` : "";
   const ctx = context
-    ? `\n\nCONTEXTO — a publicação onde fomos mencionados diz o seguinte: """${context}""".\nREGRA CRÍTICA: LÊ este contexto antes de responder. NÃO perguntes nem peças informação que já esteja na publicação (ex.: se a pessoa já disse que produto é, ou o que está a fazer, não voltes a perguntar). Responde a par do que a publicação mostra, de forma natural e relevante.`
+    ? `\n\n>>> A PUBLICAÇÃO onde fomos mencionados diz o seguinte (LÊ COM ATENÇÃO antes de escreveres):\n"""${context}"""\n\nREGRAS OBRIGATÓRIAS ao responder:\n1. Identifica na publicação QUAL é o produto ou a receita de que a pessoa fala (ex.: um bolo específico, um pão, uma receita concreta) e refere-te a ELE PELO NOME na tua resposta.\n2. É PROIBIDO perguntar "qual foi a receita?", "que produto usaste?" ou pedir qualquer informação que JÁ ESTEJA na publicação acima — a resposta já lá está, perguntar faz-nos parecer que não lemos.\n3. Responde de forma calorosa, curta e ESPECÍFICA ao que a publicação mostra. Exemplo do espírito certo: se o post elogia o nosso Red Velvet, agradece e diz algo simpático sobre o Red Velvet — nunca perguntes qual foi a receita.`
     : "";
   const sys = await brand() + `\n\nAlguém MARCOU/MENCIONOU a ${BRAND} (com @) numa publicação ou comentário de OUTRA pessoa no Instagram (não é a nossa própria página).${quem}${ctx} Vais decidir se e como responder publicamente.
 Regras de saída (obrigatórias):
