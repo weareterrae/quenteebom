@@ -272,7 +272,7 @@ ${grupos}
 
 ${footerHTML()}
 
-<script src="/assets/js/site.js?v=7"></script>
+<script src="/assets/js/site.js?v=8"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>
