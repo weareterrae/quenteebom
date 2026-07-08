@@ -289,10 +289,11 @@ async function publish(row: any): Promise<{ ok: boolean; detail: string }> {
     results.push("privada:" + r2.detail); allOk = allOk && r2.ok;
   } else if (row.kind === "mention") {
     // resposta pública a uma MENÇÃO no Instagram (post/comentário de outra pessoa).
-    // comment_id -> responde ao comentário; media_id -> comenta na publicação onde fomos marcados.
-    const [mType, mId] = String(row.target_id).split(":");
+    // A API exige SEMPRE media_id; comment_id extra responde ao comentário específico.
+    const parts = String(row.target_id).split(":");
     const body: Record<string, string> = { message: row.reply };
-    if (mType === "comment") body.comment_id = mId; else body.media_id = mId;
+    if (parts[0] === "comment") { body.comment_id = parts[1]; body.media_id = parts[2]; }
+    else { body.media_id = parts[1]; }
     const r = await post(`${GRAPH}/${row.account_id}/mentions`, body);
     results.push("mencao:" + r.detail); allOk = r.ok;
   } else {
@@ -326,10 +327,14 @@ function extract(payload: any): Array<any> {
       // Instagram: a marca (@quenteebom) foi MENCIONADA num post/comentário de OUTRA pessoa.
       // O webhook só traz os ids — o texto vai-se buscar depois (fetchMentionText).
       if (ch.field === "mentions" && platform === "Instagram") {
-        const mType = v.comment_id ? "comment" : "media";
-        const mId = v.comment_id || v.media_id;
-        if (mId) out.push({ platform, kind: "mention", account_id: accountId,
-          target_id: `${mType}:${mId}`, recipient_id: "", author: "", incoming: "" });
+        // a API de menções exige SEMPRE o media_id; comment_id extra quando é menção num comentário.
+        if (v.comment_id && v.media_id) {
+          out.push({ platform, kind: "mention", account_id: accountId,
+            target_id: `comment:${v.comment_id}:${v.media_id}`, recipient_id: "", author: "", incoming: "" });
+        } else if (v.media_id) {
+          out.push({ platform, kind: "mention", account_id: accountId,
+            target_id: `media:${v.media_id}`, recipient_id: "", author: "", incoming: "" });
+        }
       }
     }
     for (const m of entry.messaging || []) {
