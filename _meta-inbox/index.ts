@@ -54,12 +54,16 @@ async function brand(): Promise<string> {
   catch { cachedPrompt = cachedPrompt || "És o Joaquim, o Chef da Quente e Bom (padaria angolana). Responde curto, caloroso, em português de Angola."; }
   return cachedPrompt;
 }
-async function claude(system: string, user: string, max = 400): Promise<string> {
+async function claude(system: string, user: string, max = 400, imageUrl = ""): Promise<string> {
+  // imageUrl (opcional) permite ao Joaquim VER uma imagem — ex.: a story a que alguém respondeu.
+  const content: any = imageUrl
+    ? [{ type: "image", source: { type: "url", url: imageUrl } }, { type: "text", text: user || "(sem texto)" }]
+    : (user || "(sem texto)");
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "content-type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
     body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: max, system,
-      messages: [{ role: "user", content: user || "(sem texto)" }] }),
+      messages: [{ role: "user", content }] }),
   });
   const j = await r.json();
   return (j?.content?.[0]?.text || "").trim();
@@ -168,13 +172,16 @@ async function convoHistory(recipientId: string): Promise<string> {
   } catch { return ""; }
 }
 // mensagem privada -> uma resposta
-async function draftForMessage(platform: string, text: string, author = "", history = ""): Promise<string> {
+async function draftForMessage(platform: string, text: string, author = "", history = "", storyImageUrl = ""): Promise<string> {
   const quem = author && !/^\d+$/.test(author) ? ` O cliente chama-se "${author}".` : "";
   const ctx = history
     ? `\n\nHISTÓRICO RECENTE DESTA CONVERSA (mais antigo primeiro):\n${history}\n\nREGRA CRÍTICA: estás a MEIO de uma conversa a decorrer — NÃO voltes a cumprimentar (nada de "Olá"), NÃO te reapresentes, NÃO repitas o que já disseste. Responde de forma natural e seguida, usando o contexto acima.`
     : "";
-  const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}.${quem} Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.${ctx}\n${RULES}`;
-  return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300))))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
+  const story = storyImageUrl
+    ? `\n\nCONTEXTO IMPORTANTE: esta mensagem é uma RESPOSTA a uma STORY da ${BRAND} — a imagem dessa story está anexada. OLHA para a imagem e responde ENQUADRADO no que a story mostra (se fala de um produto, receita ou novidade, é sobre isso que a pessoa está a comentar/perguntar). Não inventes o que não vês na imagem.`
+    : "";
+  const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}.${quem} Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.${story}${ctx}\n${RULES}`;
+  return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300, storyImageUrl))))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
 // marcação numa STORY -> DM de agradecimento (só gratidão, sem perguntas)
 async function draftForStoryMention(platform: string, author = ""): Promise<string> {
@@ -242,10 +249,12 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
   const answers = p.kind === "comment"
     ? box("Resposta pública ao comentário", p.pub, BRAND_ACCENT, BRAND_BG) + box("Mensagem privada (DM) para a pessoa", p.priv, BRAND_ACCENT, BRAND_BG)
     : box(p.kind === "mention" ? "Resposta pública à menção" : p.kind === "story_mention" ? "Mensagem de agradecimento (DM)" : "Resposta sugerida", p.pub, BRAND_ACCENT, BRAND_BG);
-  const storyBlock = (p.kind === "story_mention" && p.story_url)
+  const storyImg = p.story_url
     ? `<div style="text-align:center;margin:14px 0">
-        <img src="${p.story_url}" alt="story" style="max-width:230px;border-radius:16px;border:1px solid #eadfd2">
-        <div style="font-size:13px;color:#9b8290;margin-top:10px;line-height:1.6">📲 Para <b>repartilhares</b>: abre o Instagram, vai à notificação da marcação e toca em <b>"Adicionar à tua story"</b> — só funciona enquanto a story dela estiver no ar (~24h). O botão abaixo envia só o agradecimento por DM.</div>
+        <img src="${p.story_url}" alt="story" style="max-width:210px;border-radius:16px;border:1px solid #eadfd2">
+        <div style="font-size:12.5px;color:#9b8290;margin-top:9px;line-height:1.6">${p.kind === "story_mention"
+          ? "📲 Para <b>repartilhares</b>: abre o Instagram, vai à marcação e toca em <b>\"Adicionar à tua story\"</b> (enquanto a story dela estiver no ar). O botão abaixo envia só o agradecimento por DM."
+          : "↩️ Isto é uma <b>resposta a esta vossa story</b> — o Joaquim já respondeu com este contexto à frente."}</div>
       </div>`
     : "";
   const html = `
@@ -254,7 +263,8 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
       <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:${BRAND_ACCENT};font-weight:700">${BRAND} · ${p.platform} · ${badge}</div>
       <div style="font-size:18px;font-weight:700;margin-top:4px">Nova interação de ${p.author || "um cliente"}</div>
     </div>
-    ${p.kind === "story_mention" ? storyBlock : box("Recebido", p.incoming)}
+    ${p.kind === "story_mention" ? "" : box("Recebido", p.incoming)}
+    ${storyImg}
     ${answers}
     <div style="text-align:center;margin:22px 0">
       <a href="${link}" style="background:${BRAND_ACCENT};color:${BRAND_BG};font-weight:800;text-decoration:none;padding:14px 34px;border-radius:999px;font-size:16px;display:inline-block">Aprovar e enviar ${p.kind === "comment" ? "(resposta + DM)" : ""} ☀️</a>
@@ -365,9 +375,11 @@ function extract(payload: any): Array<any> {
         continue;
       }
       if (!m.message?.text) continue;
+      // se for RESPOSTA a uma story nossa, guardamos o link da imagem da story (para dar contexto)
+      const storyReplyUrl = m.message?.reply_to?.story?.url || "";
       out.push({ platform, kind: "message", account_id: accountId,
         target_id: m.sender?.id || "", recipient_id: m.sender?.id || "",
-        author: m.sender?.id || "", incoming: m.message.text });
+        author: m.sender?.id || "", incoming: m.message.text, story_url: storyReplyUrl });
     }
   }
   return out;
@@ -414,20 +426,10 @@ Deno.serve(async (req) => {
     const { data, error } = await db.from("pending_replies")
       .select("created_at,platform,kind,author,status,detail,incoming")
       .neq("status", "dropped")   // as menções filtradas vivem em /dropped, não poluem o /last
-      .neq("status", "debug")     // registos de diagnóstico vivem em /rawlast
+      .neq("status", "debug")     // esconde eventuais registos antigos de diagnóstico
       .order("created_at", { ascending: false }).limit(5);
     const rows = (data || []).map((r: any) => ({ ...r, incoming: String(r.incoming || "").slice(0, 80) }));
     return new Response(JSON.stringify(error ?? rows, null, 2), { headers: { "content-type": "application/json" } });
-  }
-
-  // ADMIN TEMPORÁRIO: payloads crus de messaging IG, para diagnosticar respostas a stories.
-  // GET /rawlast?key=<META_VERIFY_TOKEN>
-  if (req.method === "GET" && url.pathname.endsWith("/rawlast") && url.searchParams.get("key") === VERIFY_TOKEN) {
-    const { data, error } = await db.from("pending_replies")
-      .select("created_at,incoming")
-      .eq("status", "debug")
-      .order("created_at", { ascending: false }).limit(5);
-    return new Response(JSON.stringify(error ?? data, null, 2), { headers: { "content-type": "application/json" } });
   }
 
   // ADMIN: menções que o filtro NÃO respondeu (sem email) — auditar se algum falso negativo escapou.
@@ -491,13 +493,6 @@ Deno.serve(async (req) => {
     const raw = await req.text();
     if (!await validSignature(req, raw)) return new Response("bad sig", { status: 401 });
     let payload: any; try { payload = JSON.parse(raw); } catch { return new Response("ok"); }
-    // DEBUG TEMPORÁRIO (remover após diagnóstico): guarda o payload cru de eventos de messaging do Instagram
-    try {
-      if (payload.object === "instagram" && (payload.entry || []).some((e: any) => Array.isArray(e.messaging))) {
-        await db.from("pending_replies").insert({ platform: "Instagram", kind: "debug", account_id: "",
-          target_id: "", recipient_id: "", author: "", incoming: String(raw).slice(0, 3500), reply: "", private_reply: "", status: "debug" });
-      }
-    } catch { /* nunca falha o fluxo por causa do debug */ }
     for (const it of extract(payload)) {
       try {
         // Em DMs e marcações de story só vem o id do remetente — ir buscar o nome à Meta
@@ -535,7 +530,8 @@ Deno.serve(async (req) => {
         }
         else {
           const hist = await convoHistory(String(it.recipient_id || ""));
-          pub = await draftForMessage(it.platform, it.incoming, it.author, hist);
+          pub = await draftForMessage(it.platform, it.incoming, it.author, hist, it.story_url || "");
+          if (it.story_url) it.incoming = `[Resposta à vossa story] ${it.incoming}`; // contexto no email/registo
         }
         const { data: ins } = await db.from("pending_replies").insert({
           platform: it.platform, kind: it.kind, account_id: it.account_id, target_id: it.target_id,
