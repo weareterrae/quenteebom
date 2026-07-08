@@ -1925,6 +1925,33 @@ ${footerHTML()}
 }
 
 // ---------- página de receita ----------
+// texto simples a partir de HTML (para o structured data)
+function plainText(s) { return String(s || '').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim(); }
+// "20 min" / "1h" -> duração ISO 8601 ("PT20M") para o Google
+function isoDur(t) {
+  const s = String(t || ''); let m = 0;
+  const h = s.match(/(\d+)\s*h/i); const min = s.match(/(\d+)\s*min/i);
+  if (h) m += parseInt(h[1]) * 60; if (min) m += parseInt(min[1]);
+  return m ? `PT${m}M` : null;
+}
+// structured data schema.org/Recipe -> receita rica no Google (foto, tempo, ingredientes)
+function recipeSchema(r) {
+  const cat = (META[r.slug] || {}).cat || 'Receita';
+  const obj = {
+    "@context": "https://schema.org", "@type": "Recipe",
+    name: r.titulo,
+    image: ["https://quenteebom.com" + r.img],
+    description: plainText(r.intro),
+    author: { "@type": "Organization", name: "Quente e Bom" },
+    recipeCategory: cat,
+    recipeYield: r.rende,
+    recipeIngredient: r.ingredientes.map(plainText),
+    recipeInstructions: r.passos.map(([t, p]) => ({ "@type": "HowToStep", name: plainText(t), text: plainText(p) })),
+    keywords: `Quente e Bom, ${cat}, Angola`,
+  };
+  const tt = isoDur(r.tempo); if (tt) obj.totalTime = tt;
+  return `<script type="application/ld+json">${JSON.stringify(obj).replace(/</g, '\\u003c')}</script>`;
+}
 function pagReceita(r) {
   const ings = r.ingredientes.map(i => `        <li>${i}</li>`).join('\n');
   const passos = r.passos.map(([t, p]) => `        <li><h4>${t}</h4><p>${p}</p></li>`).join('\n');
@@ -1932,6 +1959,7 @@ function pagReceita(r) {
 <html lang="pt">
 <head>
 ${headHTML(`${r.titulo} — Receitas Quente e Bom`, r.intro, `/receitas/${r.slug}/`, r.img)}
+${recipeSchema(r)}
 </head>
 <body>
 ${headerHTML()}
