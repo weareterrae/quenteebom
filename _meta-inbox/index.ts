@@ -54,10 +54,10 @@ async function brand(): Promise<string> {
   catch { cachedPrompt = cachedPrompt || "És o Joaquim, o Chef da Quente e Bom (padaria angolana). Responde curto, caloroso, em português de Angola."; }
   return cachedPrompt;
 }
-async function claude(system: string, user: string, max = 400, imageUrl = ""): Promise<string> {
-  // imageUrl (opcional) permite ao Joaquim VER uma imagem — ex.: a story a que alguém respondeu.
-  const content: any = imageUrl
-    ? [{ type: "image", source: { type: "url", url: imageUrl } }, { type: "text", text: user || "(sem texto)" }]
+async function claude(system: string, user: string, max = 400, image: { data: string; mime: string } | null = null): Promise<string> {
+  // image (opcional, em base64) permite ao Joaquim VER uma imagem — ex.: a story a que alguém respondeu.
+  const content: any = image
+    ? [{ type: "image", source: { type: "base64", media_type: image.mime, data: image.data } }, { type: "text", text: user || "(sem texto)" }]
     : (user || "(sem texto)");
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -67,6 +67,21 @@ async function claude(system: string, user: string, max = 400, imageUrl = ""): P
   });
   const j = await r.json();
   return (j?.content?.[0]?.text || "").trim();
+}
+// descarrega uma imagem (ex.: a story) e devolve-a em base64 — URLs lookaside expiram, por isso
+// buscamos NO MOMENTO do webhook (fresca). Devolve null se falhar (o redator cai para só-texto).
+async function fetchImageB64(u: string): Promise<{ data: string; mime: string } | null> {
+  try {
+    let r = await fetch(u);
+    if (!r.ok) { const tk = await pageTok(); r = await fetch(u + (u.includes("?") ? "&" : "?") + "access_token=" + tk); }
+    if (!r.ok) return null;
+    const mime = r.headers.get("content-type") || "image/jpeg";
+    if (!/^image\//.test(mime)) return null;
+    const buf = new Uint8Array(await r.arrayBuffer());
+    if (buf.length > 4_500_000) return null; // demasiado grande — evita estoirar memória/base64
+    let bin = ""; for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+    return { data: btoa(bin), mime: mime.split(";")[0] };
+  } catch { return null; }
 }
 const RULES = `Regras gerais (aplicam-se sempre, além das regras da marca acima):
 - Nunca inventes preços, moradas de loja, stocks, promoções ou factos. Reclamações -> lamenta com empatia e encaminha para os canais oficiais da marca.
@@ -177,11 +192,12 @@ async function draftForMessage(platform: string, text: string, author = "", hist
   const ctx = history
     ? `\n\nHISTÓRICO RECENTE DESTA CONVERSA (mais antigo primeiro):\n${history}\n\nREGRA CRÍTICA: estás a MEIO de uma conversa a decorrer — NÃO voltes a cumprimentar (nada de "Olá"), NÃO te reapresentes, NÃO repitas o que já disseste. Responde de forma natural e seguida, usando o contexto acima.`
     : "";
-  const story = storyImageUrl
+  const img = storyImageUrl ? await fetchImageB64(storyImageUrl) : null;
+  const story = img
     ? `\n\nCONTEXTO IMPORTANTE: esta mensagem é uma RESPOSTA a uma STORY da ${BRAND} — a imagem dessa story está anexada. OLHA para a imagem e responde ENQUADRADO no que a story mostra (se fala de um produto, receita ou novidade, é sobre isso que a pessoa está a comentar/perguntar). Não inventes o que não vês na imagem.`
-    : "";
+    : (storyImageUrl ? `\n\nCONTEXTO: esta mensagem é uma resposta a uma story da ${BRAND}. Responde de forma calorosa e útil ao comentário da pessoa (não sabes o conteúdo exato da story, por isso não o inventes).` : "");
   const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}.${quem} Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.${story}${ctx}\n${RULES}`;
-  return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300, storyImageUrl))))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
+  return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300, img))))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
 // marcação numa STORY -> DM de agradecimento (só gratidão, sem perguntas)
 async function draftForStoryMention(platform: string, author = ""): Promise<string> {
@@ -250,12 +266,9 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
     ? box("Resposta pública ao comentário", p.pub, BRAND_ACCENT, BRAND_BG) + box("Mensagem privada (DM) para a pessoa", p.priv, BRAND_ACCENT, BRAND_BG)
     : box(p.kind === "mention" ? "Resposta pública à menção" : p.kind === "story_mention" ? "Mensagem de agradecimento (DM)" : "Resposta sugerida", p.pub, BRAND_ACCENT, BRAND_BG);
   const storyImg = p.story_url
-    ? `<div style="text-align:center;margin:14px 0">
-        <img src="${p.story_url}" alt="story" style="max-width:210px;border-radius:16px;border:1px solid #eadfd2">
-        <div style="font-size:12.5px;color:#9b8290;margin-top:9px;line-height:1.6">${p.kind === "story_mention"
-          ? "📲 Para <b>repartilhares</b>: abre o Instagram, vai à marcação e toca em <b>\"Adicionar à tua story\"</b> (enquanto a story dela estiver no ar). O botão abaixo envia só o agradecimento por DM."
-          : "↩️ Isto é uma <b>resposta a esta vossa story</b> — o Joaquim já respondeu com este contexto à frente."}</div>
-      </div>`
+    ? `<div style="text-align:center;margin:12px 0;font-size:12.5px;color:#9b8290;line-height:1.6">${p.kind === "story_mention"
+        ? "✨ <b>Marcou-vos numa story.</b> Para <b>repartilhares</b>: abre o Instagram, vai à marcação e toca em <b>\"Adicionar à tua story\"</b> (enquanto a story dela estiver no ar). O botão abaixo envia só o agradecimento por DM."
+        : "↩️ Isto é uma <b>resposta a uma story vossa</b> — o Joaquim já a viu e respondeu com esse contexto à frente."}</div>`
     : "";
   const html = `
   <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#3A2030">
