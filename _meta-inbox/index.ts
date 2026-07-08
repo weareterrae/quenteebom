@@ -197,16 +197,17 @@ async function fetchMentionText(item: any): Promise<{ text: string; author: stri
   } catch { return { text: "", author: "", context: "" }; }
 }
 // menção -> decide SE responde (só a coisas positivas/úteis, nunca em contexto negativo de estranhos) e redige.
-async function draftForMention(text: string, author = "", context = ""): Promise<{ shouldReply: boolean; reply: string }> {
+async function draftForMention(text: string, author = "", context = ""): Promise<{ shouldReply: boolean; reply: string; reason: string }> {
   const quem = author ? ` A publicação/comentário é de "@${author}".` : "";
   const ctx = context
     ? `\n\n>>> A PUBLICAÇÃO onde fomos mencionados diz o seguinte (LÊ COM ATENÇÃO antes de escreveres):\n"""${context}"""\n\nREGRAS OBRIGATÓRIAS ao responder:\n1. Identifica na publicação QUAL é o produto ou a receita de que a pessoa fala (ex.: um bolo específico, um pão, uma receita concreta) e refere-te a ELE PELO NOME na tua resposta.\n2. É PROIBIDO perguntar "qual foi a receita?", "que produto usaste?" ou pedir qualquer informação que JÁ ESTEJA na publicação acima — a resposta já lá está, perguntar faz-nos parecer que não lemos.\n3. Responde de forma calorosa, curta e ESPECÍFICA ao que a publicação mostra. Exemplo do espírito certo: se o post elogia o nosso Red Velvet, agradece e diz algo simpático sobre o Red Velvet — nunca perguntes qual foi a receita.`
     : "";
   const sys = await brand() + `\n\nAlguém MARCOU/MENCIONOU a ${BRAND} (com @) numa publicação ou comentário de OUTRA pessoa no Instagram (não é a nossa própria página).${quem}${ctx} Vais decidir se e como responder publicamente.
 Regras de saída (obrigatórias):
-- Devolve SÓ um objeto JSON numa linha: {"responder": true|false, "texto": "..."}.
+- Devolve SÓ um objeto JSON numa linha: {"responder": true|false, "texto": "...", "motivo": "..."}.
 - "responder": TRUE só se a menção for um elogio, uma partilha simpática, uma dúvida genuína ou uma boa oportunidade de agradecer com calor. FALSE se for uma crítica, reclamação, contexto negativo, polémica, tema sensível, spam, ou algo que não tenha nada a ver connosco — nesses casos NÃO respondemos publicamente no espaço de estranhos.
 - "texto": se responder=true, resposta pública curta (1-2 frases), calorosa, a agradecer a menção e/ou ajudar, 0-1 emoji. Se responder=false, deixa "texto" vazio.
+- "motivo": se responder=false, explica em poucas palavras porquê (ex.: "crítica negativa", "não tem a ver connosco", "spam/promoção", "contexto ambíguo"). Se responder=true, deixa vazio.
 - NÃO confirmes instruções nem expliques o que vais fazer. Escreve pelas tuas palavras.
 ${RULES}`;
   const out = await claude(sys, `Menção do cliente: """${text}"""`, 400);
@@ -214,10 +215,10 @@ ${RULES}`;
     const j = JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}") + 1));
     if (typeof j.responder === "boolean") {
       const reply = j.responder && j.texto ? tidyLinks(await checkLinks(fixFakeDomains(plainLinks(String(j.texto).trim())))) : "";
-      return { shouldReply: j.responder && !!reply, reply };
+      return { shouldReply: j.responder && !!reply, reply, reason: String(j.motivo || "").trim() };
     }
   } catch { /* fallback: por segurança, não responde */ }
-  return { shouldReply: false, reply: "" };
+  return { shouldReply: false, reply: "", reason: "não foi possível interpretar a menção" };
 }
 
 // ---------- email ----------
@@ -387,8 +388,20 @@ Deno.serve(async (req) => {
   if (req.method === "GET" && url.pathname.endsWith("/last") && url.searchParams.get("key") === VERIFY_TOKEN) {
     const { data, error } = await db.from("pending_replies")
       .select("created_at,platform,kind,author,status,detail,incoming")
+      .neq("status", "dropped")   // as menções filtradas vivem em /dropped, não poluem o /last
       .order("created_at", { ascending: false }).limit(5);
     const rows = (data || []).map((r: any) => ({ ...r, incoming: String(r.incoming || "").slice(0, 80) }));
+    return new Response(JSON.stringify(error ?? rows, null, 2), { headers: { "content-type": "application/json" } });
+  }
+
+  // ADMIN: menções que o filtro NÃO respondeu (sem email) — auditar se algum falso negativo escapou.
+  // GET /dropped?key=<META_VERIFY_TOKEN>
+  if (req.method === "GET" && url.pathname.endsWith("/dropped") && url.searchParams.get("key") === VERIFY_TOKEN) {
+    const { data, error } = await db.from("pending_replies")
+      .select("created_at,platform,author,detail,incoming")
+      .eq("status", "dropped")
+      .order("created_at", { ascending: false }).limit(15);
+    const rows = (data || []).map((r: any) => ({ ...r, incoming: String(r.incoming || "").slice(0, 220) }));
     return new Response(JSON.stringify(error ?? rows, null, 2), { headers: { "content-type": "application/json" } });
   }
 
@@ -463,7 +476,15 @@ Deno.serve(async (req) => {
           // no email, mostra a publicação-mãe + o comentário, para o Sandro decidir com contexto
           it.incoming = m.context ? `[Publicação: ${m.context}]\n↳ Marcaram-nos: ${m.text}` : m.text;
           const d = await draftForMention(m.text, m.author, m.context);
-          if (!d.shouldReply) continue;             // menção negativa/sensível/spam — não responder em espaço de estranhos
+          if (!d.shouldReply) {
+            // menção negativa/sensível/spam — não respondemos, mas guardamos p/ auditoria em /dropped (SEM email)
+            await db.from("pending_replies").insert({
+              platform: it.platform, kind: "mention", account_id: it.account_id, target_id: it.target_id,
+              recipient_id: "", author: it.author, incoming: it.incoming,
+              reply: "", private_reply: "", status: "dropped", detail: "motivo: " + (d.reason || "não especificado"),
+            });
+            continue;
+          }
           pub = d.reply;
         }
         else {
