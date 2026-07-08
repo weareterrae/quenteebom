@@ -196,7 +196,7 @@ async function fetchMentionText(item: any): Promise<{ text: string; author: stri
 // menção -> decide SE responde (só a coisas positivas/úteis, nunca em contexto negativo de estranhos) e redige.
 async function draftForMention(text: string, author = ""): Promise<{ shouldReply: boolean; reply: string }> {
   const quem = author ? ` A publicação/comentário é de "@${author}".` : "";
-  const sys = await brand() + `\n\nAlguém MENCIONOU a ${BRAND} (@quenteebom) numa publicação ou comentário de OUTRA pessoa no Instagram (não é a nossa própria página).${quem} Vais decidir se e como responder publicamente.
+  const sys = await brand() + `\n\nAlguém MARCOU/MENCIONOU a ${BRAND} (com @) numa publicação ou comentário de OUTRA pessoa no Instagram (não é a nossa própria página).${quem} Vais decidir se e como responder publicamente.
 Regras de saída (obrigatórias):
 - Devolve SÓ um objeto JSON numa linha: {"responder": true|false, "texto": "..."}.
 - "responder": TRUE só se a menção for um elogio, uma partilha simpática, uma dúvida genuína ou uma boa oportunidade de agradecer com calor. FALSE se for uma crítica, reclamação, contexto negativo, polémica, tema sensível, spam, ou algo que não tenha nada a ver connosco — nesses casos NÃO respondemos publicamente no espaço de estranhos.
