@@ -177,26 +177,32 @@ async function draftForMessage(platform: string, text: string, author = "", hist
   return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300))))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
 
-// menção no Instagram: o webhook só dá os ids -> ir buscar o texto e o autor da menção.
-async function fetchMentionText(item: any): Promise<{ text: string; author: string }> {
+// menção no Instagram: o webhook só dá os ids -> ir buscar o texto, o autor e o CONTEXTO
+// (a legenda da publicação onde fomos mencionados, para não responder às cegas).
+async function fetchMentionText(item: any): Promise<{ text: string; author: string; context: string }> {
   const [type, id] = String(item.target_id).split(":");
   const tk = await pageTok();
   try {
     if (type === "comment") {
-      const r = await fetch(`${GRAPH}/${item.account_id}?fields=mentioned_comment.comment_id(${id})%7Btext,username%7D&access_token=${tk}`);
+      // além do comentário, expande media{caption} = a legenda da publicação-mãe
+      const r = await fetch(`${GRAPH}/${item.account_id}?fields=mentioned_comment.comment_id(${id})%7Btext,username,media%7Bcaption,username%7D%7D&access_token=${tk}`);
       const j = await r.json(); const mc = j?.mentioned_comment;
-      return { text: mc?.text || "", author: mc?.username || "" };
+      return { text: mc?.text || "", author: mc?.username || "", context: mc?.media?.caption || "" };
     } else {
+      // menção na legenda: o próprio texto já é a publicação inteira — não há contexto extra
       const r = await fetch(`${GRAPH}/${item.account_id}?fields=mentioned_media.media_id(${id})%7Bcaption,username%7D&access_token=${tk}`);
       const j = await r.json(); const mm = j?.mentioned_media;
-      return { text: mm?.caption || "", author: mm?.username || "" };
+      return { text: mm?.caption || "", author: mm?.username || "", context: "" };
     }
-  } catch { return { text: "", author: "" }; }
+  } catch { return { text: "", author: "", context: "" }; }
 }
 // menção -> decide SE responde (só a coisas positivas/úteis, nunca em contexto negativo de estranhos) e redige.
-async function draftForMention(text: string, author = ""): Promise<{ shouldReply: boolean; reply: string }> {
+async function draftForMention(text: string, author = "", context = ""): Promise<{ shouldReply: boolean; reply: string }> {
   const quem = author ? ` A publicação/comentário é de "@${author}".` : "";
-  const sys = await brand() + `\n\nAlguém MARCOU/MENCIONOU a ${BRAND} (com @) numa publicação ou comentário de OUTRA pessoa no Instagram (não é a nossa própria página).${quem} Vais decidir se e como responder publicamente.
+  const ctx = context
+    ? `\n\nCONTEXTO — a publicação onde fomos mencionados diz o seguinte: """${context}""".\nREGRA CRÍTICA: LÊ este contexto antes de responder. NÃO perguntes nem peças informação que já esteja na publicação (ex.: se a pessoa já disse que produto é, ou o que está a fazer, não voltes a perguntar). Responde a par do que a publicação mostra, de forma natural e relevante.`
+    : "";
+  const sys = await brand() + `\n\nAlguém MARCOU/MENCIONOU a ${BRAND} (com @) numa publicação ou comentário de OUTRA pessoa no Instagram (não é a nossa própria página).${quem}${ctx} Vais decidir se e como responder publicamente.
 Regras de saída (obrigatórias):
 - Devolve SÓ um objeto JSON numa linha: {"responder": true|false, "texto": "..."}.
 - "responder": TRUE só se a menção for um elogio, uma partilha simpática, uma dúvida genuína ou uma boa oportunidade de agradecer com calor. FALSE se for uma crítica, reclamação, contexto negativo, polémica, tema sensível, spam, ou algo que não tenha nada a ver connosco — nesses casos NÃO respondemos publicamente no espaço de estranhos.
@@ -448,8 +454,10 @@ Deno.serve(async (req) => {
         else if (it.kind === "mention") {
           const m = await fetchMentionText(it);
           if (!m.text) continue;                    // não conseguimos ler a menção — ignora
-          it.incoming = m.text; it.author = m.author;
-          const d = await draftForMention(m.text, m.author);
+          it.author = m.author;
+          // no email, mostra a publicação-mãe + o comentário, para o Sandro decidir com contexto
+          it.incoming = m.context ? `[Publicação: ${m.context}]\n↳ Marcaram-nos: ${m.text}` : m.text;
+          const d = await draftForMention(m.text, m.author, m.context);
           if (!d.shouldReply) continue;             // menção negativa/sensível/spam — não responder em espaço de estranhos
           pub = d.reply;
         }
