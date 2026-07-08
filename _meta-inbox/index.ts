@@ -176,6 +176,12 @@ async function draftForMessage(platform: string, text: string, author = "", hist
   const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}.${quem} Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.${ctx}\n${RULES}`;
   return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300))))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
+// marcação numa STORY -> DM de agradecimento (só gratidão, sem perguntas)
+async function draftForStoryMention(platform: string, author = ""): Promise<string> {
+  const quem = author && !/^\d+$/.test(author) ? ` A pessoa chama-se "${author}".` : "";
+  const sys = await brand() + `\n\nUma pessoa MARCOU a ${BRAND} numa STORY dela no ${platform} — partilhou um momento com os nossos produtos.${quem} Escreve SÓ uma mensagem privada (DM) muito curta (1-2 frases) a AGRADECER com carinho por nos ter marcado/partilhado. Calorosa, 0-1 emoji. NÃO faças perguntas, NÃO peças nada, NÃO confirmes instruções — é só gratidão genuína.\n${RULES}`;
+  return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, "A pessoa marcou-nos numa story dela.", 200))))) || "Muito obrigado por nos marcares na tua story! 🧡";
+}
 
 // menção no Instagram: o webhook só dá os ids -> ir buscar o texto, o autor e o CONTEXTO
 // (a legenda da publicação onde fomos mencionados, para não responder às cegas).
@@ -227,19 +233,28 @@ function box(label: string, txt: string, accent = "#f0e6d6", labelColor = "#9b82
     <div style="font-size:12px;color:${labelColor};text-transform:uppercase;letter-spacing:1px;font-weight:700">${label}</div>
     <div style="font-size:15.5px;margin-top:6px;white-space:pre-wrap">${escapeHtml(txt)}</div></div>`;
 }
-async function notify(p: { id: string; platform: string; kind: string; author: string; incoming: string; pub: string; priv: string; sig: string; }) {
+async function notify(p: { id: string; platform: string; kind: string; author: string; incoming: string; pub: string; priv: string; sig: string; story_url?: string; }) {
   const link = `${FN_BASE}/send?id=${p.id}&sig=${p.sig}`;
-  const badge = p.kind === "comment" ? "Comentário" : p.kind === "mention" ? "Menção (publicação de outra pessoa)" : "Mensagem privada";
+  const badge = p.kind === "comment" ? "Comentário"
+    : p.kind === "mention" ? "Menção (publicação de outra pessoa)"
+    : p.kind === "story_mention" ? "Marcou-vos numa story ✨"
+    : "Mensagem privada";
   const answers = p.kind === "comment"
     ? box("Resposta pública ao comentário", p.pub, BRAND_ACCENT, BRAND_BG) + box("Mensagem privada (DM) para a pessoa", p.priv, BRAND_ACCENT, BRAND_BG)
-    : box(p.kind === "mention" ? "Resposta pública à menção" : "Resposta sugerida", p.pub, BRAND_ACCENT, BRAND_BG);
+    : box(p.kind === "mention" ? "Resposta pública à menção" : p.kind === "story_mention" ? "Mensagem de agradecimento (DM)" : "Resposta sugerida", p.pub, BRAND_ACCENT, BRAND_BG);
+  const storyBlock = (p.kind === "story_mention" && p.story_url)
+    ? `<div style="text-align:center;margin:14px 0">
+        <img src="${p.story_url}" alt="story" style="max-width:230px;border-radius:16px;border:1px solid #eadfd2">
+        <div style="font-size:13px;color:#9b8290;margin-top:10px;line-height:1.6">📲 Para <b>repartilhares</b>: abre o Instagram, vai à notificação da marcação e toca em <b>"Adicionar à tua story"</b> — só funciona enquanto a story dela estiver no ar (~24h). O botão abaixo envia só o agradecimento por DM.</div>
+      </div>`
+    : "";
   const html = `
   <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#3A2030">
     <div style="background:${BRAND_BG};color:#fff;border-radius:14px;padding:18px 22px">
       <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:${BRAND_ACCENT};font-weight:700">${BRAND} · ${p.platform} · ${badge}</div>
       <div style="font-size:18px;font-weight:700;margin-top:4px">Nova interação de ${p.author || "um cliente"}</div>
     </div>
-    ${box("Recebido", p.incoming)}
+    ${p.kind === "story_mention" ? storyBlock : box("Recebido", p.incoming)}
     ${answers}
     <div style="text-align:center;margin:22px 0">
       <a href="${link}" style="background:${BRAND_ACCENT};color:${BRAND_BG};font-weight:800;text-decoration:none;padding:14px 34px;border-radius:999px;font-size:16px;display:inline-block">Aprovar e enviar ${p.kind === "comment" ? "(resposta + DM)" : ""} ☀️</a>
@@ -339,7 +354,17 @@ function extract(payload: any): Array<any> {
       }
     }
     for (const m of entry.messaging || []) {
-      if (m.message?.is_echo || !m.message?.text) continue;
+      if (m.message?.is_echo) continue;
+      // marcação numa STORY: chega como mensagem com anexo story_mention (sem texto).
+      const att = (m.message?.attachments || [])[0];
+      if (att?.type === "story_mention") {
+        out.push({ platform, kind: "story_mention", account_id: accountId,
+          target_id: m.sender?.id || "", recipient_id: m.sender?.id || "",
+          author: m.sender?.id || "", incoming: "[Marcou-vos numa story]",
+          story_url: att?.payload?.url || "" });
+        continue;
+      }
+      if (!m.message?.text) continue;
       out.push({ platform, kind: "message", account_id: accountId,
         target_id: m.sender?.id || "", recipient_id: m.sender?.id || "",
         author: m.sender?.id || "", incoming: m.message.text });
@@ -457,8 +482,8 @@ Deno.serve(async (req) => {
     let payload: any; try { payload = JSON.parse(raw); } catch { return new Response("ok"); }
     for (const it of extract(payload)) {
       try {
-        // Em DMs só vem o id do remetente — ir buscar o nome à Meta para personalizar a resposta
-        if (it.kind === "message" && /^\d+$/.test(String(it.author || ""))) {
+        // Em DMs e marcações de story só vem o id do remetente — ir buscar o nome à Meta
+        if ((it.kind === "message" || it.kind === "story_mention") && /^\d+$/.test(String(it.author || ""))) {
           try {
             const tk = await pageTok();
             const ur = await fetch(`${GRAPH}/${it.author}?fields=name,first_name,username&access_token=${tk}`);
@@ -486,6 +511,9 @@ Deno.serve(async (req) => {
             continue;
           }
           pub = d.reply;
+        }
+        else if (it.kind === "story_mention") {
+          pub = await draftForStoryMention(it.platform, it.author);
         }
         else {
           const hist = await convoHistory(String(it.recipient_id || ""));
