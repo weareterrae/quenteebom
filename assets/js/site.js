@@ -107,3 +107,16 @@
   }
   loadScript(function () { beTracker.t({ hash: "4f08e52fadba55f51e0d84318564e5d0" }); });
 })();
+
+/* Meta Pixel — Quente e Bom Angola Event Data (retargeting + otimização de anúncios) */
+(function (f, b, e, v, n, t, s) {
+  if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+  if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
+  t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+})(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1542771350882848');
+fbq('track', 'PageView');
+// evento próprio nas páginas de receita — permite otimizar/retargetar quem procura receitas
+if (location.pathname.indexOf('/receitas/') === 0 && location.pathname.length > 11) {
+  fbq('trackCustom', 'VerReceita', { pagina: location.pathname });
+}
