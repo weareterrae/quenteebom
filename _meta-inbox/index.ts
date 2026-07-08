@@ -414,9 +414,20 @@ Deno.serve(async (req) => {
     const { data, error } = await db.from("pending_replies")
       .select("created_at,platform,kind,author,status,detail,incoming")
       .neq("status", "dropped")   // as menções filtradas vivem em /dropped, não poluem o /last
+      .neq("status", "debug")     // registos de diagnóstico vivem em /rawlast
       .order("created_at", { ascending: false }).limit(5);
     const rows = (data || []).map((r: any) => ({ ...r, incoming: String(r.incoming || "").slice(0, 80) }));
     return new Response(JSON.stringify(error ?? rows, null, 2), { headers: { "content-type": "application/json" } });
+  }
+
+  // ADMIN TEMPORÁRIO: payloads crus de messaging IG, para diagnosticar respostas a stories.
+  // GET /rawlast?key=<META_VERIFY_TOKEN>
+  if (req.method === "GET" && url.pathname.endsWith("/rawlast") && url.searchParams.get("key") === VERIFY_TOKEN) {
+    const { data, error } = await db.from("pending_replies")
+      .select("created_at,incoming")
+      .eq("status", "debug")
+      .order("created_at", { ascending: false }).limit(5);
+    return new Response(JSON.stringify(error ?? data, null, 2), { headers: { "content-type": "application/json" } });
   }
 
   // ADMIN: menções que o filtro NÃO respondeu (sem email) — auditar se algum falso negativo escapou.
@@ -480,6 +491,13 @@ Deno.serve(async (req) => {
     const raw = await req.text();
     if (!await validSignature(req, raw)) return new Response("bad sig", { status: 401 });
     let payload: any; try { payload = JSON.parse(raw); } catch { return new Response("ok"); }
+    // DEBUG TEMPORÁRIO (remover após diagnóstico): guarda o payload cru de eventos de messaging do Instagram
+    try {
+      if (payload.object === "instagram" && (payload.entry || []).some((e: any) => Array.isArray(e.messaging))) {
+        await db.from("pending_replies").insert({ platform: "Instagram", kind: "debug", account_id: "",
+          target_id: "", recipient_id: "", author: "", incoming: String(raw).slice(0, 3500), reply: "", private_reply: "", status: "debug" });
+      }
+    } catch { /* nunca falha o fluxo por causa do debug */ }
     for (const it of extract(payload)) {
       try {
         // Em DMs e marcações de story só vem o id do remetente — ir buscar o nome à Meta
