@@ -456,6 +456,68 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify(error ?? rows, null, 2), { headers: { "content-type": "application/json" } });
   }
 
+  // ADMIN: DIGEST semanal — resumo dos últimos 7 dias do inbox, com temas/perguntas frequentes
+  // (resumidos pelo Claude) + sentimento + sugestão. Enviado por email. Agendar 1x/semana.
+  // GET /digest?key=<META_VERIFY_TOKEN>[&dias=7]
+  if (req.method === "GET" && url.pathname.endsWith("/digest") && url.searchParams.get("key") === VERIFY_TOKEN) {
+    const dias = Math.max(1, Math.min(31, parseInt(url.searchParams.get("dias") || "7", 10) || 7));
+    const desde = new Date(Date.now() - dias * 864e5).toISOString();
+    const { data } = await db.from("pending_replies")
+      .select("kind,platform,status,author,incoming,created_at")
+      .gte("created_at", desde).order("created_at", { ascending: false }).limit(600);
+    const rows = data || [];
+    const n = (f: (r: any) => boolean) => rows.filter(f).length;
+    const stats = {
+      total: rows.length,
+      comentarios: n(r => r.kind === "comment"),
+      mensagens: n(r => r.kind === "message"),
+      mencoes: n(r => r.kind === "mention"),
+      stories: n(r => r.kind === "story_mention"),
+      instagram: n(r => r.platform === "Instagram"),
+      facebook: n(r => r.platform === "Facebook"),
+      enviadas: n(r => r.status === "sent"),
+      pendentes: n(r => r.status === "pending"),
+      dropped: n(r => r.status === "dropped"),
+    };
+    // amostra dos textos recebidos (sem os "dropped") para o Claude detetar temas
+    const amostra = rows.filter(r => r.incoming && r.status !== "dropped")
+      .map(r => `- [${r.platform}/${r.kind}] ${String(r.incoming).replace(/\s+/g, " ").slice(0, 200)}`)
+      .slice(0, 80).join("\n");
+    let resumo = "Sem interações com texto suficiente para resumir esta semana.";
+    if (amostra) {
+      resumo = await claude(
+        `És um analista de comunidade da marca ${BRAND} (padaria/pastelaria angolana). Analisas o que os clientes escreveram esta semana nas redes sociais e devolves um briefing curto e útil para a equipa. Português de Angola, direto, sem floreados. NÃO uses markdown de títulos (#); usa texto simples com quebras de linha.`,
+        `Interações dos últimos ${dias} dias (${stats.total} no total):\n${amostra}\n\nDevolve exatamente 3 secções curtas:\n1) TEMAS/PERGUNTAS MAIS FREQUENTES — 3 a 5 pontos (o que mais perguntam/comentam).\n2) SENTIMENTO GERAL — 1 frase (positivo/neutro/negativo e porquê).\n3) SUGESTÃO DA SEMANA — 1 ação concreta para a marca (ex.: uma story a fazer, uma dúvida recorrente a esclarecer no site/receitas).`,
+        700);
+    }
+    const chip = (lbl: string, v: number, bg: string) => `<span style="display:inline-block;background:${bg};color:#3A2030;font-weight:700;font-size:13px;border-radius:999px;padding:5px 12px;margin:3px 4px">${v} ${lbl}</span>`;
+    const html = `
+    <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;color:#3A2030">
+      <div style="background:${BRAND_BG};color:#fff;border-radius:14px;padding:18px 22px">
+        <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:${BRAND_ACCENT};font-weight:700">${BRAND} · Resumo do inbox</div>
+        <div style="font-size:19px;font-weight:800;margin-top:4px">Os últimos ${dias} dias em redes sociais</div>
+      </div>
+      <div style="text-align:center;margin:16px 0">
+        ${chip("interações", stats.total, BRAND_ACCENT)}
+        ${chip("comentários", stats.comentarios, "#f0e6d6")}
+        ${chip("mensagens", stats.mensagens, "#f0e6d6")}
+        ${chip("menções", stats.mencoes, "#f0e6d6")}
+        ${chip("stories", stats.stories, "#f0e6d6")}
+      </div>
+      <div style="text-align:center;margin:2px 0 14px;font-size:12.5px;color:#9b8290">
+        ${stats.instagram} Instagram · ${stats.facebook} Facebook · ${stats.enviadas} respondidas · ${stats.pendentes} por responder${stats.dropped ? " · " + stats.dropped + " filtradas" : ""}
+      </div>
+      <div style="background:#fff;border:1px solid #f0e6d6;border-radius:12px;padding:16px 18px;font-size:15px;white-space:pre-wrap;line-height:1.55">${escapeHtml(resumo)}</div>
+      <div style="font-size:12px;color:#9b8290;text-align:center;margin-top:12px">Resumo automático do inbox supervisionado. ☀️</div>
+    </div>`;
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "content-type": "application/json", "authorization": `Bearer ${RESEND_KEY}` },
+      body: JSON.stringify({ from: FROM_EMAIL, to: [NOTIFY_EMAIL], subject: `📊 Resumo semanal do inbox — ${BRAND}`, html }),
+    });
+    return new Response(JSON.stringify({ enviado: true, ...stats }, null, 2), { headers: { "content-type": "application/json" } });
+  }
+
   // ADMIN: leituras de teste para carimbar os testing requirements do use case Instagram
   // GET /igtest?key=<META_VERIFY_TOKEN>  (só-leitura; usar published_posts, não /feed)
   if (req.method === "GET" && url.pathname.endsWith("/igtest") && url.searchParams.get("key") === VERIFY_TOKEN) {
