@@ -11,7 +11,11 @@
 
 const RESEND_KEY = process.env.RESEND_API_KEY || "";
 const TO_EMAIL   = process.env.LEADS_EMAIL || "sandro.qb@gmail.com";
-const FROM_EMAIL = process.env.LEADS_FROM || "Leads Quente e Bom <leads@quenteebom.com>";
+// Remetente: usa o mesmo do inbox (onboarding@resend.dev — remetente de teste do Resend).
+// Entrega só ao email da conta Resend (sandro.qb@gmail.com), o que basta para os avisos de lead.
+// Para remetente próprio (leads@quenteebom.com) OU enviar a mais pessoas, verificar o domínio no Resend
+// e definir a env LEADS_FROM.
+const FROM_EMAIL = process.env.LEADS_FROM || "Quente e Bom Leads <onboarding@resend.dev>";
 
 // nomes de formulário -> etiqueta amigável (para o assunto/cabeçalho)
 const FORM_LABELS = {
