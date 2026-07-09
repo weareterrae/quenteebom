@@ -310,7 +310,7 @@ const LEAD_LABELS: Record<string, string> = {
   full_name: "Nome", email: "Email", phone_number: "Telefone", company_name: "Estabelecimento",
 };
 const leadLabel = (n: string) => LEAD_LABELS[n] || n.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-async function notifyLead(fields: LeadField[], ok: boolean, detail: string) {
+async function notifyLead(fields: LeadField[], ok: boolean, detail: string): Promise<string> {
   const val = (n: string) => (fields.find((f) => f.name === n)?.values?.[0]) || "";
   const nome = val("full_name") || "novo contacto";
   const phone = val("phone_number").replace(/[^\d+]/g, "");
@@ -338,11 +338,15 @@ async function notifyLead(fields: LeadField[], ok: boolean, detail: string) {
     ${actions}
     <div style="font-size:12.5px;color:#9b8290;text-align:center">Contacto qualificado recebido pelos anúncios. Responde depressa — a rapidez é o que fecha negócio. 🌾</div>
   </div>`;
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { "content-type": "application/json", "authorization": `Bearer ${RESEND_KEY}` },
-    body: JSON.stringify({ from: FROM_EMAIL, to: [NOTIFY_EMAIL], subject: `🌾 Novo pedido de cotação — ${nome}`, html }),
-  });
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "content-type": "application/json", "authorization": `Bearer ${RESEND_KEY}` },
+      body: JSON.stringify({ from: FROM_EMAIL, to: [NOTIFY_EMAIL], subject: `🌾 Novo pedido de cotação — ${nome}`, html }),
+    });
+    const t = await r.text();
+    return `${r.status} ${t.slice(0, 300)}`;
+  } catch (e) { return "fetch-erro: " + String(e).slice(0, 200); }
 }
 
 // ---------- publicar (Graph API) ----------
@@ -639,7 +643,9 @@ Deno.serve(async (req) => {
             incoming: JSON.stringify(lead.fields), reply: "", private_reply: "",
             status: lead.ok ? "lead" : "lead_error", detail: lead.detail,
           });
-          await notifyLead(lead.fields, lead.ok, lead.detail);
+          const emailRes = await notifyLead(lead.fields, lead.ok, lead.detail);
+          await db.from("pending_replies").update({ detail: `read:${lead.detail} | email:${emailRes}` })
+            .eq("kind", "lead").eq("target_id", String(leadgenId));
         } catch (e) { console.error("erro lead", e); }
       }
     }
