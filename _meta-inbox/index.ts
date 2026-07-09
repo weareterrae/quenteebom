@@ -463,21 +463,23 @@ Deno.serve(async (req) => {
     if (acc?.error) return j({ step: "me/accounts", error: acc.error });
     const out: Record<string, unknown> = {};
     for (const page of acc?.data || []) {
-      // tenta feed+messages; se o token ainda não tiver pages_messaging, cai para só feed
-      let r = await fetch(`${GRAPH}/${page.id}/subscribed_apps`, {
-        method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ access_token: page.access_token, subscribed_fields: "feed,messages,leadgen" }),
-      });
-      let rj = await r.json();
-      if (rj?.error) {
-        r = await fetch(`${GRAPH}/${page.id}/subscribed_apps`, {
+      // Degradação graciosa: tenta o conjunto completo e, se o token não tiver alguma
+      // permissão (ex.: leads_retrieval p/ leadgen, ou pages_messaging p/ messages),
+      // vai retirando campos SEM nunca perder os que já funcionavam. Ordem: mais → menos.
+      const trySub = async (fields: string) => {
+        const rr = await fetch(`${GRAPH}/${page.id}/subscribed_apps`, {
           method: "POST",
           headers: { "content-type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ access_token: page.access_token, subscribed_fields: "feed" }),
+          body: new URLSearchParams({ access_token: page.access_token, subscribed_fields: fields }),
         });
-        rj = { fallback_so_feed: await r.json(), erro_feed_messages: rj.error?.message };
-      }
+        return { fields, resp: await rr.json() };
+      };
+      const erros: string[] = [];
+      let att = await trySub("feed,messages,leadgen");
+      if (att.resp?.error) { erros.push("feed,messages,leadgen: " + att.resp.error.message); att = await trySub("feed,messages"); }
+      if (att.resp?.error) { erros.push("feed,messages: " + att.resp.error.message); att = await trySub("feed"); }
+      const rj: Record<string, unknown> = { subscrito: att.fields, resposta: att.resp };
+      if (erros.length) rj.avisos = erros;
       const chk = await fetch(`${GRAPH}/${page.id}/subscribed_apps?fields=subscribed_fields&access_token=${page.access_token}`);
       const cj = await chk.json();
       out[page.name || page.id] = { subscribe: rj, atual: cj?.data ?? cj?.error?.message };
