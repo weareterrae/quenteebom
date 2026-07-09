@@ -21,9 +21,10 @@ const PAGE_TOKEN   = env("META_PAGE_TOKEN");
 const ANTHROPIC_KEY= env("ANTHROPIC_API_KEY");
 const RESEND_KEY   = env("RESEND_API_KEY");
 const NOTIFY_EMAIL = env("NOTIFY_EMAIL", "sandro.qb@gmail.com");
-// Destino dos LEADS (pedidos de cotação) — a equipa comercial. As aprovações do inbox
-// continuam a ir para NOTIFY_EMAIL. Override por marca via secret LEADS_EMAIL.
-const LEADS_EMAIL = env("LEADS_EMAIL", "geral@quenteebom.co.ao");
+// Destino dos LEADS (pedidos de cotação). Por defeito = NOTIFY_EMAIL (o Gmail do Sandro,
+// o único destinatário permitido enquanto o Resend não tiver domínio verificado).
+// Depois de verificar um domínio, pôr o secret LEADS_EMAIL=geral@quenteebom.co.ao.
+const LEADS_EMAIL = env("LEADS_EMAIL", NOTIFY_EMAIL);
 const FROM_EMAIL   = env("FROM_EMAIL", "Joaquim da Quente e Bom <inbox@quenteebom.com>");
 const HMAC_SECRET  = env("HMAC_SECRET");
 const FN_BASE      = env("FN_BASE");
