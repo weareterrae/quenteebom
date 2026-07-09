@@ -91,6 +91,16 @@ exports.handler = async (event) => {
           : `<div style="text-align:center;margin:14px 0;background:#fff3f3;border:1px solid #f0c8c8;border-radius:10px;padding:11px 14px;color:#b03030;font-weight:700;font-size:14px">⚠️ Candidatura recebida SEM CV anexado</div>`)
       : "";
 
+    // DEBUG temporário: quando uma candidatura chega sem CV detetado, mostra a estrutura
+    // do payload para percebermos onde (ou se) o Netlify põe o ficheiro.
+    const debugBlock = (formName === "candidatura" && !cvUrl)
+      ? `<pre style="font-size:11px;background:#faf6ef;border:1px dashed #d8c8b0;padding:10px;border-radius:8px;white-space:pre-wrap;word-break:break-all;color:#6b5060;margin:12px 0">DEBUG (temporário)
+payload keys: ${esc(Object.keys(payload).join(", "))}
+data keys: ${esc(Object.keys(data).join(", "))}
+payload.files: ${esc(JSON.stringify(payload.files || payload.file || null))}
+raw: ${esc(JSON.stringify(payload).slice(0, 1400))}</pre>`
+      : "";
+
     const html = `
     <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#3A2030">
       <div style="background:#5B2A4A;color:#fff;border-radius:14px;padding:18px 22px">
@@ -101,6 +111,7 @@ exports.handler = async (event) => {
       ${cvBlock}
       <table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #f0e6d6;border-radius:12px;overflow:hidden;margin:12px 0">${rows}</table>
       <div style="font-size:12px;color:#9b8290;text-align:center;margin-top:10px">Responde depressa — um lead B2B esfria em horas. ☀️</div>
+      ${debugBlock}
     </div>`;
 
     const subject = `☀️ ${label}${negocio ? " — " + negocio : (nome ? " — " + nome : "")}`;
