@@ -211,23 +211,14 @@ document.getElementById('c-cv').addEventListener('change', function () {
   document.getElementById('cvDrop').classList.add('ok');
   document.getElementById('cvTxt').innerHTML = '<b>✓ ' + f.name + '</b><br>' + (f.size / 1024 / 1024).toFixed(1) + ' MB — pronto a enviar';
 });
-// submissão multipart (necessária para o anexo)
-document.getElementById('rcForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  var f = e.target;
+// submissão NATIVA multipart — NÃO usar fetch/AJAX: no Netlify, o upload de ficheiro (CV)
+// só é guardado com um POST normal do browser. Com AJAX o texto chega mas o anexo é descartado.
+// Aqui só damos feedback no botão; o browser faz o POST e o Netlify redireciona para /obrigado.html.
+document.getElementById('rcForm').addEventListener('submit', function () {
   var btn = document.getElementById('rcBtn');
   btn.disabled = true; btn.textContent = 'A enviar…';
-  fetch('/', { method: 'POST', body: new FormData(f) })
-    .then(function (r) {
-      if (!r.ok) throw new Error(r.status);
-      document.getElementById('formOk').style.display = 'block';
-      btn.textContent = 'Candidatura enviada ✓';
-      f.querySelectorAll('input,textarea,select').forEach(function (el) { el.disabled = true; });
-    })
-    .catch(function () {
-      btn.disabled = false; btn.textContent = 'Enviar candidatura ☀️';
-      alert('Não foi possível enviar. Verifica a ligação e tenta outra vez.');
-    });
+  // reativa passado 8s caso o utilizador volte atrás sem ter saído da página
+  setTimeout(function () { btn.disabled = false; btn.textContent = 'Enviar candidatura ☀️'; }, 8000);
 });
 </script>
 </body>
