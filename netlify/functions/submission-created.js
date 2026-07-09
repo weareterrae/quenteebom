@@ -56,15 +56,20 @@ exports.handler = async (event) => {
     const phoneRaw = pick(data, PHONE_KEYS);
     const wa = waNumber(phoneRaw);
 
-    // anexos: o Netlify guarda ficheiros enviados (ex.: CV) e passa-os aqui como URL.
-    // detetamos qualquer campo cujo valor seja um URL http(s) e cujo nome pareça um ficheiro/CV.
-    const fileFields = Object.keys(data).filter((k) =>
-      /^https?:\/\//i.test(String(data[k] || "")) && /(cv|curriculo|ficheiro|anexo|file|upload)/i.test(k));
-    const cvUrl = fileFields.length ? data[fileFields[0]] : "";
+    // anexos: o Netlify representa ficheiros como objeto {filename, type:"file", size, url}
+    const fileFields = Object.keys(data).filter((k) => {
+      const v = data[k];
+      return v && typeof v === "object" && (v.url || v.type === "file");
+    });
+    const cvField = fileFields.map((k) => data[k]).find((v) => v && v.url) || null;
+    const cvUrl = cvField ? cvField.url : "";
+    const cvName = cvField ? cvField.filename : "";
 
-    // linhas da tabela (campos preenchidos; sem os ficheiros, que aparecem como botão)
+    // campos técnicos que o Netlify acrescenta e não interessam ao email
+    const META = ["ip", "user_agent", "referrer"];
+    // linhas da tabela (campos de texto preenchidos; sem ficheiros nem metadados técnicos)
     const rows = Object.keys(data)
-      .filter((k) => String(data[k] || "").trim() !== "" && !fileFields.includes(k))
+      .filter((k) => !fileFields.includes(k) && !META.includes(k) && typeof data[k] !== "object" && String(data[k] || "").trim() !== "")
       .map((k) => `<tr>
         <td style="padding:8px 12px;border-bottom:1px solid #f1e6d8;color:#9b8290;font-size:12.5px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;vertical-align:top">${esc(k)}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #f1e6d8;font-size:15px;color:#3A2030">${esc(data[k])}</td>
@@ -84,22 +89,12 @@ exports.handler = async (event) => {
          </div>`
       : `<div style="text-align:center;margin:18px 0;font-size:13px;color:#9b8290">Sem número de WhatsApp neste formulário — responde pelo canal indicado acima.</div>`;
 
-    // bloco do CV (só nas candidaturas): botão de download ou aviso de que veio sem anexo
-    const cvBlock = formName === "candidatura"
-      ? (cvUrl
-          ? `<div style="text-align:center;margin:14px 0"><a href="${cvUrl}" style="background:#5B2A4A;color:#fff;font-weight:800;text-decoration:none;padding:12px 26px;border-radius:999px;font-size:15px;display:inline-block">📎 Descarregar CV</a></div>`
-          : `<div style="text-align:center;margin:14px 0;background:#fff3f3;border:1px solid #f0c8c8;border-radius:10px;padding:11px 14px;color:#b03030;font-weight:700;font-size:14px">⚠️ Candidatura recebida SEM CV anexado</div>`)
-      : "";
-
-    // DEBUG temporário: quando uma candidatura chega sem CV detetado, mostra a estrutura
-    // do payload para percebermos onde (ou se) o Netlify põe o ficheiro.
-    const debugBlock = (formName === "candidatura" && !cvUrl)
-      ? `<pre style="font-size:11px;background:#faf6ef;border:1px dashed #d8c8b0;padding:10px;border-radius:8px;white-space:pre-wrap;word-break:break-all;color:#6b5060;margin:12px 0">DEBUG (temporário)
-payload keys: ${esc(Object.keys(payload).join(", "))}
-data keys: ${esc(Object.keys(data).join(", "))}
-payload.files: ${esc(JSON.stringify(payload.files || payload.file || null))}
-raw: ${esc(JSON.stringify(payload).slice(0, 1400))}</pre>`
-      : "";
+    // bloco do CV/anexo: botão de download (com nome do ficheiro) ou, nas candidaturas, aviso se faltar
+    const cvBlock = cvUrl
+      ? `<div style="text-align:center;margin:14px 0"><a href="${cvUrl}" style="background:#5B2A4A;color:#fff;font-weight:800;text-decoration:none;padding:12px 26px;border-radius:999px;font-size:15px;display:inline-block">📎 Descarregar CV</a>${cvName ? `<div style="font-size:12px;color:#9b8290;margin-top:6px">${esc(cvName)}</div>` : ""}</div>`
+      : (formName === "candidatura"
+          ? `<div style="text-align:center;margin:14px 0;background:#fff3f3;border:1px solid #f0c8c8;border-radius:10px;padding:11px 14px;color:#b03030;font-weight:700;font-size:14px">⚠️ Candidatura recebida SEM CV anexado</div>`
+          : "");
 
     const html = `
     <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#3A2030">
@@ -111,7 +106,6 @@ raw: ${esc(JSON.stringify(payload).slice(0, 1400))}</pre>`
       ${cvBlock}
       <table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #f0e6d6;border-radius:12px;overflow:hidden;margin:12px 0">${rows}</table>
       <div style="font-size:12px;color:#9b8290;text-align:center;margin-top:10px">Responde depressa — um lead B2B esfria em horas. ☀️</div>
-      ${debugBlock}
     </div>`;
 
     const subject = `☀️ ${label}${negocio ? " — " + negocio : (nome ? " — " + nome : "")}`;
