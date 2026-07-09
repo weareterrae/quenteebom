@@ -293,6 +293,58 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
 }
 function escapeHtml(s: string) { return (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!)); }
 
+// ---------- LEADS (formulários instantâneos de anúncios) ----------
+// Um novo contacto chega no webhook como change.field === "leadgen" com value.leadgen_id.
+// O webhook NÃO traz as respostas — vão-se buscar ao Graph (o token da Página precisa de leads_retrieval).
+type LeadField = { name: string; values: string[] };
+async function fetchLead(leadgenId: string): Promise<{ ok: boolean; fields: LeadField[]; detail: string }> {
+  try {
+    const tk = await pageTok();
+    const r = await fetch(`${GRAPH}/${leadgenId}?fields=field_data,created_time,form_id,ad_id&access_token=${tk}`);
+    const j = await r.json();
+    if (j?.error) return { ok: false, fields: [], detail: j.error.message || "erro" };
+    return { ok: true, fields: j.field_data || [], detail: "ok" };
+  } catch (e) { return { ok: false, fields: [], detail: String(e) }; }
+}
+const LEAD_LABELS: Record<string, string> = {
+  full_name: "Nome", email: "Email", phone_number: "Telefone", company_name: "Estabelecimento",
+};
+const leadLabel = (n: string) => LEAD_LABELS[n] || n.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+async function notifyLead(fields: LeadField[], ok: boolean, detail: string) {
+  const val = (n: string) => (fields.find((f) => f.name === n)?.values?.[0]) || "";
+  const nome = val("full_name") || "novo contacto";
+  const phone = val("phone_number").replace(/[^\d+]/g, "");
+  const email = val("email");
+  const wa = phone ? `https://wa.me/${phone.replace(/^\+/, "")}` : "";
+  // as 5 perguntas custom aparecem primeiro (mais úteis para qualificar), os dados de contacto a seguir
+  const order = (f: LeadField) => (["full_name", "phone_number", "email", "company_name"].includes(f.name) ? 1 : 0);
+  const rows = ok
+    ? [...fields].sort((a, b) => order(a) - order(b)).map((f) => box(leadLabel(f.name), (f.values || []).join(", "), BRAND_ACCENT, BRAND_BG)).join("")
+    : box("Aviso", `Chegou um novo contacto, mas não foi possível ler os detalhes automaticamente (${escapeHtml(detail)}). Abre o Centro de Leds do Meta para o ver: business.facebook.com/leads_center`, BRAND_ACCENT, BRAND_BG);
+  const btn = (href: string, bg: string, fg: string, txt: string, border = "") =>
+    `<a href="${href}" style="background:${bg};color:${fg};font-weight:800;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:15px;display:inline-block;margin:4px${border}">${txt}</a>`;
+  const actions = ok ? `<div style="text-align:center;margin:20px 0">
+      ${wa ? btn(wa, "#25D366", "#fff", "💬 WhatsApp") : ""}
+      ${phone ? btn(`tel:${phone}`, BRAND_ACCENT, BRAND_BG, "📞 Ligar") : ""}
+      ${email ? btn(`mailto:${email}`, "transparent", BRAND_BG, "✉️ Email", `;border:2px solid ${BRAND_ACCENT}`) : ""}
+    </div>` : "";
+  const html = `
+  <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#3A2030">
+    <div style="background:${BRAND_BG};color:#fff;border-radius:14px;padding:18px 22px">
+      <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:${BRAND_ACCENT};font-weight:700">${BRAND} · Pedido de cotação 🌾</div>
+      <div style="font-size:19px;font-weight:700;margin-top:4px">Novo contacto: ${escapeHtml(nome)}</div>
+    </div>
+    ${rows}
+    ${actions}
+    <div style="font-size:12.5px;color:#9b8290;text-align:center">Contacto qualificado recebido pelos anúncios. Responde depressa — a rapidez é o que fecha negócio. 🌾</div>
+  </div>`;
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "content-type": "application/json", "authorization": `Bearer ${RESEND_KEY}` },
+    body: JSON.stringify({ from: FROM_EMAIL, to: [NOTIFY_EMAIL], subject: `🌾 Novo pedido de cotação — ${nome}`, html }),
+  });
+}
+
 // ---------- publicar (Graph API) ----------
 // A Meta exige o token da PÁGINA para publicar (o do system user só serve para ler/gerir).
 // Trocamos o token do system user pelo da Página via me/accounts (com cache de 50 min).
@@ -415,7 +467,7 @@ Deno.serve(async (req) => {
       let r = await fetch(`${GRAPH}/${page.id}/subscribed_apps`, {
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ access_token: page.access_token, subscribed_fields: "feed,messages" }),
+        body: new URLSearchParams({ access_token: page.access_token, subscribed_fields: "feed,messages,leadgen" }),
       });
       let rj = await r.json();
       if (rj?.error) {
@@ -568,6 +620,27 @@ Deno.serve(async (req) => {
     const raw = await req.text();
     if (!await validSignature(req, raw)) return new Response("bad sig", { status: 401 });
     let payload: any; try { payload = JSON.parse(raw); } catch { return new Response("ok"); }
+    // LEADS primeiro: os eventos "leadgen" vão direto por email (não precisam de aprovação).
+    for (const entry of payload.entry || []) {
+      for (const ch of entry.changes || []) {
+        if (ch.field !== "leadgen") continue;
+        const leadgenId = ch.value?.leadgen_id; if (!leadgenId) continue;
+        try {
+          // dedup: o Meta reenvia webhooks — não mandar 2 emails do mesmo lead
+          const { data: seen } = await db.from("pending_replies").select("id")
+            .eq("kind", "lead").eq("target_id", String(leadgenId)).limit(1);
+          if (seen?.length) continue;
+          const lead = await fetchLead(String(leadgenId));
+          await db.from("pending_replies").insert({
+            platform: "Facebook", kind: "lead", account_id: entry.id, target_id: String(leadgenId),
+            recipient_id: "", author: (lead.fields.find((f) => f.name === "full_name")?.values?.[0]) || "",
+            incoming: JSON.stringify(lead.fields), reply: "", private_reply: "",
+            status: lead.ok ? "lead" : "lead_error", detail: lead.detail,
+          });
+          await notifyLead(lead.fields, lead.ok, lead.detail);
+        } catch (e) { console.error("erro lead", e); }
+      }
+    }
     for (const it of extract(payload)) {
       try {
         // Em DMs e marcações de story só vem o id do remetente — ir buscar o nome à Meta
