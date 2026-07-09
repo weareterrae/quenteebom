@@ -21,6 +21,9 @@ const PAGE_TOKEN   = env("META_PAGE_TOKEN");
 const ANTHROPIC_KEY= env("ANTHROPIC_API_KEY");
 const RESEND_KEY   = env("RESEND_API_KEY");
 const NOTIFY_EMAIL = env("NOTIFY_EMAIL", "sandro.qb@gmail.com");
+// Destino dos LEADS (pedidos de cotação) — a equipa comercial. As aprovações do inbox
+// continuam a ir para NOTIFY_EMAIL. Override por marca via secret LEADS_EMAIL.
+const LEADS_EMAIL = env("LEADS_EMAIL", "geral@quenteebom.co.ao");
 const FROM_EMAIL   = env("FROM_EMAIL", "Joaquim da Quente e Bom <inbox@quenteebom.com>");
 const HMAC_SECRET  = env("HMAC_SECRET");
 const FN_BASE      = env("FN_BASE");
@@ -342,7 +345,7 @@ async function notifyLead(fields: LeadField[], ok: boolean, detail: string): Pro
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "content-type": "application/json", "authorization": `Bearer ${RESEND_KEY}` },
-      body: JSON.stringify({ from: FROM_EMAIL, to: [NOTIFY_EMAIL], subject: `🌾 Novo pedido de cotação — ${nome}`, html }),
+      body: JSON.stringify({ from: FROM_EMAIL, to: [LEADS_EMAIL], subject: `🌾 Novo pedido de cotação — ${nome}`, html }),
     });
     const t = await r.text();
     return `${r.status} ${t.slice(0, 300)}`;
