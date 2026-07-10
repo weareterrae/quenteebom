@@ -263,12 +263,12 @@ async function fetchMentionText(item: any): Promise<{ text: string; author: stri
   } catch { return { text: "", author: "", context: "" }; }
 }
 // menção -> decide SE responde (só a coisas positivas/úteis, nunca em contexto negativo de estranhos) e redige.
-async function draftForMention(text: string, author = "", context = ""): Promise<{ shouldReply: boolean; reply: string; reason: string }> {
+async function draftForMention(text: string, author = "", context = "", platform = "Instagram"): Promise<{ shouldReply: boolean; reply: string; reason: string }> {
   const quem = author ? ` A publicação/comentário é de "@${author}".` : "";
   const ctx = context
     ? `\n\n>>> A PUBLICAÇÃO onde fomos mencionados diz o seguinte (LÊ COM ATENÇÃO antes de escreveres):\n"""${context}"""\n\nREGRAS OBRIGATÓRIAS ao responder:\n1. Identifica na publicação QUAL é o produto ou a receita de que a pessoa fala (ex.: um bolo específico, um pão, uma receita concreta) e refere-te a ELE PELO NOME na tua resposta.\n2. É PROIBIDO perguntar "qual foi a receita?", "que produto usaste?" ou pedir qualquer informação que JÁ ESTEJA na publicação acima — a resposta já lá está, perguntar faz-nos parecer que não lemos.\n3. Responde de forma calorosa, curta e ESPECÍFICA ao que a publicação mostra. Exemplo do espírito certo: se o post elogia o nosso Red Velvet, agradece e diz algo simpático sobre o Red Velvet — nunca perguntes qual foi a receita.`
     : "";
-  const sys = await brand() + `\n\nAlguém MARCOU/MENCIONOU a ${BRAND} (com @) numa publicação ou comentário de OUTRA pessoa no Instagram (não é a nossa própria página).${quem}${ctx} Vais decidir se e como responder publicamente.
+  const sys = await brand() + `\n\nAlguém MARCOU/MENCIONOU a ${BRAND} (com @) numa publicação ou comentário de OUTRA pessoa no ${platform} (não é a nossa própria página).${quem}${ctx} Vais decidir se e como responder publicamente.
 Regras de saída (obrigatórias):
 - Devolve SÓ um objeto JSON numa linha: {"responder": true|false, "texto": "...", "motivo": "..."}.
 - "responder": TRUE só se a menção for um elogio, uma partilha simpática, uma dúvida genuína ou uma boa oportunidade de agradecer com calor. FALSE se for uma crítica, reclamação, contexto negativo, polémica, tema sensível, spam, ou algo que não tenha nada a ver connosco — nesses casos NÃO respondemos publicamente no espaço de estranhos.
@@ -425,14 +425,22 @@ async function publish(row: any): Promise<{ ok: boolean; detail: string }> {
     });
     results.push("privada:" + r2.detail); allOk = allOk && r2.ok;
   } else if (row.kind === "mention") {
-    // resposta pública a uma MENÇÃO no Instagram (post/comentário de outra pessoa).
-    // A API exige SEMPRE media_id; comment_id extra responde ao comentário específico.
-    const parts = String(row.target_id).split(":");
-    const body: Record<string, string> = { message: row.reply };
-    if (parts[0] === "comment") { body.comment_id = parts[1]; body.media_id = parts[2]; }
-    else { body.media_id = parts[1]; }
-    const r = await post(`${GRAPH}/${row.account_id}/mentions`, body);
-    results.push("mencao:" + r.detail); allOk = r.ok;
+    if (row.platform === "Facebook") {
+      // menção no FB: responder = comentar no post/comentário onde a Página foi marcada.
+      // Nota: pode exigir a permissão pages_manage_engagement — se a Meta recusar, o erro
+      // aparece na página de confirmação e no /last (status error), e responde-se à mão na app.
+      const r = await post(`${GRAPH}/${row.target_id}/comments`, { message: row.reply });
+      results.push("mencao-fb:" + r.detail); allOk = r.ok;
+    } else {
+      // resposta pública a uma MENÇÃO no Instagram (post/comentário de outra pessoa).
+      // A API exige SEMPRE media_id; comment_id extra responde ao comentário específico.
+      const parts = String(row.target_id).split(":");
+      const body: Record<string, string> = { message: row.reply };
+      if (parts[0] === "comment") { body.comment_id = parts[1]; body.media_id = parts[2]; }
+      else { body.media_id = parts[1]; }
+      const r = await post(`${GRAPH}/${row.account_id}/mentions`, body);
+      results.push("mencao:" + r.detail); allOk = r.ok;
+    }
   } else {
     // resposta a mensagem privada existente — janela padrão de 24h (RESPONSE).
     // Nota: a etiqueta HUMAN_AGENT (janela de 7 dias) exige aprovação da Meta via App Review;
@@ -472,6 +480,13 @@ function extract(payload: any): Array<any> {
           out.push({ platform, kind: "mention", account_id: accountId,
             target_id: `media:${v.media_id}`, recipient_id: "", author: "", incoming: "" });
         }
+      }
+      // Facebook: a Página foi mencionada num post/comentário de outra pessoa (field "mention").
+      // O webhook costuma trazer o texto e o nome; a resposta pública é um comentário nesse post.
+      if (ch.field === "mention" && platform === "Facebook") {
+        out.push({ platform, kind: "mention", account_id: accountId,
+          target_id: v.comment_id || v.post_id || "", recipient_id: "",
+          author: v.sender_name || "", incoming: v.message || "" });
       }
     }
     for (const m of entry.messaging || []) {
@@ -521,7 +536,8 @@ Deno.serve(async (req) => {
         return { fields, resp: await rr.json() };
       };
       const erros: string[] = [];
-      let att = await trySub("feed,messages,leadgen");
+      let att = await trySub("feed,mention,messages,leadgen");
+      if (att.resp?.error) { erros.push("feed,mention,messages,leadgen: " + att.resp.error.message); att = await trySub("feed,messages,leadgen"); }
       if (att.resp?.error) { erros.push("feed,messages,leadgen: " + att.resp.error.message); att = await trySub("feed,messages"); }
       if (att.resp?.error) { erros.push("feed,messages: " + att.resp.error.message); att = await trySub("feed"); }
       const rj: Record<string, unknown> = { subscrito: att.fields, resposta: att.resp };
@@ -706,12 +722,20 @@ Deno.serve(async (req) => {
         let pub = "", priv = "", autoOk = false, autoMotivo = "";
         if (it.kind === "comment") { const d = await draftForComment(it.platform, it.incoming, it.author); pub = d.pub; priv = d.priv; }
         else if (it.kind === "mention") {
-          const m = await fetchMentionText(it);
-          if (!m.text) continue;                    // não conseguimos ler a menção — ignora
-          it.author = m.author;
-          // no email, mostra a publicação-mãe + o comentário, para o Sandro decidir com contexto
-          it.incoming = m.context ? `[Publicação: ${m.context}]\n↳ Marcaram-nos: ${m.text}` : m.text;
-          const d = await draftForMention(m.text, m.author, m.context);
+          let mText = it.incoming, mCtx = "";
+          if (it.platform === "Instagram") {
+            const m = await fetchMentionText(it);
+            if (!m.text) continue;                  // não conseguimos ler a menção — ignora
+            it.author = m.author; mText = m.text; mCtx = m.context;
+            // no email, mostra a publicação-mãe + o comentário, para o Sandro decidir com contexto
+            it.incoming = m.context ? `[Publicação: ${m.context}]\n↳ Marcaram-nos: ${m.text}` : m.text;
+          } else {
+            // Facebook: o texto vem (quase sempre) no próprio webhook
+            if (!it.target_id) continue;
+            if (!mText) { mText = "(menção sem texto no webhook — vê na app antes de aprovar)"; }
+            it.incoming = `[Menção no Facebook] ${mText}`;
+          }
+          const d = await draftForMention(mText, it.author, mCtx, it.platform);
           if (!d.shouldReply) {
             // menção negativa/sensível/spam — não respondemos, mas guardamos p/ auditoria em /dropped (SEM email)
             await db.from("pending_replies").insert({
