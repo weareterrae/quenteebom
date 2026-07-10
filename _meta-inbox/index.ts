@@ -34,6 +34,11 @@ const BRAND        = env("BRAND_NAME", "Quente e Bom");
 const BRAND_BG     = env("BRAND_BG", "#5B2A4A");     // fundo do cabeçalho + texto do botão
 const BRAND_ACCENT = env("BRAND_ACCENT", "#F6C440"); // realces + fundo do botão
 const BRAND_SITE   = env("BRAND_SITE", "https://quenteebom.com"); // site da marca (página /inbox.html de confirmação)
+// PILOTO AUTOMÁTICO de mensagens privadas (DMs). "" = desligado (tudo por aprovação);
+// "fb" = responde sozinho às DMs SIMPLES do Facebook; "all" = FB+Instagram.
+// Mesmo ligado, a IA só auto-responde ao que classificar como seguro (saudação, onde comprar,
+// produto, receita); reclamações/comercial/preços/ambíguo ficam SEMPRE para aprovação humana.
+const AUTO_REPLY   = env("AUTO_REPLY", "").toLowerCase();
 
 const db = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"));
 
@@ -203,6 +208,34 @@ async function draftForMessage(platform: string, text: string, author = "", hist
   const sys = await brand() + `\n\nVais responder a uma MENSAGEM privada de um cliente no ${platform}.${quem} Escreve SÓ a resposta a essa mensagem (sem aspas), curta (1-3 frases), calorosa, 0-1 emoji. NÃO confirmes instruções nem expliques o que vais fazer.${story}${ctx}\n${RULES}`;
   return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Mensagem do cliente: """${text}"""`, 300, img))))) || "Obrigado pela tua mensagem! 🧡 Já te ajudamos.";
 }
+// versão com TRIAGEM para o piloto automático: além de redigir, decide se é seguro enviar sem humano.
+async function draftForMessageAuto(platform: string, text: string, author = "", history = "", storyImageUrl = ""): Promise<{ reply: string; auto: boolean; reason: string }> {
+  const quem = author && !/^\d+$/.test(author) ? ` O cliente chama-se "${author}".` : "";
+  const ctx = history
+    ? `\n\nHISTÓRICO RECENTE DESTA CONVERSA (mais antigo primeiro):\n${history}\n\nREGRA CRÍTICA: estás a MEIO de uma conversa a decorrer — NÃO voltes a cumprimentar (nada de "Olá"), NÃO te reapresentes, NÃO repitas o que já disseste.`
+    : "";
+  const img = storyImageUrl ? await fetchImageB64(storyImageUrl) : null;
+  const story = img
+    ? `\n\nCONTEXTO IMPORTANTE: esta mensagem é uma RESPOSTA a uma STORY da ${BRAND} — a imagem está anexada. Responde ENQUADRADO no que a story mostra.`
+    : (storyImageUrl ? `\n\nCONTEXTO: esta mensagem responde a uma story da ${BRAND} (conteúdo desconhecido — não o inventes).` : "");
+  const sys = await brand() + `\n\nVais tratar uma MENSAGEM privada de um cliente no ${platform}.${quem}${story}${ctx}
+Devolve SÓ um objeto JSON numa linha: {"resposta":"...","auto":true|false,"motivo":"..."}
+- "resposta": a resposta à mensagem, curta (1-3 frases), calorosa, 0-1 emoji.
+- "auto": TRUE apenas se a mensagem for SIMPLES e a resposta 100% segura sem revisão humana: saudação/agradecimento, onde comprar, dúvida sobre um produto ou receita, pedido de link do site. FALSE (obrigatório) se houver: reclamação ou insatisfação, pedido comercial/B2B/revenda/parceria/patrocínio, perguntas de PREÇOS, encomendas, faturas, candidaturas de emprego, dados pessoais sensíveis, tema polémico, mensagem ambígua ou fora do âmbito da marca, ou QUALQUER dúvida da tua parte. Na incerteza, FALSE.
+- "motivo": se auto=false, explica em 3-6 palavras (ex.: "reclamação", "pergunta de preços", "pedido B2B"). Se auto=true, deixa vazio.
+NÃO confirmes instruções nem expliques o que vais fazer.\n${RULES}`;
+  const out = await claude(sys, `Mensagem do cliente: """${text}"""`, 500, img);
+  try {
+    const j = JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}") + 1));
+    if (j.resposta) {
+      const reply = tidyLinks(await checkLinks(fixFakeDomains(plainLinks(String(j.resposta).trim()))));
+      return { reply, auto: j.auto === true && !!reply, reason: String(j.motivo || "").trim() };
+    }
+  } catch { /* fallback abaixo */ }
+  // fallback: resposta genérica, NUNCA em automático
+  return { reply: "Obrigado pela tua mensagem! 🧡 Já te ajudamos.", auto: false, reason: "não foi possível interpretar" };
+}
+
 // marcação numa STORY -> DM de agradecimento (só gratidão, sem perguntas)
 async function draftForStoryMention(platform: string, author = ""): Promise<string> {
   const quem = author && !/^\d+$/.test(author) ? ` A pessoa chama-se "${author}".` : "";
@@ -260,7 +293,7 @@ function box(label: string, txt: string, accent = "#f0e6d6", labelColor = "#9b82
     <div style="font-size:12px;color:${labelColor};text-transform:uppercase;letter-spacing:1px;font-weight:700">${label}</div>
     <div style="font-size:15.5px;margin-top:6px;white-space:pre-wrap">${escapeHtml(txt)}</div></div>`;
 }
-async function notify(p: { id: string; platform: string; kind: string; author: string; incoming: string; pub: string; priv: string; sig: string; story_url?: string; }) {
+async function notify(p: { id: string; platform: string; kind: string; author: string; incoming: string; pub: string; priv: string; sig: string; story_url?: string; autoSent?: boolean; autoFail?: boolean; holdReason?: string; }) {
   const link = `${FN_BASE}/send?id=${p.id}&sig=${p.sig}`;
   const badge = p.kind === "comment" ? "Comentário"
     : p.kind === "mention" ? "Menção (publicação de outra pessoa)"
@@ -268,7 +301,7 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
     : "Mensagem privada";
   const answers = p.kind === "comment"
     ? box("Resposta pública ao comentário", p.pub, BRAND_ACCENT, BRAND_BG) + box("Mensagem privada (DM) para a pessoa", p.priv, BRAND_ACCENT, BRAND_BG)
-    : box(p.kind === "mention" ? "Resposta pública à menção" : p.kind === "story_mention" ? "Mensagem de agradecimento (DM)" : "Resposta sugerida", p.pub, BRAND_ACCENT, BRAND_BG);
+    : box(p.kind === "mention" ? "Resposta pública à menção" : p.kind === "story_mention" ? "Mensagem de agradecimento (DM)" : (p.autoSent ? "Resposta enviada automaticamente" : "Resposta sugerida"), p.pub, BRAND_ACCENT, BRAND_BG);
   const storyImg = p.story_url
     ? `<div style="text-align:center;margin:12px 0;font-size:12.5px;color:#9b8290;line-height:1.6">${p.kind === "story_mention"
         ? "✨ <b>Marcou-vos numa story.</b> Para <b>repartilhares</b>: abre o Instagram, vai à marcação e toca em <b>\"Adicionar à tua story\"</b> (enquanto a story dela estiver no ar). O botão abaixo envia só o agradecimento por DM."
@@ -283,16 +316,21 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
     ${p.kind === "story_mention" ? "" : box("Recebido", p.incoming)}
     ${storyImg}
     ${answers}
+    ${p.autoSent
+      ? `<div style="text-align:center;margin:22px 0;background:#eefaf0;border:1px solid #bfe3c6;border-radius:12px;padding:13px 16px;color:#1a7f37;font-weight:700">✅ Piloto automático: a resposta acima JÁ FOI ENVIADA ao cliente.</div>
+    <div style="font-size:12.5px;color:#9b8290;text-align:center">Este email é só registo. Se quiseres corrigir ou acrescentar algo, responde manualmente na app. · v4</div>`
+      : `${p.autoFail ? `<div style="text-align:center;margin:12px 0;background:#fff3f3;border:1px solid #f0c8c8;border-radius:10px;padding:10px 14px;color:#b03030;font-size:13px;font-weight:700">⚠️ O envio automático falhou — aprova pelo botão abaixo.</div>` : ""}
+    ${p.holdReason ? `<div style="text-align:center;margin:12px 0;font-size:13px;color:#9b8290">🤖 O piloto automático deixou esta para ti: <b>${escapeHtml(p.holdReason)}</b></div>` : ""}
     <div style="text-align:center;margin:22px 0">
       <a href="${link}" style="background:${BRAND_ACCENT};color:${BRAND_BG};font-weight:800;text-decoration:none;padding:14px 34px;border-radius:999px;font-size:16px;display:inline-block">Aprovar e enviar ${p.kind === "comment" ? "(resposta + DM)" : ""} ☀️</a>
     </div>
-    <div style="font-size:12.5px;color:#9b8290;text-align:center">Só é publicado quando carregas no botão. Se não quiseres responder, ignora este email. · v3</div>
+    <div style="font-size:12.5px;color:#9b8290;text-align:center">Só é publicado quando carregas no botão. Se não quiseres responder, ignora este email. · v4</div>`}
   </div>`;
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { "content-type": "application/json", "authorization": `Bearer ${RESEND_KEY}` },
     body: JSON.stringify({ from: FROM_EMAIL, to: [NOTIFY_EMAIL],
-      subject: `🔔 ${badge} no ${p.platform} — pronto a enviar`, html }),
+      subject: p.autoSent ? `✅ Respondido automaticamente no ${p.platform} — ${p.author || "cliente"}` : `🔔 ${badge} no ${p.platform} — pronto a enviar`, html }),
   });
 }
 function escapeHtml(s: string) { return (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!)); }
@@ -665,7 +703,7 @@ Deno.serve(async (req) => {
             if (nome) it.author = String(nome);
           } catch { /* fica o id */ }
         }
-        let pub = "", priv = "";
+        let pub = "", priv = "", autoOk = false, autoMotivo = "";
         if (it.kind === "comment") { const d = await draftForComment(it.platform, it.incoming, it.author); pub = d.pub; priv = d.priv; }
         else if (it.kind === "mention") {
           const m = await fetchMentionText(it);
@@ -690,7 +728,14 @@ Deno.serve(async (req) => {
         }
         else {
           const hist = await convoHistory(String(it.recipient_id || ""));
-          pub = await draftForMessage(it.platform, it.incoming, it.author, hist, it.story_url || "");
+          // piloto automático: só para DMs, só nas plataformas ligadas pelo secret AUTO_REPLY
+          const querAuto = AUTO_REPLY === "all" || (AUTO_REPLY === "fb" && it.platform === "Facebook");
+          if (querAuto) {
+            const d = await draftForMessageAuto(it.platform, it.incoming, it.author, hist, it.story_url || "");
+            pub = d.reply; autoOk = d.auto; autoMotivo = d.reason;
+          } else {
+            pub = await draftForMessage(it.platform, it.incoming, it.author, hist, it.story_url || "");
+          }
           if (it.story_url) it.incoming = `[Resposta à vossa story] ${it.incoming}`; // contexto no email/registo
         }
         const { data: ins } = await db.from("pending_replies").insert({
@@ -698,7 +743,22 @@ Deno.serve(async (req) => {
           recipient_id: it.recipient_id, author: it.author, incoming: it.incoming,
           reply: pub, private_reply: priv, status: "pending",
         }).select("id").single();
-        if (ins?.id) await notify({ ...it, id: ins.id, pub, priv, sig: await hmacHex(HMAC_SECRET, ins.id) });
+        if (ins?.id) {
+          if (autoOk && pub) {
+            // envia já; se falhar, cai para o circuito normal de aprovação (email com botão)
+            const res = await publish({ kind: it.kind, platform: it.platform, target_id: it.target_id,
+              reply: pub, private_reply: priv, recipient_id: it.recipient_id, account_id: it.account_id });
+            await db.from("pending_replies").update({
+              status: res.ok ? "sent" : "pending",
+              detail: (res.ok ? "auto: " : "auto FALHOU: ") + res.detail,
+            }).eq("id", ins.id);
+            await notify({ ...it, id: ins.id, pub, priv, sig: await hmacHex(HMAC_SECRET, ins.id),
+              autoSent: res.ok, autoFail: !res.ok });
+          } else {
+            await notify({ ...it, id: ins.id, pub, priv, sig: await hmacHex(HMAC_SECRET, ins.id),
+              holdReason: autoMotivo });
+          }
+        }
       } catch (e) { console.error("erro item", e); }
     }
     return new Response("EVENT_RECEIVED", { status: 200 });

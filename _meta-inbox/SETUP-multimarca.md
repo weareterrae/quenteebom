@@ -63,3 +63,15 @@ Todas as funções de um projeto Supabase **partilham os mesmos secrets**. Como 
 - ⚠️ Lição 9 (2026-07-07): DMs seguidas soavam sempre a primeiro contacto ("Olá!" em cada resposta). Fix no index.ts: convoHistory(recipient_id) lê as últimas 4 trocas (48h) da pending_replies e injeta HISTÓRICO no prompt do draftForMessage com regra "estás a meio de uma conversa, não cumprimentes de novo". Redeploy nas 3 funções ao alterar.
 - ⚠️ Lição 8 (2026-07-06, QeB): **apps/funções antigas abandonadas são bombas-relógio.** A app antiga "Quente e Bom Bot" (presa na access verification desde 03/07) ficou verificada mais tarde e ACORDOU — os webhooks dela começaram a entregar eventos reais à função antiga `quente-e-bom-webhook` (bot SEM supervisão), que respondeu sozinha a DMs do Messenger (markdown cru `*asteriscos*`). Sintoma: resposta instantânea ao cliente + o mesmo evento fica "pending" no meta-inbox. Correção: apagar a função antiga no Supabase E apagar a app antiga na Meta (ambos feitos a 06/07). REGRA: ao substituir um bot, apagar logo a app e a função antigas — "fica abandonada, não faz mal" é falso.
 - ⚠️ Lição 7 (2026-07-06, QeB): a resposta PÚBLICA a comentários FB exige também **`pages_read_user_content`** no token (sem ela: erro #200 na pública; a DM privada sai na mesma) → token final QeB com **10 permissões** + public_profile. E com acesso Standard o **Messenger só responde a admins/testers da app** (erro #10 "até que a permissão pages_messaging seja revista") — para responder ao público é preciso **Advanced Access ao `pages_messaging`** via App Review → Permissions and Features → Request advanced access (negócio verificado facilita). O IG (comentários públicos+DM e DMs) funciona para o público SEM advanced access (validado com utilizador real). **Aplicar a correção às 3 marcas.**
+
+## Lição 13 — Piloto automático de DMs (AUTO_REPLY)
+
+O clique de aprovação é escolha nossa, NÃO depende da App Review. Para respostas automáticas às DMs:
+- Secret **AUTO_REPLY** por projeto: `fb` = só DMs do Facebook em automático; `all` = FB+IG; ausente = tudo por aprovação (default).
+- Mesmo ligado, a IA faz TRIAGEM (draftForMessageAuto): auto-envia só o que classificar como simples/seguro
+  (saudações, onde comprar, produto, receita, link). Reclamações, comercial/B2B, PREÇOS, encomendas,
+  candidaturas, temas sensíveis ou ambíguos ficam SEMPRE no circuito de aprovação — o email indica o motivo
+  ("🤖 O piloto automático deixou esta para ti: ...").
+- Auto-enviadas: email de REGISTO (✅ sem botão, assunto "Respondido automaticamente"); na BD ficam status
+  "sent" com detail "auto: ...". Se o envio automático falhar → volta a pending + email com botão normal.
+- Comentários, menções e story mentions continuam SEMPRE supervisionados (público = mais risco).
