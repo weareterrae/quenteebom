@@ -554,8 +554,8 @@ Deno.serve(async (req) => {
       };
       const erros: string[] = [];
       let att = await trySub("feed,mention,messages,leadgen");
-      if (att.resp?.error) { erros.push("feed,mention,messages,leadgen: " + att.resp.error.message); att = await trySub("feed,messages,leadgen"); }
-      if (att.resp?.error) { erros.push("feed,messages,leadgen: " + att.resp.error.message); att = await trySub("feed,messages"); }
+      if (att.resp?.error) { erros.push("feed,mention,messages,leadgen: " + att.resp.error.message); att = await trySub("feed,mention,messages"); }
+      if (att.resp?.error) { erros.push("feed,mention,messages: " + att.resp.error.message); att = await trySub("feed,messages"); }
       if (att.resp?.error) { erros.push("feed,messages: " + att.resp.error.message); att = await trySub("feed"); }
       const rj: Record<string, unknown> = { subscrito: att.fields, resposta: att.resp };
       if (erros.length) rj.avisos = erros;
