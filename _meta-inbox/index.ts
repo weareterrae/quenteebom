@@ -162,9 +162,12 @@ async function checkLinks(s: string): Promise<string> {
   return out;
 }
 
-// comentário -> gera resposta PÚBLICA + mensagem PRIVADA
-async function draftForComment(platform: string, text: string, author: string): Promise<{ pub: string; priv: string }> {
-  const sys = await brand() + `\n\nA tua tarefa: responder a um COMENTÁRIO público no ${platform} de ${author || "um cliente"}.\nRegras de saída (obrigatórias):\n- Responde AO comentário. NÃO confirmes instruções, NÃO expliques o que vais fazer, NÃO descrevas o formato.\n- Devolve SÓ um objeto JSON numa linha, nada antes nem depois.\n- "publica": resposta pública curta e calorosa, 1-2 frases, 0-1 emoji.\n- "privada": DM de seguimento à mesma pessoa, mais pessoal, 1-3 frases, a agradecer/ajudar e a convidar a continuar a conversa por aqui.\nExemplo de saída (usa o TEU conteúdo, não estas frases): {"publica":"Muito obrigada pelo carinho! 🧡","privada":"Olá! Diz-nos a tua zona que ajudamos a encontrar os nossos produtos pertinho de ti."}\n${RULES}`;
+// comentário -> gera resposta PÚBLICA + mensagem PRIVADA (com histórico se for 2ª interação)
+async function draftForComment(platform: string, text: string, author: string, history = ""): Promise<{ pub: string; priv: string }> {
+  const ctx = history
+    ? `\n\nHISTÓRICO RECENTE com esta pessoa (mais antigo primeiro):\n${history}\n\nREGRA CRÍTICA: NÃO é um primeiro contacto — usa o contexto acima. Não repitas perguntas nem informação já dada, não te reapresentes, e responde de forma seguida e natural ao fio da conversa. Na "privada", CONTINUA a conversa (nada de voltar a convidar "diz-nos a tua zona" se já perguntámos).`
+    : "";
+  const sys = await brand() + `\n\nA tua tarefa: responder a um COMENTÁRIO público no ${platform} de ${author || "um cliente"}.${ctx}\nRegras de saída (obrigatórias):\n- Responde AO comentário. NÃO confirmes instruções, NÃO expliques o que vais fazer, NÃO descrevas o formato.\n- Devolve SÓ um objeto JSON numa linha, nada antes nem depois.\n- "publica": resposta pública curta e calorosa, 1-2 frases, 0-1 emoji.\n- "privada": DM de seguimento à mesma pessoa, mais pessoal, 1-3 frases, a agradecer/ajudar e a convidar a continuar a conversa por aqui.\nExemplo de saída (usa o TEU conteúdo, não estas frases): {"publica":"Muito obrigada pelo carinho! 🧡","privada":"Olá! Diz-nos a tua zona que ajudamos a encontrar os nossos produtos pertinho de ti."}\n${RULES}`;
   const out = await claude(sys, `Comentário do cliente: """${text}"""`, 500);
   try {
     const j = JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}") + 1));
@@ -179,20 +182,34 @@ async function draftForComment(platform: string, text: string, author: string): 
     priv: `Olá! 🧡 Vimos o teu comentário e quisemos agradecer por aqui. Se precisares de alguma coisa — saber onde encontrar os nossos produtos ou tirar uma dúvida — é só dizeres!`,
   };
 }
-// histórico recente da conversa com este remetente (para respostas seguidas, não "primeiro contacto")
+// histórico recente de interações com esta pessoa (DMs + comentários + stories) — para a IA
+// responder sempre COM CONTEXTO a partir da 2ª interação. Janela de 7 dias, últimas 6.
+// Nota: a ligação é pelo id que a Meta dá em cada canal; comentário→comentário e DM→DM
+// ligam sempre; comentário→DM depende de a Meta usar o mesmo id (nem sempre usa).
 async function convoHistory(recipientId: string): Promise<string> {
   if (!recipientId) return "";
   try {
-    const desde = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+    const desde = new Date(Date.now() - 7 * 864e5).toISOString();
     const { data } = await db.from("pending_replies")
-      .select("incoming,reply,status,created_at")
-      .eq("kind", "message").eq("recipient_id", recipientId)
+      .select("kind,incoming,reply,private_reply,status,created_at")
+      .in("kind", ["message", "comment", "story_mention"])
+      .eq("recipient_id", recipientId)
       .gte("created_at", desde)
-      .order("created_at", { ascending: false }).limit(4);
+      .order("created_at", { ascending: false }).limit(6);
     if (!data?.length) return "";
-    return data.reverse().map((r: any) =>
-      `Cliente: ${r.incoming}` + (r.status === "sent" && r.reply ? `\nTu respondeste: ${r.reply}` : "")
-    ).join("\n");
+    return data.reverse().map((r: any) => {
+      const quem = r.kind === "comment" ? "Cliente (comentário público)"
+        : r.kind === "story_mention" ? "Cliente (marcou-vos numa story)"
+        : "Cliente (mensagem privada)";
+      let s = `${quem}: ${r.incoming}`;
+      if (r.status === "sent") {
+        if (r.kind === "comment") {
+          if (r.reply) s += `\nTu respondeste (público): ${r.reply}`;
+          if (r.private_reply) s += `\nTu enviaste (DM): ${r.private_reply}`;
+        } else if (r.reply) s += `\nTu respondeste: ${r.reply}`;
+      }
+      return s;
+    }).join("\n");
   } catch { return ""; }
 }
 // mensagem privada -> uma resposta
@@ -720,7 +737,11 @@ Deno.serve(async (req) => {
           } catch { /* fica o id */ }
         }
         let pub = "", priv = "", autoOk = false, autoMotivo = "";
-        if (it.kind === "comment") { const d = await draftForComment(it.platform, it.incoming, it.author); pub = d.pub; priv = d.priv; }
+        if (it.kind === "comment") {
+          const hist = await convoHistory(String(it.recipient_id || ""));
+          const d = await draftForComment(it.platform, it.incoming, it.author, hist);
+          pub = d.pub; priv = d.priv;
+        }
         else if (it.kind === "mention") {
           let mText = it.incoming, mCtx = "";
           if (it.platform === "Instagram") {
