@@ -97,7 +97,7 @@ const RULES = `Regras gerais (aplicam-se sempre, além das regras da marca acima
 - LINKS: isto é uma resposta de rede social, NÃO renderiza markdown. NUNCA uses o formato [texto](url) nem links relativos tipo "receitas.html". **UM link no máximo por resposta** (regra rígida — escolhe o melhor). O link deve ser um URL completo e CURTO, sem #âncora (ex.: ${BRAND_SITE}/receitas.html — âncoras longas não abrem bem no telemóvel); diz por palavras o que procurar na página (ex.: "procura aí 'Queques de Chocolate'"). Usa APENAS URLs que constem do conhecimento da marca — NUNCA inventes caminhos; na dúvida, usa ${BRAND_SITE}.
 - NOME: se o nome do cliente for indicado e parecer um nome próprio real (ex.: "Ana", "Carlos M."), cumprimenta-o pelo PRIMEIRO nome na primeira frase ("Olá, Ana! ..."). Se for um nome de utilizador técnico (ex.: "xpto_2384"), não o uses.
 - Gramática: Angola é FEMININO — escreve sempre "toda a Angola" / "em toda a Angola" (nunca "todo o Angola" nem "toda Angola").
-- PORTUGUÊS EUROPEU/DE ANGOLA, nunca do Brasil: "Olá" (nunca "Oi"), "pequeno-almoço" (nunca "café da manhã"), "fresquinho/gelado" (nunca "geladinho"), ênclise ("encontras-me", nunca "me encontras"), "casa de banho", "autocarro", "telemóvel".
+- ⚠️ PORTUGUÊS EUROPEU/DE ANGOLA, NUNCA do Brasil — regra rígida: a saudação é SEMPRE "Olá" (escrever "Oi" é um ERRO GRAVE); "pequeno-almoço" (nunca "café da manhã"), "fresquinho/gelado" (nunca "geladinho"), ênclise ("encontras-me", nunca "me encontras"), "precisas DE falar" (nunca "precisas falar"), "casa de banho", "autocarro", "telemóvel".
 - Tom caloroso e fiel à voz da marca. 0-1 emoji. Responde em português.
 - DOMÍNIO: o único site da marca é ${BRAND_SITE}. NUNCA escrevas domínios genéricos ou de exemplo ("site.com", "exemplo.com", "nossosite.com", "o nosso site.com/...") — isso é um erro grave. Se deres um link, escreve o URL COMPLETO começando por https:// e pertencente a ${BRAND_SITE}.`;
 
@@ -112,10 +112,25 @@ function plainLinks(s: string): string {
     .replace(/(^|[\s(])\/?((?:receitas|catalogo|foodcost|cotacao|formacao|dicas|contacto|profissional|revendedor)[\w\-]*(?:\.html?|\/[\w\-\/]+)(?:#[\w\-]*)?)/gi,
       (m, pre, path) => (m.includes("http") ? m : `${pre}${BRAND_SITE}/${path.replace(/^\//, "")}`));
 }
+// Rede de segurança PT-EU/Angola: corrige brasileirismos que escapem ao prompt.
+// Determinística — corre em TODAS as respostas (o tidyLinks é o sanitizador mais exterior).
+function fixPtAo(s: string): string {
+  return String(s || "")
+    .replace(/\bOi\b/g, "Olá").replace(/\boi\b(?=[!,. ])/g, "olá")
+    .replace(/café da manhã/gi, "pequeno-almoço")
+    .replace(/geladinh(o|a)s?\b/gi, "fresquinho")
+    .replace(/\bcelular(es)?\b/gi, "telemóvel")
+    .replace(/\bbanheiro\b/gi, "casa de banho")
+    .replace(/\b[ôo]nibus\b/gi, "autocarro")
+    .replace(/\bsorvetes?\b/gi, "gelado")
+    .replace(/\btrem\b/gi, "comboio")
+    // "precisas falar" -> "precisas de falar" (precisar + infinitivo pede "de" em PT-EU)
+    .replace(/\b(precis(?:as|a|amos|am))\s+((?:[a-zá-úà-ãç]+)(?:ar|er|ir))\b/gi, "$1 de $2");
+}
 // Arruma os links: se houver um link específico (com caminho), as ocorrências do domínio "solto"
 // (normalmente resultado de um URL inventado que foi corrigido) passam a "o nosso site".
 function tidyLinks(s: string): string {
-  let out = String(s || "");
+  let out = fixPtAo(String(s || ""));
   const urls = out.match(/https?:\/\/[^\s)\]"',]+/g) || [];
   const temEspecifico = urls.some((u) => { try { return new URL(u).pathname.replace(/\/$/, "").length > 1; } catch { return false; } });
   if (temEspecifico) {
