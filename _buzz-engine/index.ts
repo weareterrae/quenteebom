@@ -100,15 +100,22 @@ function planForDay(dow: number, isVideo: boolean): Plan {
   return p;
 }
 
-// --- gasto do mês (insights da conta) ---
+// --- gasto do mês SÓ das campanhas do buzz (não conta o launch) ---
 async function monthSpend(): Promise<number> {
   const now = new Date();
   const y = now.getUTCFullYear(), m = String(now.getUTCMonth() + 1).padStart(2, "0");
   const since = `${y}-${m}-01`;
   const until = now.toISOString().slice(0, 10);
-  const j = await gGet(`${ACT}/insights?fields=spend&time_range=${encodeURIComponent(JSON.stringify({ since, until }))}`);
-  const spend = j?.data?.[0]?.spend;
-  return spend ? Number(spend) : 0;
+  const tr = encodeURIComponent(JSON.stringify({ since, until }));
+  const cfg = await sb.select("buzz_config", "select=key,value");
+  const ids = (cfg || []).filter((r: { key: string }) => String(r.key).startsWith("camp_")).map((r: { value: string }) => r.value).filter(Boolean);
+  let total = 0;
+  for (const id of ids) {
+    const j = await gGet(`${id}/insights?fields=spend&time_range=${tr}`);
+    const s = j?.data?.[0]?.spend;
+    if (s) total += Number(s);
+  }
+  return total;
 }
 
 // --- garante as 3 campanhas-base (uma por objetivo), cacheadas em buzz_config ---
@@ -126,15 +133,19 @@ async function ensureCampaign(objective: string): Promise<string> {
   return res.id;
 }
 
-// --- post do dia (Facebook Page): o mais recente publicado hoje ---
-async function todaysPost(): Promise<{ id: string; message: string; isVideo: boolean } | null> {
+// --- posts recentes da Página (com deteção de erro de permissão) ---
+async function fetchRecent(): Promise<{ error: unknown; posts: Array<Record<string, unknown>> }> {
   const j = await gGet(`${PAGE_ID}/published_posts?fields=id,created_time,message,status_type,attachments{media_type}&limit=8`);
+  if (j?.error) return { error: j.error, posts: [] };
+  return { error: null, posts: j?.data || [] };
+}
+function pickToday(posts: Array<Record<string, unknown>>): { id: string; message: string; isVideo: boolean } | null {
   const today = new Date().toISOString().slice(0, 10);
-  for (const p of (j?.data || [])) {
+  for (const p of posts) {
     if (String(p.created_time || "").slice(0, 10) === today) {
-      const mt = p?.attachments?.data?.[0]?.media_type || p.status_type || "";
-      const isVideo = /video/i.test(String(mt));
-      return { id: p.id, message: String(p.message || ""), isVideo };
+      const att = (p.attachments as { data?: Array<{ media_type?: string }> } | undefined)?.data?.[0]?.media_type;
+      const mt = att || (p.status_type as string) || "";
+      return { id: p.id as string, message: String(p.message || ""), isVideo: /video/i.test(String(mt)) };
     }
   }
   return null;
@@ -158,31 +169,36 @@ async function run(dry: boolean, canary: boolean): Promise<Record<string, unknow
   };
 
   // 1) interruptor
-  if (ENABLED !== "on" && !dry) return await log("skipped", "BUZZ_ENABLED != on");
+  if (ENABLED.trim() !== "on" && !dry) return await log("skipped", "BUZZ_ENABLED != on");
 
-  // 2) teto mensal
+  // 2) teto mensal (só buzz)
   const spent = await monthSpend();
-  if (spent >= MONTHLY_CAP) {
-    const r = await log("capped", `gasto do mês €${spent.toFixed(2)} ≥ teto €${MONTHLY_CAP}`, { spend: spent });
-    await sendEmail("💧 Buzz Minda — teto do mês atingido", `Gasto do mês: €${spent.toFixed(2)} (teto €${MONTHLY_CAP}). Sem novo anúncio hoje.`);
-    return r;
-  }
 
-  // 3) post do dia
-  const post = await todaysPost();
-  if (!post) return await log("no_post", "sem post publicado hoje na Página");
-
-  // 4) plano do dia
+  // 3) post do dia (+ diagnóstico de leitura)
+  const { error: postErr, posts } = await fetchRecent();
+  const post = pickToday(posts);
   const dow = new Date().getUTCDay();
-  const plan = planForDay(dow, post.isVideo);
   const eur = canary ? 1 : Math.max(1, DAILY_EUR);
   const budgetCents = Math.round(eur * 100);
 
   if (dry) {
-    return await log("dry", `simulação: obj=${plan.objective} goal=${plan.goal} verba=€${eur} post=${post.id}`, {
-      spend: spent, objective: plan.objective, goal: plan.goal, budget_eur: eur, post_id: post.id, is_video: post.isVideo,
+    const plan = planForDay(dow, post?.isVideo || false);
+    return await log("dry", post ? `simulação OK: obj=${plan.objective} goal=${plan.goal} verba=€${eur} post=${post.id}` : "simulação: sem post de hoje", {
+      spend: spent, buzz_month_spend: spent, objective: plan.objective, goal: plan.goal, budget_eur: eur,
+      post_id: post?.id || null, is_video: post?.isVideo || false,
+      dow, post_read_error: postErr,
+      recent_posts: posts.map((p) => ({ id: p.id, date: String(p.created_time || "").slice(0, 10) })),
     });
   }
+
+  if (spent >= MONTHLY_CAP) {
+    const r = await log("capped", `gasto do buzz €${spent.toFixed(2)} ≥ teto €${MONTHLY_CAP}`, { spend: spent });
+    await sendEmail("💧 Buzz Minda — teto do mês atingido", `Gasto do buzz este mês: €${spent.toFixed(2)} (teto €${MONTHLY_CAP}). Sem novo anúncio hoje.`);
+    return r;
+  }
+  if (!post) return await log("no_post", postErr ? `erro a ler posts: ${JSON.stringify(postErr)}` : "sem post publicado hoje na Página", { post_read_error: postErr });
+
+  const plan = planForDay(dow, post.isVideo);
 
   try {
     // 5) campanha-base do objetivo do dia
