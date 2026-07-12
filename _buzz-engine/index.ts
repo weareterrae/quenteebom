@@ -140,6 +140,7 @@ async function ensureCampaign(objective: string): Promise<string> {
     objective,
     status: "PAUSED",                 // a campanha fica PAUSED; os ad sets é que ativam
     special_ad_categories: "[]",
+    is_adset_budget_sharing_enabled: "false", // exigido pela Meta (orçamento por ad set, não CBO)
   });
   if (!res.id) throw new Error(`falha a criar campanha ${objective}: ${JSON.stringify(res.error || res)}`);
   await sb.upsert("buzz_config", { key: `camp_${objective}`, value: res.id });
