@@ -4,6 +4,20 @@
 [functions]
   directory = "netlify/functions"
 
+# Domínio antigo quenteebom.co.ao -> quenteebom.com (o email continua no .co.ao, só o site redireciona).
+# Estes redirects por host têm de vir ANTES dos redirects por caminho.
+[[redirects]]
+  from = "https://quenteebom.co.ao/*"
+  to = "https://quenteebom.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.quenteebom.co.ao/*"
+  to = "https://quenteebom.com/:splat"
+  status = 301
+  force = true
+
 # Revendedores fundiu-se na Área Profissional (jul/2026) — links antigos continuam a funcionar
 [[redirects]]
   from = "/receitas/tranca-doce-de-brioche/"
