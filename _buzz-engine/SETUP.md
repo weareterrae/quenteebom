@@ -28,7 +28,7 @@ Correr `schema.sql` (cria `buzz_runs` e `buzz_config`).
 | `MONTHLY_CAP` | `240` |
 | `DAILY_BUDGET` | `8` |
 | `LUANDA_REGION_KEY` | `4514` |
-| `FN_BASE` | `https://bxnxyrzjfyqvogcahrvh.functions.supabase.co/buzz-engine` |
+| ~~`FN_BASE`~~ | ⚠️ **NÃO definir/alterar!** É partilhado com o inbox (`meta-inbox`) no mesmo projeto. O buzz NÃO usa FN_BASE. Se o mudares, partes o botão "Aprovar e enviar" do inbox. Deve ficar em `https://bxnxyrzjfyqvogcahrvh.functions.supabase.co/meta-inbox`. |
 | `RESEND_API_KEY` | (o mesmo do inbox) |
 | `NOTIFY_EMAIL` | `sandro.qb@gmail.com` |
 | `FROM_EMAIL` | `Motor de Buzz Minda <buzz@aguaminda.com>` (ou o remetente do inbox) |
