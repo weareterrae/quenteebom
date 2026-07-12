@@ -94,23 +94,14 @@ async function pageTok(): Promise<string> {
 
 // --- rotação de objetivo por dia da semana (0=Dom … 6=Sáb) ---
 // objective = campanha (fixa); goal = otimização (ad set, varia)
-type Plan = { label: string; objective: "OUTCOME_AWARENESS" | "OUTCOME_ENGAGEMENT" | "OUTCOME_TRAFFIC"; goal: string; billing: string };
+type Plan = { label: string; objective: "OUTCOME_AWARENESS" | "OUTCOME_ENGAGEMENT"; goal: string; billing: string; dest?: string };
+const ENG:   Plan = { label: "Interações", objective: "OUTCOME_ENGAGEMENT", goal: "POST_ENGAGEMENT", billing: "IMPRESSIONS", dest: "ON_POST" };
+const REACH: Plan = { label: "Alcance",    objective: "OUTCOME_AWARENESS",  goal: "REACH",           billing: "IMPRESSIONS" };
+const VIDEO: Plan = { label: "Vídeo",      objective: "OUTCOME_AWARENESS",  goal: "THRUPLAY",        billing: "IMPRESSIONS" };
 function planForDay(dow: number, isVideo: boolean): Plan {
-  // Quinta com reel → reproduções de vídeo
-  const table: Record<number, Plan> = {
-    1: { label: "Alcance",     objective: "OUTCOME_AWARENESS",  goal: "REACH",           billing: "IMPRESSIONS" }, // Seg
-    2: { label: "Interações",  objective: "OUTCOME_ENGAGEMENT", goal: "POST_ENGAGEMENT", billing: "IMPRESSIONS" }, // Ter
-    3: { label: "Interações",  objective: "OUTCOME_ENGAGEMENT", goal: "POST_ENGAGEMENT", billing: "IMPRESSIONS" }, // Qua (MoV)
-    4: { label: "Vídeo",       objective: "OUTCOME_AWARENESS",  goal: "THRUPLAY",        billing: "IMPRESSIONS" }, // Qui (reel)
-    5: { label: "Perfil/Tráfego", objective: "OUTCOME_TRAFFIC", goal: "LANDING_PAGE_VIEWS", billing: "IMPRESSIONS" }, // Sex (crescer conta)
-    6: { label: "Alcance",     objective: "OUTCOME_AWARENESS",  goal: "REACH",           billing: "IMPRESSIONS" }, // Sáb
-    0: { label: "Interações",  objective: "OUTCOME_ENGAGEMENT", goal: "POST_ENGAGEMENT", billing: "IMPRESSIONS" }, // Dom
-  };
-  const p = table[dow];
-  if (isVideo && p.objective !== "OUTCOME_AWARENESS") {
-    return { label: "Vídeo", objective: "OUTCOME_AWARENESS", goal: "THRUPLAY", billing: "IMPRESSIONS" };
-  }
-  return p;
+  if (isVideo) return VIDEO;                 // qualquer post de vídeo → reproduções
+  const map: Record<number, Plan> = { 1: REACH, 2: ENG, 3: ENG, 4: ENG, 5: ENG, 6: REACH, 0: ENG };
+  return map[dow];
 }
 
 // --- gasto do mês SÓ das campanhas do buzz (não conta o launch) ---
@@ -134,11 +125,14 @@ async function monthSpend(): Promise<number> {
 // --- garante as 3 campanhas-base (uma por objetivo), cacheadas em buzz_config ---
 async function ensureCampaign(objective: string): Promise<string> {
   const rows = await sb.select("buzz_config", `key=eq.camp_${objective}&select=value`);
-  if (rows?.[0]?.value) return rows[0].value;
+  if (rows?.[0]?.value) {
+    await gPost(`${rows[0].value}`, { status: "ACTIVE" }); // garante que fica ativa
+    return rows[0].value;
+  }
   const res = await gPost(`${ACT}/campaigns`, {
     name: `Buzz Diário — ${objective}`,
     objective,
-    status: "PAUSED",                 // a campanha fica PAUSED; os ad sets é que ativam
+    status: "ACTIVE",                 // ACTIVE: o controlo de gasto é o ad set (verba+janela)
     special_ad_categories: "[]",
     is_adset_budget_sharing_enabled: "false", // exigido pela Meta (orçamento por ad set, não CBO)
   });
@@ -232,7 +226,7 @@ async function run(dry: boolean, canary: boolean): Promise<Record<string, unknow
       age_min: 18, age_max: 65,
       targeting_automation: { advantage_audience: 1 },
     };
-    const adset = await gPost(`${ACT}/adsets`, {
+    const adsetBody: Record<string, unknown> = {
       name: `Buzz ${stamp.slice(0, 10)} — ${plan.label}`,
       campaign_id: campId,
       lifetime_budget: String(budgetCents),
@@ -243,7 +237,9 @@ async function run(dry: boolean, canary: boolean): Promise<Record<string, unknow
       bid_strategy: "LOWEST_COST_WITHOUT_CAP",
       targeting,
       status: "ACTIVE",
-    });
+    };
+    if (plan.dest) adsetBody.destination_type = plan.dest; // ON_POST p/ interações (sem exigir URL)
+    const adset = await gPost(`${ACT}/adsets`, adsetBody);
     if (!adset.id) throw new Error(`ad set: ${JSON.stringify(adset.error || adset)}`);
 
     // 7) anúncio a partir do post publicado (creative usa object_story_id)
