@@ -79,6 +79,19 @@ async function gPost(path: string, body: Record<string, unknown>) {
   return await r.json();
 }
 
+// --- troca o token do system user por um token de PÁGINA (necessário p/ ler posts) ---
+let _pt: { tok: string; at: number } | null = null;
+async function pageTok(): Promise<string> {
+  if (_pt && Date.now() - _pt.at < 50 * 60 * 1000) return _pt.tok;
+  const j = await gGet(`${PAGE_ID}?fields=access_token`);
+  if (j?.access_token) { _pt = { tok: j.access_token, at: Date.now() }; return j.access_token; }
+  // fallback: via me/accounts
+  const a = await gGet(`me/accounts?fields=id,access_token`);
+  const p = (a?.data || []).find((x: { id: string }) => x.id === PAGE_ID);
+  if (p?.access_token) { _pt = { tok: p.access_token, at: Date.now() }; return p.access_token; }
+  throw new Error(`sem page token (o system user tem a Página atribuída?): ${JSON.stringify(j?.error || a?.error || {})}`);
+}
+
 // --- rotação de objetivo por dia da semana (0=Dom … 6=Sáb) ---
 // objective = campanha (fixa); goal = otimização (ad set, varia)
 type Plan = { label: string; objective: "OUTCOME_AWARENESS" | "OUTCOME_ENGAGEMENT" | "OUTCOME_TRAFFIC"; goal: string; billing: string };
@@ -135,9 +148,15 @@ async function ensureCampaign(objective: string): Promise<string> {
 
 // --- posts recentes da Página (com deteção de erro de permissão) ---
 async function fetchRecent(): Promise<{ error: unknown; posts: Array<Record<string, unknown>> }> {
-  const j = await gGet(`${PAGE_ID}/published_posts?fields=id,created_time,message,status_type,attachments{media_type}&limit=8`);
-  if (j?.error) return { error: j.error, posts: [] };
-  return { error: null, posts: j?.data || [] };
+  try {
+    const pt = await pageTok();
+    const r = await fetch(`${GRAPH}/${PAGE_ID}/published_posts?fields=id,created_time,message,status_type,attachments{media_type}&limit=8&access_token=${pt}`);
+    const j = await r.json();
+    if (j?.error) return { error: j.error, posts: [] };
+    return { error: null, posts: j?.data || [] };
+  } catch (e) {
+    return { error: String(e), posts: [] };
+  }
 }
 function pickToday(posts: Array<Record<string, unknown>>): { id: string; message: string; isVideo: boolean } | null {
   const today = new Date().toISOString().slice(0, 10);
