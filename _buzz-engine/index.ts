@@ -164,25 +164,30 @@ async function fetchRecent(): Promise<{ error: unknown; posts: Array<Record<stri
   }
   return { error: lastErr, posts: [] };
 }
+function mapPost(p: Record<string, unknown>): { id: string; message: string; isVideo: boolean } {
+  const att = (p.attachments as { data?: Array<{ media_type?: string }> } | undefined)?.data?.[0]?.media_type;
+  const mt = att || (p.status_type as string) || "";
+  return { id: p.id as string, message: String(p.message || ""), isVideo: /video/i.test(String(mt)) };
+}
 function pickToday(posts: Array<Record<string, unknown>>): { id: string; message: string; isVideo: boolean } | null {
   const today = new Date().toISOString().slice(0, 10);
   for (const p of posts) {
-    if (String(p.created_time || "").slice(0, 10) === today) {
-      const att = (p.attachments as { data?: Array<{ media_type?: string }> } | undefined)?.data?.[0]?.media_type;
-      const mt = att || (p.status_type as string) || "";
-      return { id: p.id as string, message: String(p.message || ""), isVideo: /video/i.test(String(mt)) };
-    }
+    if (String(p.created_time || "").slice(0, 10) === today) return mapPost(p);
   }
   return null;
 }
+function pickLatest(posts: Array<Record<string, unknown>>): { id: string; message: string; isVideo: boolean } | null {
+  return posts[0] ? mapPost(posts[0]) : null;
+}
 
 // --- media do Instagram publicada hoje (para o buzz aparecer no IG e no FB) ---
-async function todaysIgMedia(): Promise<string | null> {
+async function todaysIgMedia(anyDate = false): Promise<string | null> {
   try {
     if (!IG_ID) return null;
     const pt = await pageTok();
     const r = await fetch(`${GRAPH}/${IG_ID}/media?fields=id,timestamp&limit=8&access_token=${pt}`);
     const j = await r.json();
+    if (anyDate) return (j?.data?.[0]?.id as string) || null;
     const today = new Date().toISOString().slice(0, 10);
     for (const m of (j?.data || [])) {
       if (String(m.timestamp || "").slice(0, 10) === today) return m.id as string;
@@ -201,7 +206,7 @@ async function sendEmail(subject: string, html: string) {
 }
 
 // ------------------------------- RUN -----------------------------------------
-async function run(dry: boolean, canary: boolean): Promise<Record<string, unknown>> {
+async function run(dry: boolean, canary: boolean, force = false): Promise<Record<string, unknown>> {
   const stamp = new Date().toISOString();
   const log = async (status: string, detail: string, extra: Record<string, unknown> = {}) => {
     await sb.insert("buzz_runs", { created_at: stamp, status, detail, ...extra });
@@ -216,7 +221,7 @@ async function run(dry: boolean, canary: boolean): Promise<Record<string, unknow
 
   // 3) post do dia (+ diagnóstico de leitura)
   const { error: postErr, posts } = await fetchRecent();
-  const post = pickToday(posts);
+  const post = force ? pickLatest(posts) : pickToday(posts);
   const dow = new Date().getUTCDay();
   const eur = canary ? 1 : Math.max(1, DAILY_EUR);
   const budgetCents = Math.round(eur * 100);
@@ -248,7 +253,7 @@ async function run(dry: boolean, canary: boolean): Promise<Record<string, unknow
     const start = new Date();
     const end = new Date(Date.now() + 24 * 3600 * 1000);
     // criativo preferido = post do INSTAGRAM (aparece no IG e no FB); recurso = post do FB
-    const igMedia = await todaysIgMedia();
+    const igMedia = await todaysIgMedia(force);
     const useIg = !!igMedia;
 
     const targeting: Record<string, unknown> = {
@@ -335,7 +340,8 @@ Deno.serve(async (req) => {
   if (url.pathname.endsWith("/run")) {
     const dry = url.searchParams.get("dry") === "1";
     const canary = url.searchParams.get("budget") === "1";
-    const out = await run(dry, canary);
+    const force = url.searchParams.get("test") === "1"; // promove o post mais recente (ignora a data)
+    const out = await run(dry, canary, force);
     return new Response(JSON.stringify(out, null, 2), { headers: { "content-type": "application/json" } });
   }
 
