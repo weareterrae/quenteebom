@@ -89,7 +89,10 @@ async function pageTok(): Promise<string> {
   const a = await gGet(`me/accounts?fields=id,access_token`);
   const p = (a?.data || []).find((x: { id: string }) => x.id === PAGE_ID);
   if (p?.access_token) { _pt = { tok: p.access_token, at: Date.now() }; return p.access_token; }
-  throw new Error(`sem page token (o system user tem a Página atribuída?): ${JSON.stringify(j?.error || a?.error || {})}`);
+  // "Nova Experiência de Páginas" (NPE): não há page token separado — usa-se o token
+  // do system user diretamente (requer pages_read_engagement + Página atribuída).
+  _pt = { tok: TOKEN, at: Date.now() };
+  return TOKEN;
 }
 
 // --- rotação de objetivo por dia da semana (0=Dom … 6=Sáb) ---
@@ -141,17 +144,25 @@ async function ensureCampaign(objective: string): Promise<string> {
   return res.id;
 }
 
-// --- posts recentes da Página (com deteção de erro de permissão) ---
+// --- posts recentes da Página (robusto: páginas clássicas E "Nova Experiência de Páginas") ---
+// Tenta published_posts e feed, com o page token e com o token do system user, até um funcionar.
 async function fetchRecent(): Promise<{ error: unknown; posts: Array<Record<string, unknown>> }> {
-  try {
-    const pt = await pageTok();
-    const r = await fetch(`${GRAPH}/${PAGE_ID}/published_posts?fields=id,created_time,message,status_type,attachments{media_type}&limit=8&access_token=${pt}`);
-    const j = await r.json();
-    if (j?.error) return { error: j.error, posts: [] };
-    return { error: null, posts: j?.data || [] };
-  } catch (e) {
-    return { error: String(e), posts: [] };
+  const fields = "id,created_time,message,status_type,attachments{media_type}";
+  let pt = TOKEN;
+  try { pt = await pageTok(); } catch { /* fica o token do system user */ }
+  const tokens = [...new Set([pt, TOKEN])];
+  let lastErr: unknown = null;
+  for (const tok of tokens) {
+    for (const edge of ["published_posts", "feed"]) {
+      try {
+        const r = await fetch(`${GRAPH}/${PAGE_ID}/${edge}?fields=${fields}&limit=8&access_token=${tok}`);
+        const j = await r.json();
+        if (!j?.error && Array.isArray(j?.data)) return { error: null, posts: j.data };
+        lastErr = j?.error || lastErr;
+      } catch (e) { lastErr = String(e); }
+    }
   }
+  return { error: lastErr, posts: [] };
 }
 function pickToday(posts: Array<Record<string, unknown>>): { id: string; message: string; isVideo: boolean } | null {
   const today = new Date().toISOString().slice(0, 10);
@@ -162,6 +173,21 @@ function pickToday(posts: Array<Record<string, unknown>>): { id: string; message
       return { id: p.id as string, message: String(p.message || ""), isVideo: /video/i.test(String(mt)) };
     }
   }
+  return null;
+}
+
+// --- media do Instagram publicada hoje (para o buzz aparecer no IG e no FB) ---
+async function todaysIgMedia(): Promise<string | null> {
+  try {
+    if (!IG_ID) return null;
+    const pt = await pageTok();
+    const r = await fetch(`${GRAPH}/${IG_ID}/media?fields=id,timestamp&limit=8&access_token=${pt}`);
+    const j = await r.json();
+    const today = new Date().toISOString().slice(0, 10);
+    for (const m of (j?.data || [])) {
+      if (String(m.timestamp || "").slice(0, 10) === today) return m.id as string;
+    }
+  } catch { /* sem IG media → cai no post do FB */ }
   return null;
 }
 
@@ -221,9 +247,14 @@ async function run(dry: boolean, canary: boolean): Promise<Record<string, unknow
     // 6) ad set do dia (lifetime = verba do dia; janela de 24h; Luanda 18-65; FB+IG auto)
     const start = new Date();
     const end = new Date(Date.now() + 24 * 3600 * 1000);
-    const targeting = {
+    // criativo preferido = post do INSTAGRAM (aparece no IG e no FB); recurso = post do FB
+    const igMedia = await todaysIgMedia();
+    const useIg = !!igMedia;
+
+    const targeting: Record<string, unknown> = {
       geo_locations: { regions: [{ key: REGION_KEY }] },
       age_min: 18, age_max: 65,
+      publisher_platforms: ["facebook", "instagram"], // explícito: as duas redes
       targeting_automation: { advantage_audience: 1 },
     };
     const adsetBody: Record<string, unknown> = {
@@ -238,21 +269,32 @@ async function run(dry: boolean, canary: boolean): Promise<Record<string, unknow
       targeting,
       status: "ACTIVE",
     };
-    if (plan.dest) adsetBody.destination_type = plan.dest; // ON_POST p/ interações (sem exigir URL)
+    // ON_POST só faz sentido no criativo do FB; com criativo do IG, omitir
+    if (plan.dest && !useIg) adsetBody.destination_type = plan.dest;
     const adset = await gPost(`${ACT}/adsets`, adsetBody);
     if (!adset.id) throw new Error(`ad set: ${JSON.stringify(adset.error || adset)}`);
 
-    // 7) anúncio a partir do post publicado (creative usa object_story_id)
+    // 7) anúncio: criativo do IG se houver, senão o post do FB
     const storyId = post.id.includes("_") ? post.id : `${PAGE_ID}_${post.id}`;
-    const ad = await gPost(`${ACT}/ads`, {
+    const igCreative = { instagram_user_id: IG_ID, source_instagram_media_id: igMedia };
+    const fbCreative = { object_story_id: storyId };
+    let ad = await gPost(`${ACT}/ads`, {
       name: `Buzz ${stamp.slice(0, 10)} — ${plan.label}`,
       adset_id: adset.id,
-      creative: { object_story_id: storyId },
+      creative: useIg ? igCreative : fbCreative,
       status: "ACTIVE",
     });
+    let via = useIg ? "IG(FB+IG)" : "FB";
+    if (ad?.error && useIg) { // recurso: se o criativo do IG falhar, usa o post do FB
+      ad = await gPost(`${ACT}/ads`, {
+        name: `Buzz ${stamp.slice(0, 10)} — ${plan.label}`,
+        adset_id: adset.id, creative: fbCreative, status: "ACTIVE",
+      });
+      via = "FB(fallback)";
+    }
     if (!ad.id) throw new Error(`ad: ${JSON.stringify(ad.error || ad)}`);
 
-    const r = await log("created", `${plan.label} · €${eur} · post ${post.id}`, {
+    const r = await log("created", `${plan.label} · €${eur} · ${via} · post ${post.id}`, {
       spend: spent, objective: plan.objective, goal: plan.goal, budget_eur: eur,
       post_id: post.id, adset_id: adset.id, ad_id: ad.id,
     });
