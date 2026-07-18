@@ -1,8 +1,8 @@
 /* Joaquim — o Chef da Quente e Bom (widget partilhado).
-   Com BENTO_ENDPOINT definido: chat de IA a sério (Supabase Edge Function + Claude).
+   Com BENTO_ENDPOINT definido: chat de IA a sério (Netlify Function + Claude).
    Sem endpoint / se falhar: fluxos guiados por botões (fallback). */
 (function () {
-  var BENTO_ENDPOINT = 'https://qciagsktkqljvknmahfu.supabase.co/functions/v1/bento-web';
+  var BENTO_ENDPOINT = '/api/joaquim';
   var aiOk = !!BENTO_ENDPOINT; // desliga-se sozinho se a função falhar
   var history = [];
 
