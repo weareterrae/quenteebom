@@ -60,12 +60,58 @@ export default async (req) => {
       body: JSON.stringify(pedido),
     });
     const texto = await r.text();
-    if (!r.ok) console.error("redator: Anthropic", r.status, texto.slice(0, 300));
+    if (!r.ok) {
+      console.error("redator: Anthropic", r.status, texto.slice(0, 300));
+      const b = await planoBGemini(pedido);
+      if (b) return json(b);
+    }
     return new Response(texto, { status: r.status, headers: { "content-type": "application/json; charset=utf-8" } });
   } catch (e) {
     console.error("redator: falha de rede", e);
+    const b = await planoBGemini(pedido);
+    if (b) return json(b);
     return json({ erro: "falha de rede" }, 502);
   }
 };
+
+// PLANO B: se o Claude falhar, tenta o Gemini pelo MESMO gateway (GEMINI_API_KEY +
+// GOOGLE_GEMINI_BASE_URL injetados). Converte o pedido Anthropic → Gemini (incluindo
+// imagens base64 das stories) e devolve a resposta EMBRULHADA no formato Anthropic
+// ({content:[{type:"text",...}]}), para o index.ts do meta-inbox não notar a diferença.
+async function planoBGemini(pedido) {
+  const chave = process.env.GEMINI_API_KEY;
+  const base = (process.env.GOOGLE_GEMINI_BASE_URL || "").replace(/\/$/, "");
+  if (!chave || !base) return null;
+  try {
+    const contents = pedido.messages.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: (Array.isArray(m.content) ? m.content : [{ type: "text", text: String(m.content ?? "") }])
+        .map((b) => {
+          if (b.type === "text") return { text: b.text || "" };
+          if (b.type === "image" && b.source?.type === "base64") {
+            return { inline_data: { mime_type: b.source.media_type, data: b.source.data } };
+          }
+          return null;
+        })
+        .filter(Boolean),
+    }));
+    const r = await fetch(`${base}/v1beta/models/gemini-2.5-flash:generateContent`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": chave },
+      body: JSON.stringify({
+        ...(pedido.system ? { system_instruction: { parts: [{ text: pedido.system }] } } : {}),
+        contents,
+        generationConfig: { maxOutputTokens: pedido.max_tokens || 400 },
+      }),
+    });
+    if (!r.ok) { console.error("redator: Gemini", r.status, (await r.text()).slice(0, 200)); return null; }
+    const j = await r.json();
+    const texto = (j?.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("").trim();
+    return texto ? { content: [{ type: "text", text: texto }], _plano_b: "gemini-2.5-flash" } : null;
+  } catch (e) {
+    console.error("redator: Gemini falha de rede", e);
+    return null;
+  }
+}
 
 export const config = { path: "/api/redator" };
