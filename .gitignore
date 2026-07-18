@@ -1,3 +1,7 @@
 _optimize.ps1
 _manifest.tsv
 *.tmp
+_meta-inbox/REDATOR_KEY.local.txt
+
+# Local Netlify folder
+.netlify

@@ -19,6 +19,11 @@ const VERIFY_TOKEN = env("META_VERIFY_TOKEN");
 const APP_SECRET   = env("META_APP_SECRET");
 const PAGE_TOKEN   = env("META_PAGE_TOKEN");
 const ANTHROPIC_KEY= env("ANTHROPIC_API_KEY");
+// Redator (desde 18/07/2026): a conta Console da Anthropic foi perdida; a IA passa pelo
+// proxy /api/redator no quenteebom.com (AI Gateway da Netlify), autenticado por segredo
+// partilhado. Secrets novos por projeto: REDATOR_KEY (obrigatório) e REDATOR_URL (opcional).
+const REDATOR_URL  = env("REDATOR_URL", "https://quenteebom.com/api/redator");
+const REDATOR_KEY  = env("REDATOR_KEY");
 const RESEND_KEY   = env("RESEND_API_KEY");
 const NOTIFY_EMAIL = env("NOTIFY_EMAIL", "sandro.qb@gmail.com");
 // Destino dos LEADS (pedidos de cotação). Por defeito = NOTIFY_EMAIL (o Gmail do Sandro,
@@ -68,13 +73,22 @@ async function claude(system: string, user: string, max = 400, image: { data: st
   const content: any = image
     ? [{ type: "image", source: { type: "base64", media_type: image.mime, data: image.data } }, { type: "text", text: user || "(sem texto)" }]
     : (user || "(sem texto)");
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: max, system,
-      messages: [{ role: "user", content }] }),
-  });
+  const corpo = JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: max, system,
+    messages: [{ role: "user", content }] });
+  // Via preferida: proxy redator (AI Gateway da Netlify). Fallback: chave direta, se existir.
+  const r = REDATOR_KEY
+    ? await fetch(REDATOR_URL, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-redator-key": REDATOR_KEY },
+        body: corpo,
+      })
+    : await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
+        body: corpo,
+      });
   const j = await r.json();
+  if (!r.ok) console.error("claude/redator:", r.status, JSON.stringify(j).slice(0, 300));
   return (j?.content?.[0]?.text || "").trim();
 }
 // descarrega uma imagem (ex.: a story) e devolve-a em base64 — URLs lookaside expiram, por isso

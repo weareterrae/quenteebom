@@ -24,6 +24,13 @@ O **mesmo `index.ts`** serve as 3 marcas (código generalizado: `BRAND_NAME`, `B
 
 Os restantes secrets (`META_VERIFY_TOKEN`, `META_APP_SECRET`, `META_PAGE_TOKEN`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `HMAC_SECRET`, `FN_BASE`) são **por marca** (tokens da app dessa marca).
 
+## ⚠️ IA via redator (desde 18/07/2026 — conta Console da Anthropic perdida)
+A `ANTHROPIC_API_KEY` do Console morreu com a suspensão da conta (17/07). O `claude()` do index.ts passou a chamar o **proxy `https://quenteebom.com/api/redator`** (Netlify Function no site da QeB, que usa o AI Gateway da Netlify — fatura na conta Netlify, sem Console Anthropic). Autenticação por segredo partilhado.
+- **Secrets novos POR PROJETO Supabase (os 3):** `REDATOR_KEY` (obrigatório — valor em `_meta-inbox/REDATOR_KEY.local.txt`, fora do git; o MESMO valor nos 3 projetos e na env var REDATOR_KEY do site Netlify da QeB) e `REDATOR_URL` (opcional; default quenteebom.com/api/redator).
+- `ANTHROPIC_API_KEY` antiga pode ficar (é ignorada quando REDATOR_KEY existe) ou ser apagada.
+- Sem REDATOR_KEY definido, o código faz fallback à chave direta (compatibilidade).
+- Ao mudar o index.ts → colar/redeploy nas 3 funções (QeB qciagsktkqljvknmahfu · Minda bxnxyrzjfyqvogcahrvh · MP swrwomjsleosbckrsjco) e verificar com a rota `/last?key=...` após um comentário de teste.
+
 ## ⚠️ GOTCHA importante: secrets do Supabase são por PROJETO, não por função
 Todas as funções de um projeto Supabase **partilham os mesmos secrets**. Como a `meta-inbox` (QeB) e a `CHEFPRIMAIA` (Chef Prima) já vivem no projeto `qciagsktkqljvknmahfu`, **não** se pode pôr lá 3 funções cada uma com o seu `META_PAGE_TOKEN` diferente. Opções (escolha do Sandro):
 
