@@ -50,7 +50,7 @@ export default async (req) => {
 
   const base = (process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com").replace(/\/$/, "");
   try {
-    const r = await fetch(`${base}/v1/messages`, {
+    const pedirClaude = () => fetch(`${base}/v1/messages`, {
       method: "POST",
       headers: {
         "x-api-key": chave,
@@ -59,6 +59,13 @@ export default async (req) => {
       },
       body: JSON.stringify(pedido),
     });
+    let r = await pedirClaude();
+    // As rajadas de 429 do gateway duram ~1s — uma segunda tentativa resolve quase sempre.
+    if (!r.ok && (r.status === 429 || r.status >= 500)) {
+      console.error("redator: Anthropic", r.status, "→ retry em 1.2s");
+      await new Promise((res) => setTimeout(res, 1200));
+      r = await pedirClaude();
+    }
     const texto = await r.text();
     if (!r.ok) {
       console.error("redator: Anthropic", r.status, texto.slice(0, 300));
