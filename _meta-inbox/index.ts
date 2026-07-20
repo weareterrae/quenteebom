@@ -372,12 +372,21 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
     </div>
     <div style="font-size:12.5px;color:#9b8290;text-align:center">Só é publicado quando carregas no botão. Se não quiseres responder, ignora este email. · v4</div>`}
   </div>`;
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { "content-type": "application/json", "authorization": `Bearer ${RESEND_KEY}` },
-    body: JSON.stringify({ from: FROM_EMAIL, to: [NOTIFY_EMAIL],
-      subject: p.autoSent ? `✅ Respondido automaticamente no ${p.platform} — ${p.author || "cliente"}` : `🔔 ${badge} no ${p.platform} — pronto a enviar`, html }),
-  });
+  // O resultado fica gravado no registo (detail) — diagnóstico visível via /last.
+  let emailDiag = "";
+  try {
+    const er = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "content-type": "application/json", "authorization": `Bearer ${RESEND_KEY}` },
+      body: JSON.stringify({ from: FROM_EMAIL, to: [NOTIFY_EMAIL],
+        subject: p.autoSent ? `✅ Respondido automaticamente no ${p.platform} — ${p.author || "cliente"}` : `🔔 ${badge} no ${p.platform} — pronto a enviar`, html }),
+    });
+    emailDiag = `email:${er.status} ${(await er.text()).slice(0, 200)}`;
+  } catch (e) {
+    emailDiag = "email:fetch-erro " + String(e).slice(0, 200);
+  }
+  console.log("[notify]", emailDiag);
+  try { await db.from("pending_replies").update({ detail: emailDiag }).eq("id", p.id); } catch (_) { /* diagnóstico best-effort */ }
 }
 function escapeHtml(s: string) { return (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!)); }
 
