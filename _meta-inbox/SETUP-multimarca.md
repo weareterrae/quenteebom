@@ -30,6 +30,12 @@ A `ANTHROPIC_API_KEY` do Console morreu com a suspensão da conta (17/07). O `cl
 - `ANTHROPIC_API_KEY` antiga pode ficar (é ignorada quando REDATOR_KEY existe) ou ser apagada.
 - Sem REDATOR_KEY definido, o código faz fallback à chave direta (compatibilidade).
 - Ao mudar o index.ts → colar/redeploy nas 3 funções (QeB qciagsktkqljvknmahfu · Minda bxnxyrzjfyqvogcahrvh · MP swrwomjsleosbckrsjco) e verificar com a rota `/last?key=...` após um comentário de teste.
+## EKOOLOGY (4.ª marca — lado do site PRONTO a 20/07/2026; falta a parte Meta+Supabase)
+- Páginas vivas: **https://ekoology-preview.netlify.app/privacidade.html** (Privacy Policy URL para a app Meta) · **/inbox.html** (página de confirmação) · **/chef-kool-prompt.txt** (voz do Chef Kool para as redes — atualiza-se por deploy do site EKOOLOGY, id 5e4f8ba0).
+- Config por deployment: `BRAND_NAME=EKOOLOGY` · `BRAND_BG=#00379E` · `BRAND_ACCENT=#F25C1B` · `BRAND_SITE=https://koolnature.pt` · `PROMPT_URL=https://ekoology-preview.netlify.app/chef-kool-prompt.txt` · `NOTIFY_EMAIL=sandro.qb@gmail.com` · `META_VERIFY_TOKEN=ekoology-brasa-2026`.
+- Secrets gerados em `_meta-inbox/EKOOLOGY-SECRETS.local.txt` (fora do git): VERIFY, HMAC_SECRET novo, REDATOR_KEY (o mesmo das outras 3). **SEM ANTHROPIC_API_KEY** — a IA vai pelo redator.
+- Página FB: EKOOLOGY id 108618787493840 · IG: @ekoologycharcoal · Metricool brandId 6368768.
+- FALTA (Sandro, ~1h como nas outras, modelo QeB "Opção B"): app Meta "EKOOLOGY Inbox" (3 use cases, SEM Tech Provider) → system user + token 9 permissões → projeto Supabase novo (org Terrae, opção A) com schema.sql + função `meta-inbox` (index.ts atual) + secrets + FN_BASE → `/subscribe` + `/igtest` → Privacy Policy URL → dança do pages_manage_engagement → Publish → teste E2E.
 
 ## ⚠️ GOTCHA importante: secrets do Supabase são por PROJETO, não por função
 Todas as funções de um projeto Supabase **partilham os mesmos secrets**. Como a `meta-inbox` (QeB) e a `CHEFPRIMAIA` (Chef Prima) já vivem no projeto `qciagsktkqljvknmahfu`, **não** se pode pôr lá 3 funções cada uma com o seu `META_PAGE_TOKEN` diferente. Opções (escolha do Sandro):
