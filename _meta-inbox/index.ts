@@ -26,6 +26,10 @@ const REDATOR_URL  = env("REDATOR_URL", "https://quenteebom.com/api/redator");
 const REDATOR_KEY  = env("REDATOR_KEY");
 const RESEND_KEY   = env("RESEND_API_KEY");
 const NOTIFY_EMAIL = env("NOTIFY_EMAIL", "sandro.qb@gmail.com");
+// Aceita VÁRIOS destinatários separados por vírgula (ex.: "sandro@x.com, nuno@y.com").
+// Nota: com o remetente de teste onboarding@resend.dev só entrega ao dono da conta Resend;
+// para mais destinatários é preciso um domínio verificado no Resend.
+const NOTIFY_LIST = NOTIFY_EMAIL.split(",").map((s) => s.trim()).filter(Boolean);
 // Destino dos LEADS (pedidos de cotação). Por defeito = NOTIFY_EMAIL (o Gmail do Sandro,
 // o único destinatário permitido enquanto o Resend não tiver domínio verificado).
 // Depois de verificar um domínio, pôr o secret LEADS_EMAIL=geral@quenteebom.co.ao.
@@ -378,7 +382,7 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
     const er = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "content-type": "application/json", "authorization": `Bearer ${RESEND_KEY}` },
-      body: JSON.stringify({ from: FROM_EMAIL, to: [NOTIFY_EMAIL],
+      body: JSON.stringify({ from: FROM_EMAIL, to: NOTIFY_LIST,
         subject: p.autoSent ? `✅ Respondido automaticamente no ${p.platform} — ${p.author || "cliente"}` : `🔔 ${badge} no ${p.platform} — pronto a enviar`, html }),
     });
     emailDiag = `email:${er.status} ${(await er.text()).slice(0, 200)}`;
@@ -684,7 +688,7 @@ Deno.serve(async (req) => {
     await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "content-type": "application/json", "authorization": `Bearer ${RESEND_KEY}` },
-      body: JSON.stringify({ from: FROM_EMAIL, to: [NOTIFY_EMAIL], subject: `📊 Resumo semanal do inbox — ${BRAND}`, html }),
+      body: JSON.stringify({ from: FROM_EMAIL, to: NOTIFY_LIST, subject: `📊 Resumo semanal do inbox — ${BRAND}`, html }),
     });
     return new Response(JSON.stringify({ enviado: true, ...stats }, null, 2), { headers: { "content-type": "application/json" } });
   }
