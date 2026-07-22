@@ -116,7 +116,9 @@ async function geminiCall(pedido) {
     });
     if (!r.ok) { console.error("redator: Gemini", r.status, (await r.text()).slice(0, 200)); return null; }
     const j = await r.json();
-    const texto = (j?.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("").trim();
+    const texto = (j?.candidates?.[0]?.content?.parts || [])
+      .filter((p) => !p.thought)            // exclui as partes de "raciocínio" dos modelos thinking
+      .map((p) => p.text || "").join("").trim();
     return texto ? { content: [{ type: "text", text: texto }], _via: modelo } : null;
   } catch (e) {
     console.error("redator: Gemini falha de rede", e);
