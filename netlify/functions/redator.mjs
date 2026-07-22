@@ -76,13 +76,14 @@ export default async (req) => {
 };
 
 // Chama o Gemini e devolve a resposta EMBRULHADA no formato Anthropic. Converte o pedido
-// Anthropic → Gemini (incluindo imagens base64 das stories). Usa a chave DIRETA do Google
-// AI Studio (GEMINI_API_KEY); GOOGLE_GEMINI_BASE_URL é opcional (default = endpoint público).
+// Anthropic → Gemini (incluindo imagens base64 das stories). Usa a chave DIRETA do plano
+// pago (GEMINI_API_KEY) no endpoint público do Google — NÃO passa pela AI Gateway.
+// Modelo por omissão: gemini-2.5-pro (topo); pode mudar-se com a variável GEMINI_MODEL.
 async function geminiCall(pedido) {
   const chave = process.env.GEMINI_API_KEY;
   if (!chave) return null;
-  const base = (process.env.GOOGLE_GEMINI_BASE_URL || "https://generativelanguage.googleapis.com").replace(/\/$/, "");
-  const modelo = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const base = "https://generativelanguage.googleapis.com"; // chave direta do plano pago (não a AI Gateway)
+  const modelo = process.env.GEMINI_MODEL || "gemini-2.5-pro";
   try {
     const contents = pedido.messages.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
