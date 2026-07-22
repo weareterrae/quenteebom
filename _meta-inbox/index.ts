@@ -225,7 +225,7 @@ async function convoHistory(recipientId: string): Promise<string> {
     const desde = new Date(Date.now() - 7 * 864e5).toISOString();
     const { data } = await db.from("pending_replies")
       .select("kind,incoming,reply,private_reply,status,created_at")
-      .in("kind", ["message", "comment", "story_mention"])
+      .in("kind", ["message", "comment", "story_mention", "story_reaction"])
       .eq("recipient_id", recipientId)
       .gte("created_at", desde)
       .order("created_at", { ascending: false }).limit(6);
@@ -233,6 +233,7 @@ async function convoHistory(recipientId: string): Promise<string> {
     return data.reverse().map((r: any) => {
       const quem = r.kind === "comment" ? "Cliente (comentário público)"
         : r.kind === "story_mention" ? "Cliente (marcou-vos numa story)"
+        : r.kind === "story_reaction" ? "Cliente (reagiu à vossa story)"
         : "Cliente (mensagem privada)";
       let s = `${quem}: ${r.incoming}`;
       if (r.status === "sent") {
@@ -293,6 +294,13 @@ async function draftForStoryMention(platform: string, author = ""): Promise<stri
   return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, "A pessoa marcou-nos numa story dela.", 200))))) || "Muito obrigado por nos marcares na tua story! 🧡";
 }
 
+// reação rápida (emoji) a uma story nossa -> DM curtinha, só gratidão
+async function draftForStoryReaction(platform: string, emoji: string, author = ""): Promise<string> {
+  const quem = author && !/^\d+$/.test(author) ? ` A pessoa chama-se ${author}.` : "";
+  const sys = await brand() + `\n\nUma pessoa REAGIU com ${emoji || "um emoji"} a uma story da ${BRAND} no ${platform}.${quem} Escreve SÓ uma mensagem privada (DM) muito curta (1 frase, no máximo 2) a agradecer a reação, calorosa e leve. 0-1 emoji. NÃO faças perguntas, NÃO vendas nada, NÃO confirmes instruções — é só um gesto simpático de volta.\n${RULES}`;
+  return tidyLinks(await checkLinks(fixFakeDomains(plainLinks(await claude(sys, `Reagiu com ${emoji || "um emoji"} à nossa story.`, 150))))) || "Obrigado pela reação à nossa story! 🧡";
+}
+
 // menção no Instagram: o webhook só dá os ids -> ir buscar o texto, o autor e o CONTEXTO
 // (a legenda da publicação onde fomos mencionados, para não responder às cegas).
 async function fetchMentionText(item: any): Promise<{ text: string; author: string; context: string }> {
@@ -348,10 +356,11 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
   const badge = p.kind === "comment" ? "Comentário"
     : p.kind === "mention" ? "Menção (publicação de outra pessoa)"
     : p.kind === "story_mention" ? "Marcou-vos numa story ✨"
+    : p.kind === "story_reaction" ? "Reagiu à vossa story 🔥"
     : "Mensagem privada";
   const answers = p.kind === "comment"
     ? box("Resposta pública ao comentário", p.pub, BRAND_ACCENT, BRAND_BG) + box("Mensagem privada (DM) para a pessoa", p.priv, BRAND_ACCENT, BRAND_BG)
-    : box(p.kind === "mention" ? "Resposta pública à menção" : p.kind === "story_mention" ? "Mensagem de agradecimento (DM)" : (p.autoSent ? "Resposta enviada automaticamente" : "Resposta sugerida"), p.pub, BRAND_ACCENT, BRAND_BG);
+    : box(p.kind === "mention" ? "Resposta pública à menção" : (p.kind === "story_mention" || p.kind === "story_reaction") ? "Mensagem de agradecimento (DM)" : (p.autoSent ? "Resposta enviada automaticamente" : "Resposta sugerida"), p.pub, BRAND_ACCENT, BRAND_BG);
   const storyImg = p.story_url
     ? `<div style="text-align:center;margin:12px 0;font-size:12.5px;color:#9b8290;line-height:1.6">${p.kind === "story_mention"
         ? "✨ <b>Marcou-vos numa story.</b> Para <b>repartilhares</b>: abre o Instagram, vai à marcação e toca em <b>\"Adicionar à tua story\"</b> (enquanto a story dela estiver no ar). O botão abaixo envia só o agradecimento por DM."
@@ -562,6 +571,16 @@ function extract(payload: any): Array<any> {
       if (!m.message?.text) continue;
       // se for RESPOSTA a uma story nossa, guardamos o link da imagem da story (para dar contexto)
       const storyReplyUrl = m.message?.reply_to?.story?.url || "";
+      // REAÇÃO RÁPIDA a uma story (❤️🔥👏…): chega como mensagem só-emoji em resposta à story.
+      // Merece gratidão curtinha, não uma "resposta" — tratamos como story_reaction.
+      const soEmoji = storyReplyUrl && /^[\p{Extended_Pictographic}\p{Emoji_Component}‍️\s]+$/u.test(m.message.text);
+      if (soEmoji) {
+        out.push({ platform, kind: "story_reaction", account_id: accountId,
+          target_id: m.sender?.id || "", recipient_id: m.sender?.id || "",
+          author: m.sender?.id || "", incoming: `[Reagiu à vossa story] ${m.message.text}`,
+          story_url: storyReplyUrl });
+        continue;
+      }
       out.push({ platform, kind: "message", account_id: accountId,
         target_id: m.sender?.id || "", recipient_id: m.sender?.id || "",
         author: m.sender?.id || "", incoming: m.message.text, story_url: storyReplyUrl });
@@ -769,7 +788,7 @@ Deno.serve(async (req) => {
     for (const it of extract(payload)) {
       try {
         // Em DMs e marcações de story só vem o id do remetente — ir buscar o nome à Meta
-        if ((it.kind === "message" || it.kind === "story_mention") && /^\d+$/.test(String(it.author || ""))) {
+        if ((it.kind === "message" || it.kind === "story_mention" || it.kind === "story_reaction") && /^\d+$/.test(String(it.author || ""))) {
           try {
             const tk = await pageTok();
             const ur = await fetch(`${GRAPH}/${it.author}?fields=name,first_name,username&access_token=${tk}`);
@@ -812,6 +831,9 @@ Deno.serve(async (req) => {
         }
         else if (it.kind === "story_mention") {
           pub = await draftForStoryMention(it.platform, it.author);
+        }
+        else if (it.kind === "story_reaction") {
+          pub = await draftForStoryReaction(it.platform, String(it.incoming || "").replace("[Reagiu à vossa story] ", ""), it.author);
         }
         else {
           const hist = await convoHistory(String(it.recipient_id || ""));
