@@ -83,7 +83,7 @@ async function geminiCall(pedido) {
   const chave = process.env.GEMINI_API_KEY;
   if (!chave) return null;
   const base = "https://generativelanguage.googleapis.com"; // chave direta do plano pago (não a AI Gateway)
-  const modelo = process.env.GEMINI_MODEL || "gemini-2.5-pro";
+  const modelo = process.env.GEMINI_MODEL || "gemini-pro-latest";
   try {
     const contents = pedido.messages.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
