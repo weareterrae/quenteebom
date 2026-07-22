@@ -55,6 +55,17 @@
   to = "/contacto/"
   status = 301
 
+# Cabeçalhos de segurança — aplicados a todo o site
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), payment=(), usb=(), geolocation=(self)"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    X-DNS-Prefetch-Control = "on"
+
 # CSS e JS mudam com o design — cache curta, revalida sempre
 [[headers]]
   for = "/assets/css/*"

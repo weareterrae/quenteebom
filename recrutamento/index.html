@@ -45,7 +45,7 @@
       <img src="/assets/logos/logo_color_trans.png" class="hlogo logo-c" alt="Quente e Bom">
     </a>
     <nav class="nav">
-      <a href="/#mundos">Produtos</a>
+      <a href="/produtos/">Produtos</a>
       <a href="/profissional/">Profissional</a>
       <a href="/receitas/">Receitas</a>
       <a href="/dicas/">Dicas</a>
@@ -106,8 +106,16 @@
       <h2>Candidaturas encerradas, por agora 🧡</h2>
       <p>Recebemos um carinho enorme — obrigado a toda a gente que se candidatou! A nossa equipa de Recursos Humanos já está a analisar todas as candidaturas, e os candidatos selecionados serão contactados diretamente.<br><br>Volta em breve — haverá sempre novas oportunidades para juntar-te à família Quente e Bom. ☀️</p>
     </div>
-    <!-- CANDIDATURAS FECHADAS 09/07/2026 (523 recebidas em <12h). Para REABRIR: repor o display:none abaixo para o form e apagar a mensagem acima. -->
-    <form class="form-card" name="candidatura" method="POST" action="/obrigado.html" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data" id="rcForm" style="display:none !important;">
+    <div class="ctr" style="margin-top:26px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <a class="btn btn-sun" href="/">Voltar ao início ☀️</a>
+      <a class="btn btn-glass" href="/profissional/">Conhecer a Quente e Bom</a>
+    </div>
+    <!-- CANDIDATURAS FECHADAS 09/07/2026 (523 recebidas em <12h).
+         Formulário DESATIVADO por completo: comentado = fora do DOM, da ordem de tabulação e do upload de CV,
+         e NÃO é registado nos Netlify Forms enquanto estiver comentado (não aceita submissões).
+         PARA REABRIR: descomentar o <form> abaixo, apagar a mensagem "Candidaturas encerradas" e o CTA acima.
+         [VALIDAÇÃO INTERNA NECESSÁRIA antes de reativar]
+    <form class="form-card" name="candidatura" method="POST" action="/obrigado.html" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data" id="rcForm">
       <input type="hidden" name="form-name" value="candidatura">
       <p style="display:none;"><label>Não preencher: <input name="bot-field"></label></p>
       <div class="rc-form-grid">
@@ -161,6 +169,8 @@
       <button class="btn btn-orange" type="submit" id="rcBtn" style="width:100%;">Enviar candidatura ☀️</button>
       <div class="form-ok" id="formOk">Candidatura recebida! 🧡 Obrigado pelo interesse em juntar-te à família Quente e Bom — a nossa equipa de Recursos Humanos vai analisar e entra em contacto.</div>
     </form>
+    -->
+    <!-- fim do formulário desativado -->
   </div>
 </section>
 
@@ -175,7 +185,7 @@
         <a href="/pao/">Pão</a><a href="/cakes/">Cakes</a><a href="/bolos-da-avo/">Bolos da Avó</a><a href="/biscoitos/">Biscoitos</a><a href="/snacks/">Snacks</a><a href="/tostas/">Tostas</a><a href="/ingredientes/">Ingredientes</a>
       </div>
       <div class="ft-col"><h5>Marca</h5>
-        <a href="/#historia">A nossa história</a><a href="/receitas/">Receitas</a><a href="/dicas/">Dicas e sugestões</a><a href="/profissional/">Área Profissional</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a><a href="/#onde">Onde comprar</a>
+        <a href="/quem-somos/">A nossa história</a><a href="/receitas/">Receitas</a><a href="/dicas/">Dicas e sugestões</a><a href="/profissional/">Área Profissional</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a><a href="/onde-comprar/">Onde comprar</a>
       </div>
       <div class="ft-col"><h5>Contactos</h5>
         <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>
@@ -196,31 +206,31 @@ document.querySelectorAll('.dep').forEach(function (d) {
   d.addEventListener('click', function () {
     document.querySelectorAll('.dep').forEach(function (x) { x.classList.remove('sel'); });
     d.classList.add('sel');
-    document.getElementById('c-dep').value = d.getAttribute('data-dep');
+    var _dep = document.getElementById('c-dep'); if (_dep) _dep.value = d.getAttribute('data-dep');
     document.getElementById('candidatura').scrollIntoView({ behavior: 'smooth' });
   });
 });
-// nome do ficheiro no drop
-document.getElementById('c-cv').addEventListener('change', function () {
-  var f = this.files[0];
-  if (!f) return;
-  if (f.size > 8 * 1024 * 1024) {
-    alert('O CV não pode ter mais de 8 MB. Tenta um PDF mais leve.');
-    this.value = '';
-    return;
-  }
-  document.getElementById('cvDrop').classList.add('ok');
-  document.getElementById('cvTxt').innerHTML = '<b>✓ ' + f.name + '</b><br>' + (f.size / 1024 / 1024).toFixed(1) + ' MB — pronto a enviar';
-});
-// submissão NATIVA multipart — NÃO usar fetch/AJAX: no Netlify, o upload de ficheiro (CV)
-// só é guardado com um POST normal do browser. Com AJAX o texto chega mas o anexo é descartado.
-// Aqui só damos feedback no botão; o browser faz o POST e o Netlify redireciona para /obrigado.html.
-document.getElementById('rcForm').addEventListener('submit', function () {
-  var btn = document.getElementById('rcBtn');
-  btn.disabled = true; btn.textContent = 'A enviar…';
-  // reativa passado 8s caso o utilizador volte atrás sem ter saído da página
-  setTimeout(function () { btn.disabled = false; btn.textContent = 'Enviar candidatura ☀️'; }, 8000);
-});
+// Handlers do formulário — só quando as candidaturas estão ABERTAS (form presente no DOM).
+// Com o formulário desativado, estes elementos não existem: guardamos contra null (sem erros na consola).
+if (document.getElementById('rcForm')) {
+  document.getElementById('c-cv').addEventListener('change', function () {
+    var f = this.files[0];
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024) {
+      alert('O CV não pode ter mais de 8 MB. Tenta um PDF mais leve.');
+      this.value = '';
+      return;
+    }
+    document.getElementById('cvDrop').classList.add('ok');
+    document.getElementById('cvTxt').innerHTML = '<b>✓ ' + f.name + '</b><br>' + (f.size / 1024 / 1024).toFixed(1) + ' MB — pronto a enviar';
+  });
+  // submissão NATIVA multipart (upload de CV precisa de POST normal, não AJAX)
+  document.getElementById('rcForm').addEventListener('submit', function () {
+    var btn = document.getElementById('rcBtn');
+    btn.disabled = true; btn.textContent = 'A enviar…';
+    setTimeout(function () { btn.disabled = false; btn.textContent = 'Enviar candidatura ☀️'; }, 8000);
+  });
+}
 </script>
 </body>
 </html>

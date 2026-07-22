@@ -1,5 +1,18 @@
 /* Quente e Bom — comportamento partilhado */
 (function () {
+  // skip link (acessibilidade) — primeiro elemento focável, salta para o conteúdo principal
+  (function () {
+    var main = document.querySelector('main');
+    if (!main) { var h = document.getElementById('hdr'); main = h && h.nextElementSibling; }
+    if (main) {
+      if (!main.id) main.id = 'conteudo';
+      if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
+      var sk = document.createElement('a');
+      sk.href = '#' + main.id; sk.className = 'skip-link'; sk.textContent = 'Saltar para o conteúdo';
+      document.body.insertBefore(sk, document.body.firstChild);
+    }
+  })();
+
   // header
   var hdr = document.getElementById('hdr');
   if (hdr) {
@@ -98,36 +111,93 @@
   frame();
 })();
 
-/* Metricool — analytics do site (hash público da marca) */
+/* ===== Consentimento de cookies + camada central de analytics =====
+   - Metricool e Meta Pixel (não essenciais) só carregam APÓS o utilizador aceitar.
+   - Todo o site mede eventos por window.qbTrack(nome, params); se ainda não há decisão,
+     os eventos ficam em fila; se recusar, são descartados (só essenciais). */
 (function () {
-  function loadScript(a) {
-    var b = document.getElementsByTagName("head")[0], c = document.createElement("script");
-    c.type = "text/javascript"; c.src = "https://tracker.metricool.com/resources/be.js";
-    c.onreadystatechange = a; c.onload = a; b.appendChild(c);
+  var KEY = 'qb-consent';                 // 'accepted' | 'rejected' | null (por decidir)
+  var state = null; try { state = localStorage.getItem(KEY); } catch (e) {}
+  var queue = [], loaded = false, banner = null;
+  var STD = { PageView: 1, Lead: 1, Contact: 1, CompleteRegistration: 1, ViewContent: 1, Search: 1, InitiateCheckout: 1, AddToCart: 1 };
+
+  function assign(a, b) { for (var k in b) if (Object.prototype.hasOwnProperty.call(b, k)) a[k] = b[k]; return a; }
+  function dispatch(name, params) {
+    if (!window.fbq) return;
+    try { STD[name] ? fbq('track', name, params) : fbq('trackCustom', name, params); } catch (e) {}
   }
-  loadScript(function () { beTracker.t({ hash: "4f08e52fadba55f51e0d84318564e5d0" }); });
+  // Camada central — TODO o site chama window.qbTrack('Evento', { ... })
+  window.qbTrack = function (name, params) {
+    params = params || {};
+    (window.dataLayer = window.dataLayer || []).push(assign({ event: name }, params));
+    if (state === 'accepted') dispatch(name, params);
+    else if (state == null) queue.push([name, params]);
+  };
+
+  function loadTools() {
+    if (loaded) return; loaded = true;
+    var mc = document.createElement('script');
+    mc.src = 'https://tracker.metricool.com/resources/be.js'; mc.async = true;
+    mc.onload = function () { try { beTracker.t({ hash: '4f08e52fadba55f51e0d84318564e5d0' }); } catch (e) {} };
+    document.head.appendChild(mc);
+    !function (f, b, e, v, n, t, s) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments) }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s) }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1428486132666431'); fbq('track', 'PageView');
+    queue.forEach(function (q) { dispatch(q[0], q[1]); }); queue = [];
+  }
+
+  function setChoice(v) { state = v; try { localStorage.setItem(KEY, v); } catch (e) {} if (v === 'accepted') loadTools(); else queue = []; hideBanner(); }
+  function hideBanner() { if (banner) banner.classList.remove('show'); }
+  function buildBanner() {
+    if (banner) return;
+    banner = document.createElement('div');
+    banner.className = 'cookie-banner'; banner.setAttribute('role', 'dialog');
+    banner.setAttribute('aria-label', 'Preferências de cookies');
+    banner.innerHTML =
+      '<div class="cb-txt">Usamos cookies para medir a utilização do site e melhorar a tua experiência. ' +
+      'Podes aceitar ou recusar os cookies não essenciais. <a href="/privacidade.html">Saber mais</a>.</div>' +
+      '<div class="cb-actions">' +
+      '<button type="button" class="btn btn-glass cb-no">Recusar</button>' +
+      '<button type="button" class="btn btn-sun cb-yes">Aceitar</button></div>';
+    document.body.appendChild(banner);
+    banner.querySelector('.cb-yes').addEventListener('click', function () { setChoice('accepted'); });
+    banner.querySelector('.cb-no').addEventListener('click', function () { setChoice('rejected'); });
+  }
+  // reabrir preferências (link "Cookies" no rodapé)
+  window.qbConsentOpen = function () { buildBanner(); banner.classList.add('show'); };
+
+  // Arranque
+  if (state === 'accepted') loadTools();
+  else if (state == null) { buildBanner(); setTimeout(function () { if (banner) banner.classList.add('show'); }, 600); }
+
+  // ---- Eventos globais (encaminhados pela camada; respeitam o consentimento) ----
+  if (location.pathname.indexOf('/receitas/') === 0 && location.pathname.length > 11) {
+    qbTrack('VerReceita', { pagina: location.pathname });
+  }
+  if (/\/obrigado(\.html)?$/.test(location.pathname)) {
+    qbTrack('Lead');
+    var _t = new URLSearchParams(location.search).get('t');
+    if (_t) qbTrack('LeadB2B', { tipo: _t });
+  }
+  document.addEventListener('click', function (e) {
+    var el = e.target && e.target.closest && e.target.closest('[onclick*="openBento"]');
+    if (el) qbTrack('Contact', { metodo: 'joaquim' });
+  }, true);
 })();
 
-/* Meta Pixel — Quente e Bom Angola Event Data (retargeting + otimização de anúncios) */
-(function (f, b, e, v, n, t, s) {
-  if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
-  if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
-  t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
-})(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1428486132666431');
-fbq('track', 'PageView');
-// evento próprio nas páginas de receita — permite otimizar/retargetar quem procura receitas
-if (location.pathname.indexOf('/receitas/') === 0 && location.pathname.length > 11) {
-  fbq('trackCustom', 'VerReceita', { pagina: location.pathname });
-}
-// Lead: página de agradecimento = sucesso de qualquer formulário Netlify (revendedor, cotação, contacto, candidatura)
-if (/\/obrigado(\.html)?$/.test(location.pathname)) {
-  fbq('track', 'Lead');
-  var _t = new URLSearchParams(location.search).get('t');
-  if (_t) fbq('trackCustom', 'LeadB2B', { tipo: _t }); // revendedor / cotacao — o lead comercial que vale dinheiro
-}
-// Contacto: abrir o chat do Joaquim é o principal sinal de interesse (não há wa.me/tel no site)
-document.addEventListener('click', function (e) {
-  var el = e.target && e.target.closest && e.target.closest('[onclick*="openBento"]');
-  if (el && window.fbq) fbq('track', 'Contact', { metodo: 'joaquim' });
-}, true);
+/* Rodapé legal — links em todas as páginas com footer + botão de preferências de cookies */
+(function () {
+  var ft = document.querySelector('footer.ft');
+  if (!ft) return;
+  var bar = document.createElement('div');
+  bar.className = 'ft-legal';
+  bar.innerHTML =
+    '<a href="/privacidade.html">Privacidade</a>' +
+    '<a href="/cookies/">Cookies</a>' +
+    '<a href="/termos/">Termos</a>' +
+    '<button type="button" class="ft-legal-btn">Preferências de cookies</button>';
+  var bot = ft.querySelector('.ft-bot');
+  if (bot && bot.parentNode) bot.parentNode.insertBefore(bar, bot);
+  else (ft.querySelector('.wrap') || ft).appendChild(bar);
+  var b = bar.querySelector('.ft-legal-btn');
+  b.addEventListener('click', function () { if (window.qbConsentOpen) window.qbConsentOpen(); });
+})();

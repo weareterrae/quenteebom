@@ -6,3 +6,7 @@ _meta-inbox/REDATOR_KEY.local.txt
 # Local Netlify folder
 .netlify
 _meta-inbox/EKOOLOGY-SECRETS.local.txt
+_meta-inbox/EXTERNATO-SECRETS.local.txt
+# Segredos/tokens locais — nunca comitar
+*.local.txt
+_meta-inbox/*.local.txt

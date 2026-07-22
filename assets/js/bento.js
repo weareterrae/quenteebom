@@ -10,9 +10,10 @@
   root.innerHTML =
     '<button class="bento-btn" id="bentoBtn" aria-label="Falar com o Joaquim">' +
     '<img src="/assets/img/bento_face.jpg" class="bento-btn-av" alt="">Falar com o Joaquim</button>' +
-    '<div class="bento-panel" id="bentoPanel" role="dialog" aria-label="Conversa com o Joaquim">' +
+    '<div class="bento-panel" id="bentoPanel" role="dialog" aria-modal="true" aria-label="Conversa com o Joaquim">' +
     '<div class="bp-head"><div class="bp-av"><img src="/assets/img/bento_face.jpg" alt="Joaquim"></div>' +
-    '<div><b>Joaquim</b><span>O Chef · responde na hora</span></div></div>' +
+    '<div><b>Joaquim</b><span>O Chef · responde na hora</span></div>' +
+    '<button type="button" id="bentoClose" class="bp-close" aria-label="Fechar conversa">✕</button></div>' +
     '<div class="bp-body" id="bpBody">' +
     '<div class="msg bot">Olá! 🧡 Sou o Joaquim, o Chef da Quente e Bom. Como te posso ajudar hoje?</div></div>' +
     '<div class="qbtns" id="bpBtns"></div>' +
@@ -28,15 +29,53 @@
     '.bp-input input:focus{border-color:#EE7A1B;background:#fff;}' +
     '.bp-input button{width:42px;height:42px;border-radius:50%;border:none;background:#EE7A1B;color:#fff;font-size:16px;cursor:pointer;flex:0 0 auto;transition:.2s;}' +
     '.bp-input button:hover{background:#CC5A08;}' +
-    '.msg.typing{color:#8a7157;font-style:italic;background:#fff;border:1px solid #eaddc9;}';
+    '.msg.typing{color:#8a7157;font-style:italic;background:#fff;border:1px solid #eaddc9;}' +
+    '.bp-head{position:relative}' +
+    '.bp-close{position:absolute;top:10px;right:12px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:13px;line-height:1;cursor:pointer}' +
+    '.bp-close:hover{background:rgba(255,255,255,.35)}' +
+    '.bp-close:focus-visible{outline:2px solid #fff;outline-offset:2px}';
   document.head.appendChild(st);
 
   var panel = document.getElementById('bentoPanel');
   var body = document.getElementById('bpBody');
   var btns = document.getElementById('bpBtns');
   var input = document.getElementById('bpInput');
-  document.getElementById('bentoBtn').addEventListener('click', function () { panel.classList.toggle('open'); if (panel.classList.contains('open')) input.focus(); });
-  window.openBento = function () { panel.classList.add('open'); input.focus(); };
+  var bentoBtn = document.getElementById('bentoBtn');
+  var lastFocus = null;
+  bentoBtn.setAttribute('aria-expanded', 'false');
+
+  function focusables() {
+    return Array.prototype.filter.call(
+      panel.querySelectorAll('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])'),
+      function (el) { return el.offsetParent !== null && !el.disabled; }
+    );
+  }
+  function onKey(e) {
+    if (e.key === 'Escape') { e.preventDefault(); closeBento(); return; }
+    if (e.key !== 'Tab') return;
+    var f = focusables(); if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+  function openBento() {
+    lastFocus = document.activeElement;
+    panel.classList.add('open');
+    bentoBtn.setAttribute('aria-expanded', 'true');
+    panel.addEventListener('keydown', onKey);
+    input.focus();
+    if (window.qbTrack) window.qbTrack('JoaquimAberto');
+  }
+  function closeBento() {
+    panel.classList.remove('open');
+    bentoBtn.setAttribute('aria-expanded', 'false');
+    panel.removeEventListener('keydown', onKey);
+    (lastFocus && lastFocus.focus ? lastFocus : bentoBtn).focus();
+  }
+  window.openBento = openBento;
+  window.closeBento = closeBento;
+  bentoBtn.addEventListener('click', function () { panel.classList.contains('open') ? closeBento() : openBento(); });
+  document.getElementById('bentoClose').addEventListener('click', closeBento);
 
   function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
   // markdown leve: links [texto](url), URLs soltos, **bold** e quebras de linha
@@ -110,8 +149,9 @@
     ]);
   }
   function onde() {
-    bot('Boa! 🛒 Estamos em vários supermercados por Angola — a oferta varia de loja para loja. Diz-me a tua <b>zona/província</b> e o produto que procuras! ☀️');
+    bot('Boa! 🛒 Estamos nos supermercados de toda a Angola — a oferta varia de loja para loja. Diz-me a tua <b>zona/província</b> e o produto que procuras, ou vê a nossa página Onde comprar! ☀️');
     setBtns([
+      { label: 'Ver onde comprar', go: function () { location.href = '/onde-comprar/'; } },
       { label: 'Falar no Instagram', go: function () { window.open('https://www.instagram.com/quenteebom/', '_blank'); home(); } },
       { label: 'Voltar', go: function () { home(); bot('Em que mais posso ajudar? 🧡'); } }
     ]);
@@ -119,7 +159,7 @@
   function revendedor() {
     bot('Que bom quereres trabalhar connosco! 🤝 Preenche o formulário e a equipa comercial fala contigo rapidinho. 🥖');
     setBtns([
-      { label: 'Abrir página de revendedores', go: function () { location.href = '/revendedores/'; } },
+      { label: 'Tornar-me revendedor', go: function () { location.href = '/profissional/revendedor/'; } },
       { label: 'Voltar', go: function () { home(); bot('Em que mais posso ajudar? 🧡'); } }
     ]);
   }
@@ -128,7 +168,7 @@
     setBtns([
       { label: 'Pão', go: function () { location.href = '/pao/'; } },
       { label: 'Bolos da Avó', go: function () { location.href = '/bolos-da-avo/'; } },
-      { label: 'Ver todos', go: function () { location.href = '/#mundos'; } }
+      { label: 'Ver todos', go: function () { location.href = '/produtos/'; } }
     ]);
   }
   home();

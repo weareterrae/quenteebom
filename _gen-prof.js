@@ -153,7 +153,38 @@ const CSS_EXTRA = `<style>
 .gcard h3{margin:0 0 4px;color:#5B2A4A}
 .gcard p{margin:0;font-size:13.5px;color:#6b5060}
 .gcard .num{display:inline-block;background:#F6C440;color:#5B2A4A;font-weight:800;font-size:12px;border-radius:999px;padding:2px 10px;margin-top:8px}
+.prof-faq{max-width:820px;margin:8px 0}
+.pf-q{background:#fff;border:1px solid #f0e0c8;border-radius:12px;padding:0 16px;margin:8px 0}
+.pf-q summary{cursor:pointer;font-weight:700;color:#5B2A4A;padding:14px 0;list-style:none}
+.pf-q summary::-webkit-details-marker{display:none}
+.pf-q summary::after{content:'+';float:right;color:#CC5A08;font-size:18px}
+.pf-q[open] summary::after{content:'\\2212'}
+.pf-q p{margin:0 0 14px;color:#4a3340;line-height:1.6}
 </style>`;
+
+function crumbs(items) {
+  var html = '<nav class="crumbs" aria-label="Onde estou"><ol>' + items.map(function (it, i) {
+    var last = i === items.length - 1;
+    return '<li>' + (it.url && !last ? '<a href="' + it.url + '">' + it.name + '</a>' : '<span aria-current="page">' + it.name + '</span>') + '</li>';
+  }).join('') + '</ol></nav>';
+  var ld = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items.map(function (it, i) {
+    var o = { '@type': 'ListItem', position: i + 1, name: it.name };
+    if (it.url) o.item = 'https://quenteebom.com' + it.url;
+    return o;
+  }) };
+  return { html: html, ld: '<script type="application/ld+json">' + JSON.stringify(ld) + '</script>' };
+}
+
+const FAQ_PROF = [
+  ['Como funciona o pedido?', 'Escolhe os artigos no catálogo de cotação, envias a tua lista e a equipa comercial responde rapidinho com os preços e o plano de entregas.'],
+  ['Como recebo os preços?', 'Os preços vêm na cotação, feita à medida do teu pedido pela equipa comercial. Não há preços fixos no site.'],
+  ['Preciso de padeiro especializado?', 'Não. O pão pré-cozido coze na loja em 8 a 12 minutos, com instruções simples — enche a vitrine com cheiro de acabado de fazer.'],
+  ['Já sou revendedor. Posso pedir só a prateleira?', 'Sim. Podes pedir a gama de prateleira (embalados), os congelados/bake-off, ou tudo num só pedido de cotação.'],
+];
+function faqLd(items) {
+  var obj = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map(function (q) { return { '@type': 'Question', name: q[0], acceptedAnswer: { '@type': 'Answer', text: q[1] } }; }) };
+  return '<script type="application/ld+json">' + JSON.stringify(obj) + '</script>';
+}
 
 function headerHTML(){return `<header class="hdr solid" id="hdr">
   <div class="wrap hrow">
@@ -162,7 +193,7 @@ function headerHTML(){return `<header class="hdr solid" id="hdr">
       <img src="/assets/logos/logo_color_trans.png" class="hlogo logo-c" alt="Quente e Bom">
     </a>
     <nav class="nav">
-      <a href="/#mundos">Produtos</a>
+      <a href="/produtos/">Produtos</a>
       <a href="/profissional/">Profissional</a>
       <a href="/receitas/">Receitas</a>
       <a href="/contacto/">Contactos</a>
@@ -182,7 +213,7 @@ function footerHTML(){return `<footer class="ft">
         <a href="/profissional/">Visão geral</a><a href="/profissional/pao-pre-cozido/">Pão Pré-cozido</a><a href="/profissional/pao-congelado/">Pão Pronto Congelado</a><a href="/profissional/pastelaria-massa-congelada/">Pastelaria em Massa</a><a href="/profissional/pastelaria-pronta/">Pastelaria Pronta</a><a href="/profissional/encomenda/">Pedido de cotação</a><a href="/profissional/revendedor/">Quero ser revendedor</a>
       </div>
       <div class="ft-col"><h5>Marca</h5>
-        <a href="/#mundos">Produtos</a><a href="/receitas/">Receitas</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a>
+        <a href="/produtos/">Produtos</a><a href="/receitas/">Receitas</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a>
       </div>
       <div class="ft-col"><h5>Contactos</h5>
         <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>
@@ -256,6 +287,7 @@ ${grupos}
 }
 
 function hubHTML(){
+  const cb = crumbs([{ name: 'Início', url: '/' }, { name: 'Área Profissional' }]);
   const cards = GAMAS.map(g => {
     const n = g.grupos.reduce((s,x)=>s+x.items.length,0);
     return `<a class="gcard" href="/profissional/${g.slug}/" data-reveal>
@@ -276,6 +308,7 @@ function hubHTML(){
   </div>
 </section>
 <section class="sec"><div class="wrap">
+${cb.html}
 <div class="prof-args" data-reveal>
   <div class="pa"><b>A gama toda num pedido</b><br>Prateleira e congelados: peça tudo o que precisa numa só cotação.</div>
   <div class="pa"><b>Sem padeiro especializado</b><br>Do congelador ao forno em minutos, com instruções simples.</div>
@@ -299,76 +332,218 @@ ${cards}
     <a class="btn btn-sun" href="/profissional/revendedor/">Quero ser revendedor</a>
   </div>
 </div>
+<div class="strip-t" style="margin-top:26px"><h3>Perguntas frequentes</h3></div>
+<div class="prof-faq">
+${FAQ_PROF.map(q => `  <details class="pf-q"><summary>${q[0]}</summary><p>${q[1]}</p></details>`).join('\n')}
+</div>
+${cb.ld}
+${faqLd(FAQ_PROF)}
 </div></section>`;
   return shell('Área Profissional — Quente e Bom · pré-cozidos e congelados', 'Pão pré-cozido, pão pronto congelado e pastelaria congelada para padarias, supermercados, cafés e restaurantes em toda a Angola.', '/profissional/', body);
 }
 
 function encomendaHTML(){
-  let opts = '';
-  GAMAS.forEach(g => {
-    opts += `<optgroup label="Congelados · ${g.nome}">`;
-    g.grupos.forEach(gr => gr.items.forEach(([ref,nome,peso,cx]) => {
-      opts += `<option value="${nome} ${peso} (${cx} un/cx) [${ref}]">${nome} · ${peso} · ${cx} un/caixa</option>`;
-    }));
-    opts += `</optgroup>`;
-  });
-  RETALHO.forEach(r => {
-    opts += `<optgroup label="Prateleira · ${r.mundo}">`;
-    r.items.forEach(([ref,nome,peso,cx]) => {
-      opts += `<option value="${nome} ${peso} (${cx} un/cx) [${ref}]">${nome} · ${peso} · ${cx} un/caixa</option>`;
-    });
-    opts += `</optgroup>`;
-  });
-  const body = `<section class="phero">
+  // catálogo completo: congelados/bake-off (GAMAS) + prateleira (RETALHO)
+  const SEGMAP = { 'pao-pre-cozido': 'precozido' }; // as restantes gamas de GAMAS = congelado
+  const ALL = [];
+  GAMAS.forEach(g => g.grupos.forEach(gr => gr.items.forEach(([ref,nome,peso,cx]) => {
+    ALL.push({ ref: String(ref), nome, peso, cx, seg: SEGMAP[g.slug] || 'congelado', cat: g.nome, grupo: gr.t });
+  })));
+  RETALHO.forEach(r => r.items.forEach(([ref,nome,peso,cx]) => {
+    ALL.push({ ref: String(ref), nome, peso, cx, seg: 'prateleira', cat: r.mundo, grupo: r.mundo });
+  }));
+  const cats = [];
+  ALL.forEach(p => { if (cats.indexOf(p.cat) < 0) cats.push(p.cat); });
+  const catOpts = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  const body = `<style>
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+  .enc-layout{display:grid;grid-template-columns:1fr 360px;gap:26px;align-items:start}
+  .enc-tools{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+  #encSearch{flex:1 1 240px;padding:12px 14px;border:1px solid #e5d5c0;border-radius:12px;font-size:15px;font-family:inherit}
+  #encCat{padding:12px;border:1px solid #e5d5c0;border-radius:12px;font-size:14px;font-family:inherit}
+  .enc-chips{display:flex;gap:8px;flex-wrap:wrap;flex:1 1 100%}
+  .enc-chip{border:1px solid #e5d5c0;background:#fff;color:#5B2A4A;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer}
+  .enc-chip.on{background:#5B2A4A;color:#fff;border-color:#5B2A4A}
+  .enc-count{color:#9b8290;font-size:13px;margin:0 2px 10px}
+  .enc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+  .enc-card{background:#fff;border:1px solid #f0e0c8;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;transition:box-shadow .2s}
+  .enc-card.added{box-shadow:0 0 0 2px #F6C440}
+  .ec-main{display:flex;flex-direction:column;gap:2px}
+  .ec-main b{color:#3A2030;font-size:15px}
+  .ec-meta{font-size:13px;color:#6b5060}.ec-ref{font-size:12px;color:#9b8290}
+  .ec-add{display:flex;gap:8px;align-items:center;margin-top:auto}
+  .ec-stepper{display:flex;align-items:center;border:1px solid #e5d5c0;border-radius:10px;overflow:hidden}
+  .ec-stepper button{width:32px;height:36px;border:0;background:#faf3e8;color:#5B2A4A;font-size:18px;cursor:pointer}
+  .ec-stepper input{width:42px;height:36px;border:0;text-align:center;font-size:14px;font-family:inherit}
+  .ec-addbtn{padding:8px 14px!important;font-size:13px;flex:1}
+  .enc-summary{background:#faf3e8;border:1px solid #f0e0c8;border-radius:18px;padding:18px;position:sticky;top:90px}
+  .enc-summary h3{margin:0 0 12px;color:#5B2A4A;display:flex;align-items:center;gap:8px;font-size:18px}
+  .enc-badge{background:#F6C440;color:#5B2A4A;border-radius:999px;font-size:13px;font-weight:800;padding:2px 10px}
+  .enc-cart{list-style:none;padding:0;margin:0 0 10px;max-height:300px;overflow:auto}
+  .ec-line{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #eee0cd}
+  .ecl-name{flex:1;display:flex;flex-direction:column;min-width:0}
+  .ecl-name b{font-size:13.5px;color:#3A2030}.ecl-name span{font-size:11.5px;color:#9b8290}
+  .ecl-qty{display:flex;align-items:center;border:1px solid #e5d5c0;border-radius:8px;overflow:hidden}
+  .ecl-qty button{width:26px;height:30px;border:0;background:#fff;cursor:pointer}
+  .ecl-qty input{width:34px;height:30px;border:0;text-align:center;font-family:inherit}
+  .ecl-rm{border:0;background:none;color:#c2201f;font-size:20px;cursor:pointer;line-height:1}
+  .enc-cart-empty{font-size:13px;color:#6b5060;background:#fff;border-radius:10px;padding:12px}
+  .enc-fields{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+  .enc-fields input,.enc-fields textarea{padding:11px;border:1px solid #e5d5c0;border-radius:10px;font-size:14px;font-family:inherit;width:100%}
+  .enc-fields .inval{border-color:#c2201f;background:#fff5f5}
+  .enc-consent{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:#6b5060;margin-bottom:10px}
+  .enc-consent input{margin-top:3px}
+  .enc-err{background:#fdecec;color:#a01a1a;border-radius:10px;padding:10px 12px;font-size:13.5px;margin:0 0 10px}
+  #encSubmit{width:100%}
+  .enc-mobilebar{display:none}
+  @media(max-width:860px){
+    .enc-layout{grid-template-columns:1fr}
+    .enc-summary{position:fixed;left:0;right:0;bottom:0;top:auto;border-radius:18px 18px 0 0;max-height:82vh;overflow:auto;transform:translateY(105%);transition:transform .28s;z-index:9000;box-shadow:0 -10px 40px rgba(91,42,74,.22)}
+    .enc-summary.open{transform:translateY(0)}
+    .enc-mobilebar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:8999;justify-content:space-between;align-items:center;background:#5B2A4A;color:#fff;border:0;padding:15px 20px;font-size:15px;font-weight:700;cursor:pointer}
+  }
+  @media(prefers-reduced-motion:reduce){.enc-summary{transition:none}}
+  @media(max-width:860px){.bento-btn{bottom:80px}} /* nao tapar a barra "Ver pedido" */
+  </style>
+  <section class="phero">
   <img src="/assets/img/expositor_1.jpg" alt="Pedido de cotação Quente e Bom">
   <div class="wrap">
     <div class="eyebrow">Área Profissional</div>
     <h1>Pedido de cotação</h1>
-    <p>Monte a sua lista, envie — e a equipa comercial responde rapidinho com preços e plano de entregas.</p>
+    <p>Monte a sua lista de produtos e envie — a equipa comercial responde rapidinho com os preços e o plano de entregas.</p>
   </div>
 </section>
-<section class="sec"><div class="wrap" style="max-width:760px">
-<form name="encomenda-profissional" method="POST" data-netlify="true" netlify-honeypot="bt" action="/obrigado.html" class="fform">
-  <input type="hidden" name="form-name" value="encomenda-profissional">
-  <p style="display:none"><input name="bt"></p>
-  <div class="strip-t"><h3>1 · A sua lista</h3></div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-    <select id="prod" style="flex:1;min-width:260px;padding:12px;border-radius:10px;border:1px solid #e5d5c0">${opts}</select>
-    <input id="qtd" type="number" min="1" value="1" style="width:90px;padding:12px;border-radius:10px;border:1px solid #e5d5c0" aria-label="Caixas">
-    <button type="button" class="btn btn-sun" onclick="addItem()">Adicionar</button>
+<section class="sec"><div class="wrap">
+  <div class="enc-layout">
+    <div class="enc-catalog">
+      <div class="enc-tools">
+        <label class="sr-only" for="encSearch">Pesquisar produto</label>
+        <input id="encSearch" type="search" placeholder="Pesquisar por nome ou referência…" autocomplete="off">
+        <label class="sr-only" for="encCat">Categoria</label>
+        <select id="encCat"><option value="">Todas as categorias</option>${catOpts}</select>
+        <div class="enc-chips" role="group" aria-label="Filtrar por tipo de produto">
+          <button type="button" class="enc-chip on" data-seg="" aria-pressed="true">Todos</button>
+          <button type="button" class="enc-chip" data-seg="prateleira" aria-pressed="false">Prateleira</button>
+          <button type="button" class="enc-chip" data-seg="precozido" aria-pressed="false">Pré-cozido</button>
+          <button type="button" class="enc-chip" data-seg="congelado" aria-pressed="false">Congelado</button>
+        </div>
+      </div>
+      <p class="enc-count" id="encVisible" aria-live="polite"></p>
+      <div class="enc-grid" id="encGrid"></div>
+      <p class="enc-count" id="encEmpty" hidden>Sem resultados. Tenta outro termo ou limpa os filtros.</p>
+    </div>
+
+    <aside class="enc-summary" id="encSummary" aria-label="Resumo do pedido de cotação">
+      <h3>O seu pedido <span class="enc-badge" id="encCount">0</span></h3>
+      <p class="enc-cart-empty" id="encCartEmpty">Ainda não escolheste artigos. Adiciona as caixas que precisas — os preços vêm na cotação. 🧡</p>
+      <ul class="enc-cart" id="encCart"></ul>
+      <form name="encomenda-profissional" method="POST" data-netlify="true" netlify-honeypot="bt" action="/obrigado.html?t=cotacao" id="encForm">
+        <input type="hidden" name="form-name" value="encomenda-profissional">
+        <input type="hidden" name="referencia" id="encRef">
+        <p style="display:none"><label>Não preencher <input name="bt" tabindex="-1" autocomplete="off"></label></p>
+        <textarea id="pedido" name="pedido" hidden></textarea>
+        <div class="enc-fields">
+          <input name="empresa" id="f-empresa" required placeholder="Nome do negócio *" autocomplete="organization">
+          <input name="nome" id="f-nome" required placeholder="O seu nome *" autocomplete="name">
+          <input name="whatsapp" id="f-whats" required inputmode="tel" placeholder="WhatsApp * (+244 …)">
+          <input name="email" id="f-email" type="email" placeholder="Email (opcional)" autocomplete="email">
+          <input name="provincia" id="f-prov" required placeholder="Província / zona *">
+          <textarea name="mensagem" rows="2" placeholder="Observações (opcional)"></textarea>
+        </div>
+        <div class="enc-consent">
+          <input type="checkbox" id="f-rgpd" required>
+          <label for="f-rgpd">Autorizo o contacto da equipa Quente e Bom sobre este pedido de cotação.</label>
+        </div>
+        <p class="enc-err" id="encErr" role="alert" hidden></p>
+        <button class="btn btn-sun" type="submit" id="encSubmit">Enviar pedido de cotação ☀️</button>
+      </form>
+    </aside>
   </div>
-  <ul id="lista" style="list-style:none;padding:0;margin:14px 0"></ul>
-  <textarea id="pedido" name="pedido" required readonly style="display:none"></textarea>
-  <div class="strip-t"><h3>2 · O seu negócio</h3></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-    <input name="empresa" placeholder="Nome do negócio *" required style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
-    <input name="nome" placeholder="O seu nome *" required style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
-    <input name="whatsapp" placeholder="WhatsApp *" required style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
-    <input name="email" type="email" placeholder="Email" style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
-    <input name="provincia" placeholder="Província / zona *" required style="grid-column:1/-1;padding:12px;border-radius:10px;border:1px solid #e5d5c0">
-  </div>
-  <div style="margin-top:18px;text-align:center"><button class="btn btn-sun" type="submit">Enviar pedido de cotação</button></div>
-</form>
+</div></section>
+<button type="button" class="enc-mobilebar" id="encMobileBar" hidden aria-expanded="false" aria-controls="encSummary">
+  <span id="encMobileCount">0 artigos</span><span>Ver pedido ↑</span>
+</button>
 <script>
-function addItem(){
-  var p=document.getElementById('prod'),q=document.getElementById('qtd');
-  var li=document.createElement('li');
-  li.style.cssText='background:#fff;border:1px solid #f0e0c8;border-radius:10px;padding:10px 14px;margin:6px 0;display:flex;justify-content:space-between;align-items:center';
-  li.dataset.v=q.value+' cx — '+p.value;
-  li.innerHTML='<span>'+q.value+' caixa(s) — '+p.options[p.selectedIndex].text+'</span><button type="button" style="border:none;background:#c2201f;color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer" onclick="this.parentNode.remove();sync()">×</button>';
-  document.getElementById('lista').appendChild(li);sync();
-}
-function sync(){
-  var v=[].map.call(document.querySelectorAll('#lista li'),function(x){return x.dataset.v}).join('\\n');
-  document.getElementById('pedido').value=v;
-}
-document.querySelector('form').addEventListener('submit',function(e){
-  sync();
-  if(!document.getElementById('pedido').value){e.preventDefault();alert('Adicione pelo menos um artigo \\u00e0 lista \\u2600\\ufe0f');}
-});
-</script>
-</div></section>`;
-  return shell('Pedido de cotação — Área Profissional · Quente e Bom', 'Monte a sua lista de pré-cozidos e congelados Quente e Bom e receba a cotação da equipa comercial.', '/profissional/encomenda/', body);
+(function(){
+  var PRODUCTS = ${JSON.stringify(ALL)};
+  var grid=document.getElementById('encGrid'), search=document.getElementById('encSearch'),
+      catSel=document.getElementById('encCat'), chips=document.querySelectorAll('.enc-chip'),
+      visEl=document.getElementById('encVisible'), emptyEl=document.getElementById('encEmpty'),
+      cartEl=document.getElementById('encCart'), cartEmpty=document.getElementById('encCartEmpty'),
+      countEl=document.getElementById('encCount'), mBar=document.getElementById('encMobileBar'),
+      mCount=document.getElementById('encMobileCount'), summary=document.getElementById('encSummary'),
+      pedido=document.getElementById('pedido');
+  var cart={}, seg='';
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+  function plural(n){return n+' artigo'+(n===1?'':'s');}
+
+  PRODUCTS.forEach(function(p){
+    var el=document.createElement('div'); el.className='enc-card';
+    el.setAttribute('data-search',(p.nome+' '+p.ref+' '+p.cat+' '+p.grupo).toLowerCase());
+    el.innerHTML='<div class="ec-main"><b>'+esc(p.nome)+'</b><span class="ec-meta">'+esc(p.peso)+' · '+p.cx+' un/caixa</span><span class="ec-ref">Ref. '+esc(p.ref)+'</span></div>'+
+      '<div class="ec-add"><div class="ec-stepper"><button type="button" aria-label="Menos" data-d="-1">\\u2212</button>'+
+      '<input type="number" min="1" value="1" aria-label="Caixas de '+esc(p.nome)+'"><button type="button" aria-label="Mais" data-d="1">+</button></div>'+
+      '<button type="button" class="btn btn-sun ec-addbtn">Adicionar</button></div>';
+    var inp=el.querySelector('.ec-stepper input');
+    el.querySelectorAll('.ec-stepper button').forEach(function(b){b.addEventListener('click',function(){inp.value=Math.max(1,(parseInt(inp.value,10)||1)+parseInt(b.getAttribute('data-d'),10));});});
+    el.querySelector('.ec-addbtn').addEventListener('click',function(){add(p,Math.max(1,parseInt(inp.value,10)||1));el.classList.add('added');setTimeout(function(){el.classList.remove('added');},700);});
+    p._el=el; grid.appendChild(el);
+  });
+
+  function filter(){
+    var q=search.value.trim().toLowerCase(), cat=catSel.value, n=0;
+    PRODUCTS.forEach(function(p){
+      var ok=(!seg||p.seg===seg)&&(!cat||p.cat===cat)&&(!q||p._el.getAttribute('data-search').indexOf(q)>=0);
+      p._el.style.display=ok?'':'none'; if(ok)n++;
+    });
+    visEl.textContent=plural(n)+' disponíveis'; emptyEl.hidden=n>0;
+  }
+  search.addEventListener('input',filter); catSel.addEventListener('change',filter);
+  chips.forEach(function(c){c.addEventListener('click',function(){chips.forEach(function(x){x.classList.remove('on');x.setAttribute('aria-pressed','false');});c.classList.add('on');c.setAttribute('aria-pressed','true');seg=c.getAttribute('data-seg');filter();});});
+
+  function add(p,q){cart[p.ref]={p:p,qty:q};renderCart();}
+  function renderCart(){
+    cartEl.innerHTML=''; var refs=Object.keys(cart), n=refs.length;
+    refs.forEach(function(ref){
+      var it=cart[ref], li=document.createElement('li'); li.className='ec-line';
+      li.innerHTML='<div class="ecl-name"><b>'+esc(it.p.nome)+'</b><span>'+esc(it.p.peso)+' · Ref. '+esc(ref)+'</span></div>'+
+        '<div class="ecl-qty"><button type="button" aria-label="Menos" data-d="-1">\\u2212</button><input type="number" min="1" value="'+it.qty+'" aria-label="Caixas"><button type="button" aria-label="Mais" data-d="1">+</button></div>'+
+        '<button type="button" class="ecl-rm" aria-label="Remover '+esc(it.p.nome)+'">\\u00d7</button>';
+      var inp=li.querySelector('.ecl-qty input');
+      li.querySelectorAll('.ecl-qty button').forEach(function(b){b.addEventListener('click',function(){inp.value=Math.max(1,(parseInt(inp.value,10)||1)+parseInt(b.getAttribute('data-d'),10));it.qty=parseInt(inp.value,10);sync();});});
+      inp.addEventListener('change',function(){inp.value=Math.max(1,parseInt(inp.value,10)||1);it.qty=parseInt(inp.value,10);sync();});
+      li.querySelector('.ecl-rm').addEventListener('click',function(){delete cart[ref];renderCart();});
+      cartEl.appendChild(li);
+    });
+    countEl.textContent=n; mCount.textContent=plural(n); cartEmpty.style.display=n?'none':'';
+    mBar.hidden=n===0; sync();
+  }
+  function sync(){pedido.value=Object.keys(cart).map(function(ref){var it=cart[ref];return it.qty+' cx \\u2014 '+it.p.nome+' '+it.p.peso+' ['+ref+']';}).join('\\n');}
+
+  document.getElementById('encRef').value='QB-'+Date.now().toString(36).toUpperCase().slice(-6);
+  var qp=new URLSearchParams(location.search), qcat=qp.get('cat');
+  if(qcat){catSel.value=qcat;}
+  filter();
+  var qref=qp.get('ref'); if(qref){var pp=PRODUCTS.filter(function(x){return x.ref===qref;})[0];if(pp){add(pp,1);}}
+
+  mBar.addEventListener('click',function(){var open=summary.classList.toggle('open');mBar.setAttribute('aria-expanded',open?'true':'false');});
+
+  var form=document.getElementById('encForm'), errEl=document.getElementById('encErr'), btn=document.getElementById('encSubmit'), sending=false;
+  form.addEventListener('input',function(){if(!errEl.hidden)errEl.hidden=true;});
+  form.addEventListener('submit',function(e){
+    sync(); var probs=[];
+    if(!Object.keys(cart).length)probs.push('Adiciona pelo menos um artigo ao pedido.');
+    ['f-empresa','f-nome','f-whats','f-prov'].forEach(function(id){var f=document.getElementById(id);if(f&&!f.value.trim()){probs.push('Preenche: '+f.placeholder.replace(' *',''));f.classList.add('inval');}else if(f){f.classList.remove('inval');}});
+    if(!document.getElementById('f-rgpd').checked)probs.push('\\u00c9 necess\\u00e1rio autorizar o contacto.');
+    if(probs.length){e.preventDefault();errEl.hidden=false;errEl.textContent=probs[0];errEl.scrollIntoView({block:'center'});return;}
+    if(sending){e.preventDefault();return;}
+    sending=true;btn.disabled=true;btn.textContent='A enviar\\u2026';
+    if(window.qbTrack)window.qbTrack('CotacaoEnviada',{artigos:Object.keys(cart).length});
+  });
+})();
+</script>`;
+  return shell('Pedido de cotação — Área Profissional · Quente e Bom', 'Monte a sua lista de produtos Quente e Bom (prateleira, pré-cozidos e congelados) e receba a cotação da equipa comercial, com entrega em toda a Angola.', '/profissional/encomenda/', body);
 }
 
 function revendedorHTML(){

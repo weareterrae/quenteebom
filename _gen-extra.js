@@ -1787,7 +1787,7 @@ function headerHTML() {
       <img src="/assets/logos/logo_color_trans.png" class="hlogo logo-c" alt="Quente e Bom">
     </a>
     <nav class="nav">
-      <a href="/#mundos">Produtos</a>
+      <a href="/produtos/">Produtos</a>
       <a href="/profissional/">Profissional</a>
       <a href="/receitas/">Receitas</a>
       <a href="/dicas/">Dicas</a>
@@ -1811,7 +1811,7 @@ function footerHTML() {
         <a href="/pao/">Pão</a><a href="/cakes/">Cakes</a><a href="/bolos-da-avo/">Bolos da Avó</a><a href="/biscoitos/">Biscoitos</a><a href="/snacks/">Snacks</a><a href="/tostas/">Tostas</a><a href="/ingredientes/">Ingredientes</a>
       </div>
       <div class="ft-col"><h5>Marca</h5>
-        <a href="/#historia">A nossa história</a><a href="/receitas/">Receitas</a><a href="/dicas/">Dicas e sugestões</a><a href="/profissional/">Área Profissional</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a><a href="/#onde">Onde comprar</a>
+        <a href="/quem-somos/">A nossa história</a><a href="/receitas/">Receitas</a><a href="/dicas/">Dicas e sugestões</a><a href="/profissional/">Área Profissional</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a><a href="/onde-comprar/">Onde comprar</a>
       </div>
       <div class="ft-col"><h5>Contactos</h5>
         <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>
@@ -1825,15 +1825,31 @@ function footerHTML() {
 </footer>`;
 }
 
+function crumbs(items) {
+  var html = '<nav class="crumbs" aria-label="Onde estou"><ol>' + items.map(function (it, i) {
+    var last = i === items.length - 1;
+    return '<li>' + (it.url && !last ? '<a href="' + it.url + '">' + it.name + '</a>' : '<span aria-current="page">' + it.name + '</span>') + '</li>';
+  }).join('') + '</ol></nav>';
+  var ld = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items.map(function (it, i) {
+    var o = { '@type': 'ListItem', position: i + 1, name: it.name };
+    if (it.url) o.item = 'https://quenteebom.com' + it.url;
+    return o;
+  }) };
+  return { html: html, ld: '<script type="application/ld+json">' + JSON.stringify(ld) + '</script>' };
+}
+
 function headHTML(titulo, desc, canon, ogimg) {
   return `<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${titulo}</title>
 <meta name="description" content="${desc}">
 <link rel="canonical" href="https://quenteebom.com${canon}">
+<meta property="og:type" content="article">
 <meta property="og:title" content="${titulo}">
 <meta property="og:description" content="${desc}">
 <meta property="og:image" content="https://quenteebom.com${ogimg}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://quenteebom.com${ogimg}">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
 <link rel="stylesheet" href="/assets/css/qeb.css?v=6">`;
 }
@@ -1955,18 +1971,31 @@ function recipeSchema(r) {
 function pagReceita(r) {
   const ings = r.ingredientes.map(i => `        <li>${i}</li>`).join('\n');
   const passos = r.passos.map(([t, p]) => `        <li><h4>${t}</h4><p>${p}</p></li>`).join('\n');
+  const cb = crumbs([{ name: 'Início', url: '/' }, { name: 'Receitas', url: '/receitas/' }, { name: r.titulo }]);
+  const catR = (META[r.slug] || {}).cat || 'Receita';
+  let related = RECEITAS.filter(x => x.slug !== r.slug && (META[x.slug] || {}).cat === catR).slice(0, 3);
+  if (related.length < 3) RECEITAS.filter(x => x.slug !== r.slug && related.indexOf(x) < 0).slice(0, 3 - related.length).forEach(x => related.push(x));
+  const relHTML = related.map(x => `      <a class="rec-card" href="/receitas/${x.slug}/">
+        <div class="im"><img src="${x.img}" alt="${x.titulo}" loading="lazy"><span class="tempo">⏱ ${x.tempo}</span></div>
+        <div class="bd"><div class="cat">${(META[x.slug] || {}).cat || 'Receita'}</div><h3>${x.titulo}</h3></div>
+      </a>`).join('\n');
+  const prodChips = (r.produtos || []).map(p => `<span class="rec-prod">${p[0]}</span>`).join('');
+  const listaJS = JSON.stringify(r.ingredientes.map(plainText));
+  const tituloJS = JSON.stringify(r.titulo);
+  const slugJS = JSON.stringify(r.slug);
   return `<!DOCTYPE html>
 <html lang="pt">
 <head>
 ${headHTML(`${r.titulo} — Receitas Quente e Bom`, r.intro, `/receitas/${r.slug}/`, r.img)}
 ${recipeSchema(r)}
+${cb.ld}
 </head>
 <body>
 ${headerHTML()}
 <section class="rec-head">
   <div class="wrap">
     <div>
-      <div class="eyebrow">Receitas · ${(META[r.slug] || {}).cat || 'Receita'}</div>
+      <div class="eyebrow">Receitas · ${catR}</div>
       <h1>${r.titulo}</h1>
       <p>${r.intro}</p>
       <div class="meta"><span class="pill">⏱ ${r.tempo}</span><span class="pill">${r.dif}</span><span class="pill">🍽 ${r.rende}</span></div>
@@ -1975,16 +2004,21 @@ ${headerHTML()}
   </div>
 </section>
 <section class="sec">
-  <div class="wrap rec-layout">
+  <div class="wrap">
+  ${cb.html}
+  <div class="rec-layout">
     <div>
       <div class="ing-card" data-reveal>
         <h3>Ingredientes</h3>
         <ul>
 ${ings}
         </ul>
-        <div class="meta" style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
-          <span class="pill">⏱ ${r.tempo}</span><span class="pill">${r.dif}</span><span class="pill">🍽 ${r.rende}</span>
+        <div class="rec-actions no-print">
+          <button type="button" class="btn btn-glass" id="recPrint">🖨 Imprimir</button>
+          <button type="button" class="btn btn-glass" id="recShare">🔗 Partilhar</button>
+          <button type="button" class="btn btn-glass" id="recList">🛒 Copiar lista</button>
         </div>
+        ${prodChips ? `<div class="rec-prods-in"><b>Com produtos Quente e Bom:</b><div class="rec-prods">${prodChips}</div><a class="rec-find" href="/produtos/">Encontrar os produtos →</a></div>` : ''}
       </div>
     </div>
     <div data-reveal>
@@ -1995,13 +2029,42 @@ ${passos}
         <img src="/assets/img/bento_face.jpg" alt="Joaquim">
         <div><b>Dica do Joaquim</b><p>${r.dicaBento}</p></div>
       </div>
-      <div style="margin-top:34px;"><a class="btn btn-orange" href="/receitas/">← Mais receitas</a></div>
     </div>
+  </div>
+  <div class="strip-t no-print" style="margin-top:30px"><h3>Também vais gostar</h3></div>
+  <div class="rec-grid no-print">
+${relHTML}
+  </div>
+  <div class="no-print" style="margin-top:20px"><a class="btn btn-orange" href="/receitas/">← Todas as receitas</a></div>
   </div>
 </section>
 ${footerHTML()}
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="/assets/js/site.js?v=9"></script>
 <script src="/assets/js/bento.js?v=5"></script>
+<script>
+(function(){
+  var LISTA=${listaJS};
+  function toast(m){var t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2200);}
+  var p=document.getElementById('recPrint');
+  if(p)p.addEventListener('click',function(){window.print();if(window.qbTrack)qbTrack('ReceitaImpressa',{receita:${slugJS}});});
+  var sh=document.getElementById('recShare');
+  if(sh)sh.addEventListener('click',function(){
+    var data={title:document.title,text:'Receita Quente e Bom: '+${tituloJS},url:location.href};
+    if(navigator.share){navigator.share(data).catch(function(){});}
+    else if(navigator.clipboard){navigator.clipboard.writeText(location.href).then(function(){toast('Ligação copiada 🔗');});}
+    else{toast('Copia o endereço da página 🔗');}
+    if(window.qbTrack)qbTrack('ReceitaPartilhada',{receita:${slugJS}});
+  });
+  var li=document.getElementById('recList');
+  if(li)li.addEventListener('click',function(){
+    var txt='Lista de compras — '+${tituloJS}+'\\n\\n- '+LISTA.join('\\n- ');
+    if(navigator.clipboard){navigator.clipboard.writeText(txt).then(function(){toast('Lista de compras copiada 🛒');});}
+    else{toast('Não foi possível copiar aqui.');}
+    if(window.qbTrack)qbTrack('ListaCompras',{receita:${slugJS}});
+  });
+})();
+</script>
 </body>
 </html>
 `;
@@ -2009,6 +2072,7 @@ ${footerHTML()}
 
 // ---------- página de dicas ----------
 function pagDicas() {
+  const cb = crumbs([{ name: 'Início', url: '/' }, { name: 'Dicas' }]);
   const cards = DICAS.map(d => `      <div class="dica" data-reveal>
         <div class="ico">${d.ico}</div>
         <h3>${d.t}</h3>
@@ -2018,6 +2082,7 @@ function pagDicas() {
 <html lang="pt">
 <head>
 ${headHTML('Dicas e Sugestões — Quente e Bom', 'Os truques do Joaquim para pão sempre fresco, torradas perfeitas, bolos fofos e lanches felizes.', '/dicas/', '/assets/img/dicas_hero.jpg')}
+${cb.ld}
 </head>
 <body>
 ${headerHTML()}
@@ -2031,6 +2096,7 @@ ${headerHTML()}
 </section>
 <section class="sec">
   <div class="wrap">
+    ${cb.html}
     <div class="dicas-grid">
 ${cards}
     </div>
