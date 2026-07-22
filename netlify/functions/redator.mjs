@@ -103,7 +103,9 @@ async function geminiCall(pedido) {
       body: JSON.stringify({
         ...(pedido.system ? { system_instruction: { parts: [{ text: pedido.system }] } } : {}),
         contents,
-        generationConfig: { maxOutputTokens: pedido.max_tokens || 400 },
+        // Folga de tokens: os modelos "thinking" gastam parte do orçamento a raciocinar,
+        // por isso damos margem para a resposta não sair truncada (o texto final é curto).
+        generationConfig: { maxOutputTokens: Math.max(Number(pedido.max_tokens) || 400, 2048) },
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
           { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
