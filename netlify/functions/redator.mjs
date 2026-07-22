@@ -1,9 +1,11 @@
-// Redator — proxy de IA para o meta-inbox das 3 marcas (Netlify Function v2)
-// Criado a 18/07/2026: a conta Console da Anthropic foi perdida, e as funções Supabase
-// (meta-inbox QeB/Minda/MP) não têm acesso ao AI Gateway da Netlify. Este proxy expõe
-// o gateway a essas funções, protegido por segredo partilhado (REDATOR_KEY).
-// Recebe o corpo de um pedido /v1/messages e devolve a resposta da Anthropic tal e qual.
-// NÃO é um endpoint público: sem a chave certa responde 401 e não gasta um token.
+// Redator — proxy de IA para o meta-inbox das marcas (Netlify Function v2)
+// 18/07/2026: a conta Console da Anthropic foi perdida; este proxy expõe a IA às funções
+//   Supabase do meta-inbox, protegido por segredo partilhado (REDATOR_KEY).
+// 22/07/2026: PRINCIPAL passou a ser o Google Gemini (chave direta do AI Studio, GEMINI_API_KEY);
+//   o Claude fica como RESERVA, só se ANTHROPIC_API_KEY estiver presente e válida.
+// Recebe um corpo no formato Anthropic /v1/messages e devolve SEMPRE no formato Anthropic
+//   ({content:[{type:"text",...}]}), para o index.ts do meta-inbox não notar a diferença.
+// NÃO é público: sem a chave certa responde 401 e não gasta um token.
 
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
@@ -11,8 +13,7 @@ const json = (obj, status = 200) =>
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 
-// Teto diário por instância — o inbox das 3 marcas nunca chega perto disto;
-// se chegar, é abuso ou bug, e é melhor parar.
+// Teto diário por instância — o inbox das marcas nunca chega perto disto.
 const DIA_LIMITE = 1000;
 let diaTotal = 0;
 let diaInicio = 0;
@@ -28,9 +29,6 @@ export default async (req) => {
   const agora = Date.now();
   if (agora - diaInicio > 86_400_000) { diaInicio = agora; diaTotal = 0; }
   if (++diaTotal > DIA_LIMITE) return json({ erro: "teto diário" }, 429);
-
-  const chave = process.env.ANTHROPIC_API_KEY;
-  if (!chave) return json({ erro: "gateway indisponível" }, 503);
 
   let corpo;
   try { corpo = await req.json(); } catch { return json({ erro: "pedido inválido" }, 400); }
@@ -48,47 +46,43 @@ export default async (req) => {
     messages: mensagens,
   };
 
+  // PRINCIPAL: Google Gemini (se GEMINI_API_KEY estiver configurada).
+  const g = await geminiCall(pedido);
+  if (g) return json(g);
+
+  // RESERVA: Anthropic Claude (só se ainda houver chave).
+  const chave = process.env.ANTHROPIC_API_KEY;
+  if (!chave) return json({ erro: "IA indisponível" }, 503);
   const base = (process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com").replace(/\/$/, "");
   try {
     const pedirClaude = () => fetch(`${base}/v1/messages`, {
       method: "POST",
-      headers: {
-        "x-api-key": chave,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-      },
+      headers: { "x-api-key": chave, "anthropic-version": "2023-06-01", "content-type": "application/json" },
       body: JSON.stringify(pedido),
     });
     let r = await pedirClaude();
-    // As rajadas de 429 do gateway duram ~1s — uma segunda tentativa resolve quase sempre.
     if (!r.ok && (r.status === 429 || r.status >= 500)) {
-      console.error("redator: Anthropic", r.status, "→ retry em 1.2s");
+      console.error("redator: Claude", r.status, "→ retry em 1.2s");
       await new Promise((res) => setTimeout(res, 1200));
       r = await pedirClaude();
     }
     const texto = await r.text();
-    if (!r.ok) {
-      console.error("redator: Anthropic", r.status, texto.slice(0, 300));
-      const b = await planoBGemini(pedido);
-      if (b) return json(b);
-    }
+    if (!r.ok) console.error("redator: Claude", r.status, texto.slice(0, 300));
     return new Response(texto, { status: r.status, headers: { "content-type": "application/json; charset=utf-8" } });
   } catch (e) {
-    console.error("redator: falha de rede", e);
-    const b = await planoBGemini(pedido);
-    if (b) return json(b);
+    console.error("redator: Claude falha de rede", e);
     return json({ erro: "falha de rede" }, 502);
   }
 };
 
-// PLANO B: se o Claude falhar, tenta o Gemini pelo MESMO gateway (GEMINI_API_KEY +
-// GOOGLE_GEMINI_BASE_URL injetados). Converte o pedido Anthropic → Gemini (incluindo
-// imagens base64 das stories) e devolve a resposta EMBRULHADA no formato Anthropic
-// ({content:[{type:"text",...}]}), para o index.ts do meta-inbox não notar a diferença.
-async function planoBGemini(pedido) {
+// Chama o Gemini e devolve a resposta EMBRULHADA no formato Anthropic. Converte o pedido
+// Anthropic → Gemini (incluindo imagens base64 das stories). Usa a chave DIRETA do Google
+// AI Studio (GEMINI_API_KEY); GOOGLE_GEMINI_BASE_URL é opcional (default = endpoint público).
+async function geminiCall(pedido) {
   const chave = process.env.GEMINI_API_KEY;
-  const base = (process.env.GOOGLE_GEMINI_BASE_URL || "").replace(/\/$/, "");
-  if (!chave || !base) return null;
+  if (!chave) return null;
+  const base = (process.env.GOOGLE_GEMINI_BASE_URL || "https://generativelanguage.googleapis.com").replace(/\/$/, "");
+  const modelo = process.env.GEMINI_MODEL || "gemini-2.0-flash";
   try {
     const contents = pedido.messages.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
@@ -102,19 +96,25 @@ async function planoBGemini(pedido) {
         })
         .filter(Boolean),
     }));
-    const r = await fetch(`${base}/v1beta/models/gemini-2.5-flash:generateContent`, {
+    const r = await fetch(`${base}/v1beta/models/${modelo}:generateContent`, {
       method: "POST",
       headers: { "content-type": "application/json", "x-goog-api-key": chave },
       body: JSON.stringify({
         ...(pedido.system ? { system_instruction: { parts: [{ text: pedido.system }] } } : {}),
         contents,
         generationConfig: { maxOutputTokens: pedido.max_tokens || 400 },
+        safetySettings: [
+          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" },
+        ],
       }),
     });
     if (!r.ok) { console.error("redator: Gemini", r.status, (await r.text()).slice(0, 200)); return null; }
     const j = await r.json();
     const texto = (j?.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("").trim();
-    return texto ? { content: [{ type: "text", text: texto }], _plano_b: "gemini-2.5-flash" } : null;
+    return texto ? { content: [{ type: "text", text: texto }], _via: modelo } : null;
   } catch (e) {
     console.error("redator: Gemini falha de rede", e);
     return null;
