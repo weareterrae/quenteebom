@@ -365,7 +365,7 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
   const storyImg = p.story_url
     ? `<div style="text-align:center;margin:12px 0;font-size:12.5px;color:#9b8290;line-height:1.6">${p.kind === "story_mention"
         ? "✨ <b>Marcou-vos numa story.</b> Para <b>repartilhares</b>: abre o Instagram, vai à marcação e toca em <b>\"Adicionar à tua story\"</b> (enquanto a story dela estiver no ar). O botão abaixo envia só o agradecimento por DM."
-        : "↩️ Isto é uma <b>resposta a uma story vossa</b> — ${BOT_NAME} já a viu e respondeu com esse contexto à frente."}</div>`
+        : `↩️ Isto é uma <b>resposta a uma story vossa</b> — ${BOT_NAME} já a viu e respondeu com esse contexto à frente.`}</div>`
     : "";
   const html = `
   <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#3A2030">
