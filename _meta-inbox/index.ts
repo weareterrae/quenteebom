@@ -35,6 +35,7 @@ const NOTIFY_LIST = NOTIFY_EMAIL.split(",").map((s) => s.trim()).filter(Boolean)
 // Depois de verificar um domínio, pôr o secret LEADS_EMAIL=geral@quenteebom.co.ao.
 const LEADS_EMAIL = env("LEADS_EMAIL", NOTIFY_EMAIL);
 const FROM_EMAIL   = env("FROM_EMAIL", "Joaquim da Quente e Bom <inbox@quenteebom.com>");
+const BOT_NAME     = env("BOT_NAME", "o Joaquim"); // nome do assistente NOS EMAILS, com artigo: "o Chef Kool", "a Kianda", "a Avó Maria"
 const HMAC_SECRET  = env("HMAC_SECRET");
 const FN_BASE      = env("FN_BASE");
 const PROMPT_URL   = env("PROMPT_URL", "https://quenteebom.com/bento-prompt.txt");
@@ -69,7 +70,7 @@ let cachedPrompt = ""; let cachedAt = 0;
 async function brand(): Promise<string> {
   if (Date.now() - cachedAt < 300000 && cachedPrompt) return cachedPrompt;
   try { cachedPrompt = await (await fetch(PROMPT_URL)).text(); cachedAt = Date.now(); }
-  catch { cachedPrompt = cachedPrompt || "És o Joaquim, o Chef da Quente e Bom (padaria angolana). Responde curto, caloroso, em português de Angola."; }
+  catch { cachedPrompt = cachedPrompt || `És ${BOT_NAME}, assistente da ${BRAND}. Responde curto e caloroso, em português europeu.`; }
   return cachedPrompt;
 }
 async function claude(system: string, user: string, max = 400, image: { data: string; mime: string } | null = null): Promise<string> {
@@ -364,7 +365,7 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
   const storyImg = p.story_url
     ? `<div style="text-align:center;margin:12px 0;font-size:12.5px;color:#9b8290;line-height:1.6">${p.kind === "story_mention"
         ? "✨ <b>Marcou-vos numa story.</b> Para <b>repartilhares</b>: abre o Instagram, vai à marcação e toca em <b>\"Adicionar à tua story\"</b> (enquanto a story dela estiver no ar). O botão abaixo envia só o agradecimento por DM."
-        : "↩️ Isto é uma <b>resposta a uma story vossa</b> — o Joaquim já a viu e respondeu com esse contexto à frente."}</div>`
+        : "↩️ Isto é uma <b>resposta a uma story vossa</b> — ${BOT_NAME} já a viu e respondeu com esse contexto à frente."}</div>`
     : "";
   const html = `
   <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#3A2030">
@@ -762,6 +763,7 @@ Deno.serve(async (req) => {
     const raw = await req.text();
     if (!await validSignature(req, raw)) return new Response("bad sig", { status: 401 });
     let payload: any; try { payload = JSON.parse(raw); } catch { return new Response("ok"); }
+    console.log("AVO_DIAG_WEBHOOK", JSON.stringify(payload).slice(0, 1400)); // DIAGNÓSTICO reações a stories — REMOVER depois de percebermos a forma
     // LEADS primeiro: os eventos "leadgen" vão direto por email (não precisam de aprovação).
     for (const entry of payload.entry || []) {
       for (const ch of entry.changes || []) {
