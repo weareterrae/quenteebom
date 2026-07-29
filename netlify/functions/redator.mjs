@@ -42,7 +42,7 @@ export default async (req) => {
   const pedido = {
     model: modelo,
     max_tokens: Math.min(Number(corpo.max_tokens) || 400, 1024),
-    system: typeof corpo.system === "string" ? corpo.system.slice(0, 60_000) : undefined,
+    system: typeof corpo.system === "string" ? corpo.system.slice(0, 200_000) : undefined,
     messages: mensagens,
   };
 
@@ -103,9 +103,11 @@ async function geminiCall(pedido) {
       body: JSON.stringify({
         ...(pedido.system ? { system_instruction: { parts: [{ text: pedido.system }] } } : {}),
         contents,
-        // Folga de tokens: os modelos "thinking" gastam parte do orçamento a raciocinar,
-        // por isso damos margem para a resposta não sair truncada (o texto final é curto).
-        generationConfig: { maxOutputTokens: Math.max(Number(pedido.max_tokens) || 400, 2048) },
+        // Folga de tokens: os modelos "thinking" gastam parte do orçamento a raciocinar.
+        // Com prompts grandes (ex.: Massa Prima ~69 KB) o modelo gastava TODO o orçamento a
+        // pensar e devolvia texto vazio → o inbox caía no fallback. Damos margem generosa
+        // (8192) para caberem raciocínio + resposta (o texto final é curto).
+        generationConfig: { maxOutputTokens: Math.max(Number(pedido.max_tokens) || 400, 8192) },
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
           { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
