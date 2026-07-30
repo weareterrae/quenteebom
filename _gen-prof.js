@@ -209,13 +209,13 @@ function footerHTML(){return `<footer class="ft">
         <img src="/assets/logos/logo_white_real.png" class="ft-logo" alt="Quente e Bom">
         <p style="color:#c9b6a2;font-size:14px;">Todos os dias, uma delícia. Feito em Angola desde 2012.</p>
       </div>
-      <div class="ft-col"><h5>Área Profissional</h5>
+      <div class="ft-col"><h2 class="ft-h5">Área Profissional</h2>
         <a href="/profissional/">Visão geral</a><a href="/profissional/pao-pre-cozido/">Pão Pré-cozido</a><a href="/profissional/pao-congelado/">Pão Pronto Congelado</a><a href="/profissional/pastelaria-massa-congelada/">Pastelaria em Massa</a><a href="/profissional/pastelaria-pronta/">Pastelaria Pronta</a><a href="/profissional/encomenda/">Pedido de cotação</a><a href="/profissional/revendedor/">Quero ser revendedor</a>
       </div>
-      <div class="ft-col"><h5>Marca</h5>
+      <div class="ft-col"><h2 class="ft-h5">Marca</h2>
         <a href="/produtos/">Produtos</a><a href="/receitas/">Receitas</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a>
       </div>
-      <div class="ft-col"><h5>Contactos</h5>
+      <div class="ft-col"><h2 class="ft-h5">Contactos</h2>
         <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>
         <a href="/contacto/">Fale connosco</a>
         <a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener">Instagram · @quenteebom</a>
@@ -227,7 +227,7 @@ function footerHTML(){return `<footer class="ft">
 
 function shell(title, desc, canonical, body){
   return `<!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-AO">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -243,14 +243,15 @@ function shell(title, desc, canonical, body){
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=6">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
 ${CSS_EXTRA}
 </head>
 <body>
 ${headerHTML()}
 ${body}
 ${footerHTML()}
-<script src="/assets/js/site.js?v=9"></script>
+<script src="/assets/js/analytics.js?v=1"></script>
+<script src="/assets/js/site.js?v=10"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>`;
@@ -260,7 +261,7 @@ function gamaHTML(g){
   const grupos = g.grupos.map(gr => {
     const rows = gr.items.map(([ref,nome,peso,cx]) =>
       `<tr><td class="n">${nome}</td><td>${peso}</td><td>${cx} un/caixa</td><td class="ref">${ref}</td></tr>`).join('\n');
-    return `<div class="strip-t"><h3>${gr.t}</h3></div>
+    return `<div class="strip-t"><h2>${gr.t}</h2></div>
 <div class="gfoto" data-reveal><img src="/assets/img/prof/${gr.fkey}.jpg" alt="${gr.t} — Quente e Bom" loading="lazy" data-fkey="${gr.fkey}"></div>
 <p class="ilus">Fotografia ilustrativa do produto.</p>
 <table class="spec">
@@ -315,7 +316,7 @@ ${cb.html}
   <div class="pa"><b>Cheiro de acabado de fazer</b><br>Pão e pastelaria quentes vendem mais — a qualquer hora do dia.</div>
   <div class="pa"><b>Produção própria em Viana</b><br>Fábrica em Luanda, entrega em todo o país, frescura garantida.</div>
 </div>
-<div class="strip-t"><h3>Gama de prateleira · produtos embalados</h3></div>
+<div class="strip-t"><h2>Gama de prateleira · produtos embalados</h2></div>
 <p style="color:#6b5060;margin:2px 2px 14px;max-width:840px">Toda a gama Quente e Bom para as prateleiras da sua loja — pão, cakes, biscoitos, tostas, snacks e ingredientes. <b>Os supermercados só os têm se os pedirem:</b> peça a cotação e escolha o que quer receber.</p>
 <div class="gcards">
 ${retailCards}

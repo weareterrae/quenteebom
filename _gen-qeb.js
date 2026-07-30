@@ -217,13 +217,13 @@ function footerHTML() {
         <img src="/assets/logos/logo_white_real.png" class="ft-logo" alt="Quente e Bom">
         <p style="color:#c9b6a2;font-size:14px;">Todos os dias, uma delícia. Feito em Angola desde 2012.</p>
       </div>
-      <div class="ft-col"><h5>Produtos</h5>
+      <div class="ft-col"><h2 class="ft-h5">Produtos</h2>
         <a href="/pao/">Pão</a><a href="/cakes/">Cakes</a><a href="/bolos-da-avo/">Bolos da Avó</a><a href="/biscoitos/">Biscoitos</a><a href="/snacks/">Snacks</a><a href="/tostas/">Tostas</a><a href="/ingredientes/">Ingredientes</a>
       </div>
-      <div class="ft-col"><h5>Marca</h5>
+      <div class="ft-col"><h2 class="ft-h5">Marca</h2>
         <a href="/quem-somos/">A nossa história</a><a href="/receitas/">Receitas</a><a href="/dicas/">Dicas e sugestões</a><a href="/profissional/">Área Profissional</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a><a href="/onde-comprar/">Onde comprar</a>
       </div>
-      <div class="ft-col"><h5>Contactos</h5>
+      <div class="ft-col"><h2 class="ft-h5">Contactos</h2>
         <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>
         <a href="/contacto/">Fale connosco</a>
         <a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener">Instagram · @quenteebom</a>
@@ -242,7 +242,7 @@ function pageHTML(cat) {
           <h3>${nome}</h3>
           <p class="sub">${desc || ''}</p>
         </a>`).join('\n');
-    return `      <div class="strip-t"><h3>${g.t}</h3></div>
+    return `      <div class="strip-t"><h2>${g.t}</h2></div>
       <div class="prods">
 ${cards}
       </div>`;
@@ -252,7 +252,7 @@ ${cards}
   const cb = crumbs([{ name: 'Início', url: '/' }, { name: 'Produtos', url: '/produtos/' }, { name: cat.nome }]);
 
   return `<!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-AO">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -264,7 +264,7 @@ ${cards}
 <meta property="og:image" content="https://quenteebom.com${cat.hero}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=6">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
 ${cb.ld}
 </head>
 <body>
@@ -302,7 +302,8 @@ ${grupos}
 
 ${footerHTML()}
 
-<script src="/assets/js/site.js?v=9"></script>
+<script src="/assets/js/analytics.js?v=1"></script>
+<script src="/assets/js/site.js?v=10"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>
@@ -316,7 +317,7 @@ function produtosIndexHTML() {
         <div class="ph"><img src="/assets/produtos/${p.cat}/${p.slug}.png" alt="${p.nome} — Quente e Bom" loading="lazy"></div>
         <h3>${p.nome}</h3><p class="sub">${p.desc}</p></a>`).join('\n');
   return `<!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-AO">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -328,7 +329,7 @@ function produtosIndexHTML() {
 <meta property="og:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=6">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
 ${cb.ld}
 <style>
 .pf-tools{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 14px}
@@ -361,6 +362,7 @@ ${cb.html}
     </div>
   </div>
   <p class="pf-count" id="pfCount" aria-live="polite"></p>
+  <h2 class="sr-only">Todos os produtos</h2>
   <div class="prods" id="pfGrid">
 ${cards}
   </div>
@@ -386,7 +388,8 @@ ${footerHTML()}
   if(qp){var tgt=document.querySelector('.pf-chip[data-cat="'+qp+'"]');if(tgt){tgt.click();}else{apply();}}else{apply();}
 })();
 </script>
-<script src="/assets/js/site.js?v=9"></script>
+<script src="/assets/js/analytics.js?v=1"></script>
+<script src="/assets/js/site.js?v=10"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>`;
@@ -410,7 +413,7 @@ function produtoHTML(p) {
   const aler = e.alergenios ? `<h2>Alergénios</h2><p>${e.alergenios}</p>` : '';
   const productLd = { '@context': 'https://schema.org', '@type': 'Product', name: p.nome, category: p.catNome, description: p.desc, image: 'https://quenteebom.com' + img, brand: { '@type': 'Brand', name: 'Quente e Bom' } };
   return `<!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-AO">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -423,7 +426,7 @@ function produtoHTML(p) {
 <meta property="og:image" content="https://quenteebom.com${img}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=6">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
 <script type="application/ld+json">${JSON.stringify(productLd)}</script>
 ${cb.ld}
 <style>
@@ -466,7 +469,8 @@ ${cb.html}
   </div>
 </div></section>
 ${footerHTML()}
-<script src="/assets/js/site.js?v=9"></script>
+<script src="/assets/js/analytics.js?v=1"></script>
+<script src="/assets/js/site.js?v=10"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>`;
@@ -481,7 +485,7 @@ function ondeComprarHTML() {
   const provOpts = PROVINCIAS.map(p => `<option>${p}</option>`).join('');
   const prodOpts = CATS.map(c => `<optgroup label="${c.nome}">` + c.grupos.map(g => g.items.map(i => `<option>${i[1]}</option>`).join('')).join('') + `</optgroup>`).join('');
   return `<!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-AO">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -493,7 +497,7 @@ function ondeComprarHTML() {
 <meta property="og:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=6">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
 ${cb.ld}
 <style>
 .oc-chains{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 6px}
@@ -520,7 +524,7 @@ ${headerHTML()}
 </section>
 <section class="sec"><div class="wrap">
 ${cb.html}
-  <div class="strip-t"><h3>Nas insígnias onde já nos encontras</h3></div>
+  <div class="strip-t"><h2>Nas insígnias onde já nos encontras</h2></div>
   <div class="oc-chains">
       ${chainChips}
   </div>
@@ -575,7 +579,8 @@ ${footerHTML()}
   });
 })();
 </script>
-<script src="/assets/js/site.js?v=9"></script>
+<script src="/assets/js/analytics.js?v=1"></script>
+<script src="/assets/js/site.js?v=10"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>`;
@@ -587,7 +592,7 @@ function quemSomosHTML() {
   // [VALIDAÇÃO INTERNA NECESSÁRIA] a preencher com dados documentados: nº de colaboradores, capacidade
   // produtiva, certificações/segurança alimentar (docs), marcos datados, fotos reais da fábrica/equipa.
   return `<!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-AO">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -599,7 +604,7 @@ function quemSomosHTML() {
 <meta property="og:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=6">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
 ${cb.ld}
 <style>
 .qs-split{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;margin:26px 0}
@@ -640,7 +645,7 @@ ${cb.html}
     </div>
   </div>
 
-  <div class="strip-t"><h3>No que acreditamos</h3></div>
+  <div class="strip-t"><h2>No que acreditamos</h2></div>
   <div class="qs-values">
     <div class="qs-val"><b>Frescura todos os dias</b><br>Produção diária — porque uma delícia sabe melhor fresquinha.</div>
     <div class="qs-val"><b>Sabor genuíno</b><br>Receitas que sabem a casa, do pão de cada dia aos Bolos da Avó.</div>
@@ -659,15 +664,16 @@ ${cb.html}
     </div>
   </div>
 
-  <div class="strip-t"><h3>Para negócios</h3></div>
+  <div class="strip-t"><h2>Para negócios</h2></div>
   <p style="color:#4a3340;max-width:820px;line-height:1.65">És supermercado, loja, café ou restaurante? Leva a gama Quente e Bom para o teu negócio. <a href="/profissional/" style="color:#CC5A08;font-weight:700">Conhece a Área Profissional</a>.</p>
 
-  <div class="strip-t"><h3>Contacto</h3></div>
+  <div class="strip-t"><h2>Contacto</h2></div>
   <p style="color:#4a3340;line-height:1.65">Fábrica · Estrada do Calumbo/Zango, Viana Parque, Viana — Luanda, Angola.<br>
   <a href="/contacto/" style="color:#CC5A08;font-weight:700">Fala connosco</a> · <a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener" style="color:#CC5A08;font-weight:700">Instagram</a></p>
 </div></section>
 ${footerHTML()}
-<script src="/assets/js/site.js?v=9"></script>
+<script src="/assets/js/analytics.js?v=1"></script>
+<script src="/assets/js/site.js?v=10"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>`;

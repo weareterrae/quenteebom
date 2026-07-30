@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-AO">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,18 +10,18 @@
 <meta property="og:description" content="Sugestões, elogios, dúvidas ou reclamações — a tua opinião faz-nos melhores.">
 <meta property="og:image" content="https://quenteebom.com/assets/img/familia.jpg">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=6">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
 <style>
   .ct-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:start;}
   @media(max-width:860px){.ct-grid{grid-template-columns:1fr;}}
   .ct-side{display:flex;flex-direction:column;gap:18px;position:sticky;top:90px;}
   .ct-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:0 8px 20px rgba(38,21,10,.06);}
-  .ct-card h3{font-family:var(--display);font-size:20px;color:var(--ink);margin-bottom:8px;}
+  .ct-card h2,.ct-card h3{font-family:var(--display);font-size:20px;color:var(--ink);margin-bottom:8px;}
   .ct-card p{font-size:14.5px;color:var(--muted);line-height:1.55;}
   .ct-card a{color:var(--orange-deep);font-weight:700;}
   .ct-joaquim{display:flex;gap:14px;align-items:center;background:linear-gradient(150deg,var(--marigold),var(--orange));border:none;color:var(--brown);}
   .ct-joaquim img{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:0 0 auto;}
-  .ct-joaquim h3{color:var(--brown);}
+  .ct-joaquim h2,.ct-joaquim h3{color:var(--brown);}
   .ct-joaquim p{color:#5b3410;}
   .tipo-chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px;}
   .tchip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;transition:.2s;font-family:var(--sans);}
@@ -123,22 +123,22 @@
       <div class="ct-card ct-joaquim">
         <img src="/assets/img/bento_face.jpg" alt="Joaquim, o Chef">
         <div>
-          <h3>Precisas de resposta já?</h3>
+          <h2>Precisas de resposta já?</h2>
           <p>O Joaquim responde na hora — onde comprar, receitas e mais.</p>
           <a href="#" onclick="openBento();return false;" style="color:var(--brown);text-decoration:underline;font-weight:800;">Falar com o Joaquim →</a>
         </div>
       </div>
       <div class="ct-card">
-        <h3>📍 A nossa fábrica</h3>
+        <h2>📍 A nossa fábrica</h2>
         <p>Estrada do Calumbo/Zango<br>Viana Park, Armazém 1Q8<br>Viana — Luanda, Angola</p>
       </div>
       <div class="ct-card">
-        <h3>📱 Redes sociais</h3>
+        <h2>📱 Redes sociais</h2>
         <p><a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener">Instagram · @quenteebom</a><br>
         <a href="https://www.facebook.com/quenteebomangola" target="_blank" rel="noopener">Facebook · Quente e Bom Angola</a></p>
       </div>
       <div class="ct-card">
-        <h3>🤝 Negócios</h3>
+        <h2>🤝 Negócios</h2>
         <p>Queres vender os nossos produtos? <a href="/profissional/revendedor/">Torna-te revendedor</a>.<br>Queres trabalhar connosco? <a href="/recrutamento/">Vê as carreiras</a>.</p>
       </div>
     </div>
@@ -152,13 +152,13 @@
         <img src="/assets/logos/logo_white_real.png" class="ft-logo" alt="Quente e Bom">
         <p style="color:#c9b6a2;font-size:14px;">Todos os dias, uma delícia. Feito em Angola desde 2012.</p>
       </div>
-      <div class="ft-col"><h5>Produtos</h5>
+      <div class="ft-col"><h2 class="ft-h5">Produtos</h2>
         <a href="/pao/">Pão</a><a href="/cakes/">Cakes</a><a href="/bolos-da-avo/">Bolos da Avó</a><a href="/biscoitos/">Biscoitos</a><a href="/snacks/">Snacks</a><a href="/tostas/">Tostas</a><a href="/ingredientes/">Ingredientes</a>
       </div>
-      <div class="ft-col"><h5>Marca</h5>
+      <div class="ft-col"><h2 class="ft-h5">Marca</h2>
         <a href="/quem-somos/">A nossa história</a><a href="/receitas/">Receitas</a><a href="/dicas/">Dicas e sugestões</a><a href="/profissional/">Área Profissional</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a>
       </div>
-      <div class="ft-col"><h5>Contactos</h5>
+      <div class="ft-col"><h2 class="ft-h5">Contactos</h2>
         <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>
         <a href="/contacto/">Fale connosco</a>
         <a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener">Instagram · @quenteebom</a>
@@ -169,7 +169,8 @@
   </div>
 </footer>
 
-<script src="/assets/js/site.js?v=9"></script>
+<script src="/assets/js/analytics.js?v=1"></script>
+<script src="/assets/js/site.js?v=10"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 <script>
 // chips de tipo → campo escondido + campos extra para reclamação
@@ -191,6 +192,7 @@ document.getElementById('ctForm').addEventListener('submit', function (e) {
     .then(function (r) {
       if (!r.ok) throw new Error(r.status);
       document.getElementById('formOk').style.display = 'block';
+      if (window.qebTrack) qebTrack('Lead', { form: 'contacto' });
       btn.textContent = 'Mensagem enviada ✓';
       f.querySelectorAll('input,textarea,button.tchip').forEach(function (el) { el.disabled = true; });
     })

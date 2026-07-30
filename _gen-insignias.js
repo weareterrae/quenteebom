@@ -82,9 +82,9 @@ const adormecidos = cl.slice(2)
   .map(r => `<li><b>${String(r[1]).trim()}</b> (nº ${r[0]})${grupoAtivo(String(r[1])) ? ' <span style="color:#8a7157;font-size:12px">— o grupo compra por outra entidade; possível conta antiga</span>' : ' <span style="color:#b03030;font-size:12px">— grupo inteiro sem compras!</span>'}</li>`);
 
 const html = `<!DOCTYPE html>
-<html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="pt-AO"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow"><title>Insígnias × Mundos — interno</title>
-<link rel="stylesheet" href="/assets/css/qeb.css?v=6"></head>
+<link rel="stylesheet" href="/assets/css/qeb.css?v=7"></head>
 <body style="padding:40px 20px;max-width:1100px;margin:0 auto">
 <p class="eyebrow" style="color:var(--orange)">EQUIPA COMERCIAL · CONFIDENCIAL — não partilhar fora da empresa</p>
 <h1 style="font-family:var(--display);margin:8px 0 4px">Presença por insígnia × mundo de produto</h1>

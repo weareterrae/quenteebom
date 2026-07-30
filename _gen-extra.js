@@ -1807,13 +1807,13 @@ function footerHTML() {
         <img src="/assets/logos/logo_white_real.png" class="ft-logo" alt="Quente e Bom">
         <p style="color:#c9b6a2;font-size:14px;">Todos os dias, uma delícia. Feito em Angola desde 2012.</p>
       </div>
-      <div class="ft-col"><h5>Produtos</h5>
+      <div class="ft-col"><h2 class="ft-h5">Produtos</h2>
         <a href="/pao/">Pão</a><a href="/cakes/">Cakes</a><a href="/bolos-da-avo/">Bolos da Avó</a><a href="/biscoitos/">Biscoitos</a><a href="/snacks/">Snacks</a><a href="/tostas/">Tostas</a><a href="/ingredientes/">Ingredientes</a>
       </div>
-      <div class="ft-col"><h5>Marca</h5>
+      <div class="ft-col"><h2 class="ft-h5">Marca</h2>
         <a href="/quem-somos/">A nossa história</a><a href="/receitas/">Receitas</a><a href="/dicas/">Dicas e sugestões</a><a href="/profissional/">Área Profissional</a><a href="/recrutamento/">Carreiras</a><a href="/contacto/">Contactos</a><a href="/onde-comprar/">Onde comprar</a>
       </div>
-      <div class="ft-col"><h5>Contactos</h5>
+      <div class="ft-col"><h2 class="ft-h5">Contactos</h2>
         <p>Fábrica · Estrada do Calumbo/Zango,<br>Viana Park, Viana — Luanda</p>
         <a href="/contacto/">Fale connosco</a>
         <a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener">Instagram · @quenteebom</a>
@@ -1851,7 +1851,7 @@ function headHTML(titulo, desc, canon, ogimg) {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://quenteebom.com${ogimg}">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=6">`;
+<link rel="stylesheet" href="/assets/css/qeb.css?v=7">`;
 }
 
 // ---------- hub de receitas (estilo revista: destaque + pesquisa + filtros) ----------
@@ -1871,7 +1871,7 @@ function hubReceitas() {
   }).join('\n');
   const fm = META[feat.slug] || { cat: 'Receita', tags: [] };
   return `<!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-AO">
 <head>
 ${headHTML('Receitas — Quente e Bom · Feito em Angola', 'Receitas simples e deliciosas com os produtos Quente e Bom — do lanche à festa, o Joaquim ensina.', '/receitas/', '/assets/img/rec_redvelvet.jpg')}
 </head>
@@ -1896,7 +1896,7 @@ ${chips}
     <a class="rec-feat" data-reveal href="/receitas/${feat.slug}/">
       <div class="bd">
         <div class="eyebrow">⭐ Receita em destaque</div>
-        <h3>${feat.titulo}</h3>
+        <h2>${feat.titulo}</h2>
         <p>${feat.intro}</p>
         <div class="meta"><span class="pill">⏱ ${feat.tempo}</span><span class="pill">${feat.dif}</span><span class="pill">${fm.cat}</span></div>
       </div>
@@ -1909,7 +1909,8 @@ ${cards}
   </div>
 </section>
 ${footerHTML()}
-<script src="/assets/js/site.js?v=9"></script>
+<script src="/assets/js/analytics.js?v=1"></script>
+<script src="/assets/js/site.js?v=10"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 <script>
 (function(){
@@ -1984,7 +1985,7 @@ function pagReceita(r) {
   const tituloJS = JSON.stringify(r.titulo);
   const slugJS = JSON.stringify(r.slug);
   return `<!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-AO">
 <head>
 ${headHTML(`${r.titulo} — Receitas Quente e Bom`, r.intro, `/receitas/${r.slug}/`, r.img)}
 ${recipeSchema(r)}
@@ -2009,7 +2010,7 @@ ${headerHTML()}
   <div class="rec-layout">
     <div>
       <div class="ing-card" data-reveal>
-        <h3>Ingredientes</h3>
+        <h2>Ingredientes</h2>
         <ul>
 ${ings}
         </ul>
@@ -2031,7 +2032,7 @@ ${passos}
       </div>
     </div>
   </div>
-  <div class="strip-t no-print" style="margin-top:30px"><h3>Também vais gostar</h3></div>
+  <div class="strip-t no-print" style="margin-top:30px"><h2>Também vais gostar</h2></div>
   <div class="rec-grid no-print">
 ${relHTML}
   </div>
@@ -2040,7 +2041,8 @@ ${relHTML}
 </section>
 ${footerHTML()}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="/assets/js/site.js?v=9"></script>
+<script src="/assets/js/analytics.js?v=1"></script>
+<script src="/assets/js/site.js?v=10"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 <script>
 (function(){
@@ -2075,11 +2077,11 @@ function pagDicas() {
   const cb = crumbs([{ name: 'Início', url: '/' }, { name: 'Dicas' }]);
   const cards = DICAS.map(d => `      <div class="dica" data-reveal>
         <div class="ico">${d.ico}</div>
-        <h3>${d.t}</h3>
+        <h2>${d.t}</h2>
         <p>${d.p}</p>
       </div>`).join('\n');
   return `<!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-AO">
 <head>
 ${headHTML('Dicas e Sugestões — Quente e Bom', 'Os truques do Joaquim para pão sempre fresco, torradas perfeitas, bolos fofos e lanches felizes.', '/dicas/', '/assets/img/dicas_hero.jpg')}
 ${cb.ld}
@@ -2107,7 +2109,8 @@ ${cards}
   </div>
 </section>
 ${footerHTML()}
-<script src="/assets/js/site.js?v=9"></script>
+<script src="/assets/js/analytics.js?v=1"></script>
+<script src="/assets/js/site.js?v=10"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>
