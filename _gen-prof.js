@@ -445,12 +445,12 @@ function encomendaHTML(){
         <p style="display:none"><label>Não preencher <input name="bt" tabindex="-1" autocomplete="off"></label></p>
         <textarea id="pedido" name="pedido" hidden></textarea>
         <div class="enc-fields">
-          <input name="empresa" id="f-empresa" required placeholder="Nome do negócio *" autocomplete="organization">
-          <input name="nome" id="f-nome" required placeholder="O seu nome *" autocomplete="name">
-          <input name="whatsapp" id="f-whats" required inputmode="tel" placeholder="WhatsApp * (+244 …)">
-          <input name="email" id="f-email" type="email" placeholder="Email (opcional)" autocomplete="email">
-          <input name="provincia" id="f-prov" required placeholder="Província / zona *">
-          <textarea name="mensagem" rows="2" placeholder="Observações (opcional)"></textarea>
+          <input name="empresa" id="f-empresa" required placeholder="Nome do negócio *" aria-label="Nome do negócio" autocomplete="organization">
+          <input name="nome" id="f-nome" required placeholder="O seu nome *" aria-label="O seu nome" autocomplete="name">
+          <input name="whatsapp" id="f-whats" required inputmode="tel" placeholder="WhatsApp * (+244 …)" aria-label="WhatsApp">
+          <input name="email" id="f-email" type="email" placeholder="Email (opcional)" aria-label="Email (opcional)" autocomplete="email">
+          <input name="provincia" id="f-prov" required placeholder="Província / zona *" aria-label="Província ou zona">
+          <textarea name="mensagem" rows="2" placeholder="Observações (opcional)" aria-label="Observações (opcional)"></textarea>
         </div>
         <div class="enc-consent">
           <input type="checkbox" id="f-rgpd" required>
@@ -561,12 +561,12 @@ function revendedorHTML(){
   <input type="hidden" name="form-name" value="lead-revendedor">
   <p style="display:none;"><label>Não preencher: <input name="bot-field"></label></p>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-    <input name="nome" placeholder="O seu nome *" required autocomplete="name" style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
-    <input name="negocio" placeholder="Nome do negócio *" required autocomplete="organization" style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
-    <input name="zona" placeholder="Zona / província * (ex.: Luanda — Viana)" required style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
-    <input name="whatsapp" placeholder="WhatsApp * (+244 ...)" required inputmode="tel" style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
+    <input name="nome" placeholder="O seu nome *" aria-label="O seu nome" required autocomplete="name" style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
+    <input name="negocio" placeholder="Nome do negócio *" aria-label="Nome do negócio" required autocomplete="organization" style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
+    <input name="zona" placeholder="Zona / província * (ex.: Luanda — Viana)" aria-label="Zona ou província" required style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
+    <input name="whatsapp" placeholder="WhatsApp * (+244 …)" aria-label="WhatsApp" required inputmode="tel" style="padding:12px;border-radius:10px;border:1px solid #e5d5c0">
   </div>
-  <textarea name="mensagem" rows="4" placeholder="Que produtos lhe interessam? (opcional — ex.: pão de forma, bolos da avó, pré-cozidos)" style="width:100%;margin-top:12px;padding:12px;border-radius:10px;border:1px solid #e5d5c0"></textarea>
+  <textarea name="mensagem" rows="4" placeholder="Que produtos lhe interessam? (opcional — ex.: pão de forma, bolos da avó, pré-cozidos)" aria-label="Que produtos lhe interessam (opcional)" style="width:100%;margin-top:12px;padding:12px;border-radius:10px;border:1px solid #e5d5c0"></textarea>
   <div style="display:flex;gap:8px;align-items:flex-start;margin:12px 0;font-size:13.5px;color:#6b5060">
     <input type="checkbox" required id="f-rgpd" style="margin-top:3px">
     <label for="f-rgpd">Autorizo o contacto da equipa Quente e Bom sobre este pedido.</label>

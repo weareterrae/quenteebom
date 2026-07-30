@@ -150,12 +150,12 @@
         <p style="display:none"><label>Não preencher <input name="bt" tabindex="-1" autocomplete="off"></label></p>
         <textarea id="pedido" name="pedido" hidden></textarea>
         <div class="enc-fields">
-          <input name="empresa" id="f-empresa" required placeholder="Nome do negócio *" autocomplete="organization">
-          <input name="nome" id="f-nome" required placeholder="O seu nome *" autocomplete="name">
-          <input name="whatsapp" id="f-whats" required inputmode="tel" placeholder="WhatsApp * (+244 …)">
-          <input name="email" id="f-email" type="email" placeholder="Email (opcional)" autocomplete="email">
-          <input name="provincia" id="f-prov" required placeholder="Província / zona *">
-          <textarea name="mensagem" rows="2" placeholder="Observações (opcional)"></textarea>
+          <input name="empresa" id="f-empresa" required placeholder="Nome do negócio *" aria-label="Nome do negócio" autocomplete="organization">
+          <input name="nome" id="f-nome" required placeholder="O seu nome *" aria-label="O seu nome" autocomplete="name">
+          <input name="whatsapp" id="f-whats" required inputmode="tel" placeholder="WhatsApp * (+244 …)" aria-label="WhatsApp">
+          <input name="email" id="f-email" type="email" placeholder="Email (opcional)" aria-label="Email (opcional)" autocomplete="email">
+          <input name="provincia" id="f-prov" required placeholder="Província / zona *" aria-label="Província ou zona">
+          <textarea name="mensagem" rows="2" placeholder="Observações (opcional)" aria-label="Observações (opcional)"></textarea>
         </div>
         <div class="enc-consent">
           <input type="checkbox" id="f-rgpd" required>
