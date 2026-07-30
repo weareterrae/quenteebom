@@ -52,6 +52,13 @@ a{text-decoration:none;color:inherit;}
 .hero{position:relative;height:100vh;min-height:640px;overflow:hidden;
   background:linear-gradient(180deg,var(--night) 0%,var(--dusk) 42%,#B24310 66%,var(--orange) 82%,var(--marigold) 100%);}
 #sun{position:absolute;inset:0;width:100%;height:100%;display:block;}
+/* nascer do sol — véu de madrugada que aquece até ao dourado (1x por sessão).
+   Estado final (dourado) é o default: sem JS ou se algo falhar, ninguém fica às escuras. */
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:linear-gradient(180deg,#131A33 0%,#47224A 46%,#7A2E12 76%,#A03A0E 100%);}
+.dawn .hero::before{opacity:1;animation:qebDawn 2.9s cubic-bezier(.4,.1,.3,1) .15s forwards;}
+@keyframes qebDawn{to{opacity:0;}}
+@media(prefers-reduced-motion:reduce){.dawn .hero::before{animation:none;opacity:0;}}
 .hero-grain{position:absolute;inset:0;opacity:.5;mix-blend-mode:overlay;pointer-events:none;
   background-image:radial-gradient(rgba(255,255,255,.10) 1px,transparent 1px);background-size:4px 4px;}
 .hero-c{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;justify-content:center;}
@@ -110,10 +117,13 @@ a{text-decoration:none;color:inherit;}
 /* ---------- product grid (category pages) ---------- */
 .prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;}
 .prod{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px 22px 22px;text-align:center;transition:.35s cubic-bezier(.2,.7,.2,1);box-shadow:0 8px 20px rgba(38,21,10,.06);display:flex;flex-direction:column;}
-.prod:hover{transform:translateY(-6px);box-shadow:0 22px 44px rgba(38,21,10,.15);border-color:#f0d9b8;}
 .prod .ph{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
 .prod .ph img{max-width:92%;max-height:92%;object-fit:contain;transition:.4s;}
-.prod:hover .ph img{transform:scale(1.06) rotate(-1deg);}
+/* elevação só em dispositivos com rato (hover real); sombra quente da casa */
+@media(hover:hover){
+  .prod:hover{transform:translateY(-6px);box-shadow:0 18px 38px rgba(204,90,8,.16),0 10px 24px rgba(38,21,10,.10);border-color:#f0d9b8;transition-duration:.2s;}
+  .prod:hover .ph img{transform:scale(1.06) rotate(-1deg);}
+}
 .prod h3{font-family:var(--display);font-size:19px;color:var(--ink);line-height:1.15;margin-top:auto;}
 .prod .sub{font-size:13.5px;color:var(--muted);margin-top:6px;}
 .prod .tag{display:inline-block;margin:0 auto 12px;background:var(--cream-2);color:var(--orange-deep);font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:999px;}
@@ -417,6 +427,35 @@ a.prod{text-decoration:none;color:inherit;display:block}
 .rec-find:hover{text-decoration:underline}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#5B2A4A;color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.28s;z-index:100002}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- vapor do pão (só desktop com rato; sobe do cartão do Pão) ---------- */
+.steam{display:none;}
+@media(min-width:840px) and (hover:hover){
+  .steam{display:block;position:absolute;left:50%;top:26%;width:0;z-index:1;pointer-events:none;}
+  .steam i{position:absolute;bottom:0;width:9px;height:54px;border-radius:50%;
+    background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,246,234,.6) 50%,rgba(255,255,255,0));
+    filter:blur(4px);opacity:0;animation:qebSteam 6s ease-in-out infinite;}
+  .steam i:nth-child(2){left:-26px;height:42px;animation-delay:2.1s;animation-duration:7s;}
+  .steam i:nth-child(3){left:20px;height:48px;animation-delay:3.6s;animation-duration:6.4s;}
+}
+@keyframes qebSteam{
+  0%{transform:translateY(12px) scaleY(.7);opacity:0;}
+  25%{opacity:.28;}
+  60%{opacity:.15;}
+  100%{transform:translateY(-44px) scaleY(1.2);opacity:0;}
+}
+@media(prefers-reduced-motion:reduce){.steam{display:none!important;}}
+
+/* ---------- transições entre páginas (View Transitions API · MPA) ----------
+   Cross-fade contido; degrada em browsers sem suporte (padrão da casa). */
+@view-transition{navigation:auto;}
+::view-transition-old(root),::view-transition-new(root){
+  animation-duration:.3s;
+  animation-timing-function:cubic-bezier(.65,0,.35,1);
+}
+@media(prefers-reduced-motion:reduce){
+  @view-transition{navigation:none;}
+}
 
 @media print{
   .hdr,.ft,.ft-legal,.bento-btn,.bento-panel,.cookie-banner,.skip-link,.crumbs,.no-print,.rec-actions,.bento-tip,.toast,.b2b{display:none!important}

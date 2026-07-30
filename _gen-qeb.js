@@ -264,7 +264,7 @@ ${cards}
 <meta property="og:image" content="https://quenteebom.com${cat.hero}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=8">
 ${cb.ld}
 </head>
 <body>
@@ -302,8 +302,8 @@ ${grupos}
 
 ${footerHTML()}
 
-<script src="/assets/js/analytics.js?v=1"></script>
-<script src="/assets/js/site.js?v=10"></script>
+<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/site.js?v=11"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>
@@ -329,7 +329,7 @@ function produtosIndexHTML() {
 <meta property="og:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=8">
 ${cb.ld}
 <style>
 .pf-tools{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 14px}
@@ -388,8 +388,8 @@ ${footerHTML()}
   if(qp){var tgt=document.querySelector('.pf-chip[data-cat="'+qp+'"]');if(tgt){tgt.click();}else{apply();}}else{apply();}
 })();
 </script>
-<script src="/assets/js/analytics.js?v=1"></script>
-<script src="/assets/js/site.js?v=10"></script>
+<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/site.js?v=11"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>`;
@@ -426,7 +426,7 @@ function produtoHTML(p) {
 <meta property="og:image" content="https://quenteebom.com${img}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=8">
 <script type="application/ld+json">${JSON.stringify(productLd)}</script>
 ${cb.ld}
 <style>
@@ -469,8 +469,8 @@ ${cb.html}
   </div>
 </div></section>
 ${footerHTML()}
-<script src="/assets/js/analytics.js?v=1"></script>
-<script src="/assets/js/site.js?v=10"></script>
+<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/site.js?v=11"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>`;
@@ -497,7 +497,7 @@ function ondeComprarHTML() {
 <meta property="og:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=8">
 ${cb.ld}
 <style>
 .oc-chains{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 6px}
@@ -579,8 +579,8 @@ ${footerHTML()}
   });
 })();
 </script>
-<script src="/assets/js/analytics.js?v=1"></script>
-<script src="/assets/js/site.js?v=10"></script>
+<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/site.js?v=11"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>`;
@@ -604,7 +604,7 @@ function quemSomosHTML() {
 <meta property="og:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=8">
 ${cb.ld}
 <style>
 .qs-split{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;margin:26px 0}
@@ -672,8 +672,8 @@ ${cb.html}
   <a href="/contacto/" style="color:#CC5A08;font-weight:700">Fala connosco</a> · <a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener" style="color:#CC5A08;font-weight:700">Instagram</a></p>
 </div></section>
 ${footerHTML()}
-<script src="/assets/js/analytics.js?v=1"></script>
-<script src="/assets/js/site.js?v=10"></script>
+<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/site.js?v=11"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>`;

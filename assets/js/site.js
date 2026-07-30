@@ -69,6 +69,11 @@
     mx = (e.clientX / innerWidth - 0.5); my = (e.clientY / innerHeight - 0.5);
   }, { passive: true });
 
+  // nascer do sol (1x por sessão): a classe .dawn é posta por um script inline no index
+  // antes da primeira pintura; aqui o sol começa baixo e sobe em ~2,9 s (easeOutCubic).
+  var dawn = document.documentElement.classList.contains('dawn');
+  var t0 = 0; // arranca no 1.º frame visível (rAF não corre em separadores ocultos)
+
   var t = 0;
   function frame() {
     t += 0.0045;
@@ -76,6 +81,12 @@
     // scroll progress inside the hero: 0 at top → sun risen; scrolling down sets the sun
     var sc = Math.min(1, Math.max(0, scrollY / (H * 0.9)));
     var rise = 1 - sc; // 1 = fully risen
+    if (dawn && !reduce) {
+      if (!t0) t0 = performance.now();
+      var p = Math.min(1, (performance.now() - t0) / 2900);
+      rise *= 1 - Math.pow(1 - p, 3); // sobe de madrugada até à posição final
+      if (p >= 1) dawn = false;
+    }
     var cx = W * 0.5 + mx * 40;
     var cy = H * (0.46 + (1 - rise) * 0.38) + my * 24; // sinks as you scroll
     var R = Math.max(70, Math.min(W, H) * (0.12 + rise * 0.03));

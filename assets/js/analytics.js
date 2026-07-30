@@ -8,7 +8,7 @@
 
   var CONFIG = {
     pixel: '1428486132666431',                      // Meta Pixel "Quente e Bom Web" (ligado à conta de anúncios)
-    ga4: '',                                        // GA4 Measurement ID (G-XXXXXXXXXX) — vazio = desligado
+    ga4: 'G-XK6C5KN9CE',                            // GA4 Measurement ID "Quente e Bom Web"
     metricool: '4f08e52fadba55f51e0d84318564e5d0'   // tracker Metricool QeB
   };
 

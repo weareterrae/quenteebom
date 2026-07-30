@@ -1851,7 +1851,7 @@ function headHTML(titulo, desc, canon, ogimg) {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://quenteebom.com${ogimg}">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=7">`;
+<link rel="stylesheet" href="/assets/css/qeb.css?v=8">`;
 }
 
 // ---------- hub de receitas (estilo revista: destaque + pesquisa + filtros) ----------
@@ -1909,8 +1909,8 @@ ${cards}
   </div>
 </section>
 ${footerHTML()}
-<script src="/assets/js/analytics.js?v=1"></script>
-<script src="/assets/js/site.js?v=10"></script>
+<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/site.js?v=11"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 <script>
 (function(){
@@ -2041,8 +2041,8 @@ ${relHTML}
 </section>
 ${footerHTML()}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="/assets/js/analytics.js?v=1"></script>
-<script src="/assets/js/site.js?v=10"></script>
+<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/site.js?v=11"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 <script>
 (function(){
@@ -2109,8 +2109,8 @@ ${cards}
   </div>
 </section>
 ${footerHTML()}
-<script src="/assets/js/analytics.js?v=1"></script>
-<script src="/assets/js/site.js?v=10"></script>
+<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/site.js?v=11"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>

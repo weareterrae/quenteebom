@@ -19,7 +19,9 @@
 <meta name="twitter:description" content="Pão fresquinho, Bolos da Avó, biscoitos, snacks e 80 receitas do Chef. Feito em Angola desde 2012.">
 <meta name="twitter:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=7">
+<script>/* nascer do sol: 1x por sessão, antes da primeira pintura; sem JS a cena fica dourada */
+(function(){try{if(!sessionStorage.getItem('qebDawn')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.className+=' dawn';sessionStorage.setItem('qebDawn','1');}}catch(e){}})();</script>
+<link rel="stylesheet" href="/assets/css/qeb.css?v=8">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -106,7 +108,7 @@
       <p>Do pão de cada dia aos bolos de festa — toca para descobrir.</p>
     </div>
     <div class="mundos">
-      <a class="mundo photo" data-reveal href="/pao/"><picture><source srcset="/assets/img/m_pao.webp" type="image/webp"><img src="/assets/img/m_pao.jpg" width="1200" height="805" alt="Pão Quente e Bom" loading="lazy" decoding="async"></picture><span class="lbl">Pão</span><span class="go">ver →</span></a>
+      <a class="mundo photo" data-reveal href="/pao/"><picture><source srcset="/assets/img/m_pao.webp" type="image/webp"><img src="/assets/img/m_pao.jpg" width="1200" height="805" alt="Pão Quente e Bom" loading="lazy" decoding="async"></picture><span class="steam" aria-hidden="true"><i></i><i></i><i></i></span><span class="lbl">Pão</span><span class="go">ver →</span></a>
       <a class="mundo photo" data-reveal href="/cakes/"><picture><source srcset="/assets/img/m_cakes.webp" type="image/webp"><img src="/assets/img/m_cakes.jpg" width="1200" height="805" alt="Cakes Quente e Bom" loading="lazy" decoding="async"></picture><span class="lbl">Cakes</span><span class="go">ver →</span></a>
       <a class="mundo photo" data-reveal href="/bolos-da-avo/"><picture><source srcset="/assets/img/m_bolos.webp" type="image/webp"><img src="/assets/img/m_bolos.jpg" width="1200" height="805" alt="Bolos da Avó" loading="lazy" decoding="async"></picture><span class="lbl">Bolos da Avó</span><span class="go">ver →</span></a>
       <a class="mundo photo" data-reveal href="/biscoitos/"><picture><source srcset="/assets/img/m_biscoitos.webp" type="image/webp"><img src="/assets/img/m_biscoitos.jpg" width="1200" height="805" alt="Biscoitos" loading="lazy" decoding="async"></picture><span class="lbl">Biscoitos</span><span class="go">ver →</span></a>
@@ -218,8 +220,8 @@
   </div>
 </footer>
 
-<script src="/assets/js/analytics.js?v=1"></script>
-<script src="/assets/js/site.js?v=10"></script>
+<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/site.js?v=11"></script>
 <script src="/assets/js/bento.js?v=5"></script>
 </body>
 </html>
