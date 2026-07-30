@@ -1909,9 +1909,9 @@ ${cards}
   </div>
 </section>
 ${footerHTML()}
-<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/analytics.js?v=3"></script>
 <script src="/assets/js/site.js?v=11"></script>
-<script src="/assets/js/bento.js?v=5"></script>
+<script src="/assets/js/bento.js?v=6"></script>
 <script>
 (function(){
   var q='', f='Todas';
@@ -2041,9 +2041,9 @@ ${relHTML}
 </section>
 ${footerHTML()}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/analytics.js?v=3"></script>
 <script src="/assets/js/site.js?v=11"></script>
-<script src="/assets/js/bento.js?v=5"></script>
+<script src="/assets/js/bento.js?v=6"></script>
 <script>
 (function(){
   var LISTA=${listaJS};
@@ -2109,9 +2109,9 @@ ${cards}
   </div>
 </section>
 ${footerHTML()}
-<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/analytics.js?v=3"></script>
 <script src="/assets/js/site.js?v=11"></script>
-<script src="/assets/js/bento.js?v=5"></script>
+<script src="/assets/js/bento.js?v=6"></script>
 </body>
 </html>
 `;

@@ -302,9 +302,9 @@ ${grupos}
 
 ${footerHTML()}
 
-<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/analytics.js?v=3"></script>
 <script src="/assets/js/site.js?v=11"></script>
-<script src="/assets/js/bento.js?v=5"></script>
+<script src="/assets/js/bento.js?v=6"></script>
 </body>
 </html>
 `;
@@ -388,9 +388,9 @@ ${footerHTML()}
   if(qp){var tgt=document.querySelector('.pf-chip[data-cat="'+qp+'"]');if(tgt){tgt.click();}else{apply();}}else{apply();}
 })();
 </script>
-<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/analytics.js?v=3"></script>
 <script src="/assets/js/site.js?v=11"></script>
-<script src="/assets/js/bento.js?v=5"></script>
+<script src="/assets/js/bento.js?v=6"></script>
 </body>
 </html>`;
 }
@@ -469,9 +469,9 @@ ${cb.html}
   </div>
 </div></section>
 ${footerHTML()}
-<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/analytics.js?v=3"></script>
 <script src="/assets/js/site.js?v=11"></script>
-<script src="/assets/js/bento.js?v=5"></script>
+<script src="/assets/js/bento.js?v=6"></script>
 </body>
 </html>`;
 }
@@ -579,9 +579,9 @@ ${footerHTML()}
   });
 })();
 </script>
-<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/analytics.js?v=3"></script>
 <script src="/assets/js/site.js?v=11"></script>
-<script src="/assets/js/bento.js?v=5"></script>
+<script src="/assets/js/bento.js?v=6"></script>
 </body>
 </html>`;
 }
@@ -672,9 +672,9 @@ ${cb.html}
   <a href="/contacto/" style="color:#CC5A08;font-weight:700">Fala connosco</a> · <a href="https://www.instagram.com/quenteebom/" target="_blank" rel="noopener" style="color:#CC5A08;font-weight:700">Instagram</a></p>
 </div></section>
 ${footerHTML()}
-<script src="/assets/js/analytics.js?v=2"></script>
+<script src="/assets/js/analytics.js?v=3"></script>
 <script src="/assets/js/site.js?v=11"></script>
-<script src="/assets/js/bento.js?v=5"></script>
+<script src="/assets/js/bento.js?v=6"></script>
 </body>
 </html>`;
 }

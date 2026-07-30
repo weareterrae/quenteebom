@@ -65,6 +65,50 @@ const json = (obj, status = 200) =>
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 
+// Respostas de CONTEÚDO vão como texto simples (o widget lê em stream ou de uma vez).
+// Só os ERROS de guardrail (403/429/400/405) continuam JSON — o widget faz throw neles.
+const texto = (str, status = 200) =>
+  new Response(String(str ?? ""), {
+    status,
+    headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
+  });
+
+// Converte o stream SSE da Anthropic num stream de texto simples (só os deltas de texto).
+function streamAnthropic(resp) {
+  const enc = new TextEncoder();
+  const dec = new TextDecoder();
+  return new ReadableStream({
+    async start(controller) {
+      const reader = resp.body.getReader();
+      let buf = "";
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          let nl;
+          while ((nl = buf.indexOf("\n")) >= 0) {
+            const line = buf.slice(0, nl).trim();
+            buf = buf.slice(nl + 1);
+            if (!line.startsWith("data:")) continue;
+            const payload = line.slice(5).trim();
+            if (!payload || payload === "[DONE]") continue;
+            try {
+              const ev = JSON.parse(payload);
+              if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") {
+                controller.enqueue(enc.encode(ev.delta.text));
+              }
+            } catch { /* linha SSE parcial/keep-alive — ignora */ }
+          }
+        }
+      } catch (e) {
+        console.error("joaquim: erro no stream", e);
+      }
+      controller.close();
+    },
+  });
+}
+
 // PLANO B: se o Claude falhar (erro/429), tenta o Gemini — pelo MESMO gateway da
 // Netlify (GEMINI_API_KEY + GOOGLE_GEMINI_BASE_URL injetados; sem chaves pessoais).
 async function planoBGemini(system, mensagens, maxTokens) {
@@ -102,7 +146,7 @@ export default async (req, context) => {
   if (excedeuLimites(ip)) return json({ error: "IA indisponível" }, 429);
 
   const chave = process.env.ANTHROPIC_API_KEY;
-  if (!chave) return json({ reply: CONTINGENCIA });
+  if (!chave) return texto(CONTINGENCIA);
 
   let corpo;
   try { corpo = await req.json(); } catch { return json({ error: "pedido inválido" }, 400); }
@@ -128,7 +172,7 @@ export default async (req, context) => {
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
       },
-      body: JSON.stringify({ model: modelo, max_tokens: 800, system, messages }),
+      body: JSON.stringify({ model: modelo, max_tokens: 800, system, messages, stream: true }),
     });
     let r = await pedirClaude();
     // As rajadas de 429 do gateway duram ~1s — uma segunda tentativa resolve quase sempre.
@@ -137,22 +181,20 @@ export default async (req, context) => {
       await new Promise((res) => setTimeout(res, 1200));
       r = await pedirClaude();
     }
-    if (!r.ok) {
-      console.error("joaquim: Anthropic", r.status, await r.text());
+    if (!r.ok || !r.body) {
+      console.error("joaquim: Anthropic", r.status, await r.text().catch(() => ""));
       const b = await planoBGemini(system, messages, 800);
-      return json({ reply: b || CONTINGENCIA });
+      return texto(b || CONTINGENCIA);
     }
-    const data = await r.json();
-    let reply = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
-    // Se o limite cortar a resposta, apara a última linha incompleta (sem markdown pendurado).
-    if (data.stop_reason === "max_tokens") {
-      reply = reply.replace(/\n[^\n]*$/, "").trim() || reply;
-    }
-    return json({ reply });
+    // Streaming: entrega os deltas de texto à medida que a Anthropic os gera (velocidade percebida).
+    // Se algo falhar a meio, o stream fecha com o que tiver; o widget mantém o fallback de botões.
+    return new Response(streamAnthropic(r), {
+      headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
+    });
   } catch (e) {
     console.error("joaquim: falha de rede", e);
     const b = await planoBGemini(system, messages, 800);
-    return json({ reply: b || CONTINGENCIA });
+    return texto(b || CONTINGENCIA);
   }
 };
 

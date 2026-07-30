@@ -23,6 +23,7 @@ const FORM_LABELS = {
   "encomenda-profissional": "Pedido de cotação 📋",
   "contacto": "Mensagem de contacto ✉️",
   "candidatura": "Candidatura 👤",
+  "lead-joaquim": "Lead do Chef Joaquim 💬",
 };
 // campos que, se existirem, são um número de telefone/WhatsApp
 const PHONE_KEYS = ["whatsapp", "telefone", "tel", "telemovel", "contacto", "phone"];

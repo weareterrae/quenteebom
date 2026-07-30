@@ -33,7 +33,16 @@
     '.bp-head{position:relative}' +
     '.bp-close{position:absolute;top:10px;right:12px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:13px;line-height:1;cursor:pointer}' +
     '.bp-close:hover{background:rgba(255,255,255,.35)}' +
-    '.bp-close:focus-visible{outline:2px solid #fff;outline-offset:2px}';
+    '.bp-close:focus-visible{outline:2px solid #fff;outline-offset:2px}' +
+    '.lead-card{background:#FFF6EA;border:1px solid #eaddc9}' +
+    '.lead-f{display:flex;flex-direction:column;gap:8px;margin-top:10px}' +
+    '.lead-f input{border:1.5px solid #eaddc9;border-radius:12px;padding:10px 14px;font-size:14.5px;font-family:inherit;outline:none;background:#fff}' +
+    '.lead-f input:focus{border-color:#EE7A1B}' +
+    '.lead-go{border:none;border-radius:999px;padding:11px 16px;background:#EE7A1B;color:#fff;font-weight:800;font-size:14.5px;cursor:pointer;font-family:inherit}' +
+    '.lead-go:hover{background:#CC5A08}.lead-go:disabled{opacity:.6;cursor:default}' +
+    '.lead-err{color:#b03030;font-size:12.5px;font-weight:600}' +
+    '.lead-note{color:#9b8290;font-size:11.5px;line-height:1.4}' +
+    '.lead-ok{color:#5B2A4A;font-weight:600}';
   document.head.appendChild(st);
 
   var panel = document.getElementById('bentoPanel');
@@ -92,33 +101,136 @@
   function me(txt) { body.insertAdjacentHTML('beforeend', '<div class="msg me">' + esc(txt) + '</div>'); body.scrollTop = body.scrollHeight; }
 
   // ---------- IA ----------
+  // O Joaquim pode marcar uma captação de lead terminando com ((LEAD:tipo)) — invisível para o
+  // visitante; o widget deteta, retira o marcador e mostra o mini-formulário.
+  function stripLead(s) {
+    return String(s || '')
+      .replace(/\(\(\s*LEAD\s*:\s*[a-z_]+\s*\)\)/ig, '')  // marcador completo
+      .replace(/\(\(\s*LEAD[^)]*$/i, '')                   // marcador parcial (a meio do stream)
+      .replace(/[ \t]+$/, '');
+  }
+  function detectLead(s) {
+    var m = String(s || '').match(/\(\(\s*LEAD\s*:\s*([a-z_]+)\s*\)\)/i);
+    return m ? m[1].toLowerCase() : null;
+  }
+
   function sendAI(text) {
     me(text);
     history.push({ role: 'user', content: text });
+    if (window.qbTrack) window.qbTrack('mensagem_enviada', { origem: 'joaquim', pagina: location.pathname });
+
     var typing = document.createElement('div');
     typing.className = 'msg bot typing';
     typing.textContent = 'O Joaquim está a escrever…';
     body.appendChild(typing); body.scrollTop = body.scrollHeight;
+
+    var bubble = null, acc = '';
+    function draw() {
+      if (!bubble) { typing.remove(); bubble = document.createElement('div'); bubble.className = 'msg bot'; body.appendChild(bubble); }
+      bubble.innerHTML = fmt(stripLead(acc)); body.scrollTop = body.scrollHeight;
+    }
 
     fetch(BENTO_ENDPOINT, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ messages: history })
     })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (d) {
-        typing.remove();
-        var reply = d.reply || 'Hmm, não percebi — podes repetir? 🧡';
+      .then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        if (r.body && r.body.getReader) {          // streaming: texto a aparecer à medida que é gerado
+          var reader = r.body.getReader(), dec = new TextDecoder();
+          return (function pump() {
+            return reader.read().then(function (res) {
+              if (res.done) return;
+              acc += dec.decode(res.value, { stream: true });
+              draw();
+              return pump();
+            });
+          })();
+        }
+        return r.text().then(function (t) { acc = t; draw(); });  // sem streaming: de uma vez
+      })
+      .then(function () {
+        var raw = acc.trim();
+        // compat: se vier JSON {"reply":"…"} (versão antiga em cache), extrai o texto
+        if (raw.charAt(0) === '{' && raw.indexOf('"reply"') !== -1) {
+          try { var j = JSON.parse(raw); if (j && typeof j.reply === 'string') acc = j.reply; } catch (e) {}
+        }
+        var reply = stripLead(acc).trim() || 'Hmm, não percebi — podes repetir? 🧡';
+        if (!bubble) { typing.remove(); bot(fmt(reply)); } else { bubble.innerHTML = fmt(reply); }
         history.push({ role: 'assistant', content: reply });
-        bot(fmt(reply));
+        var lead = detectLead(acc);
+        if (lead) setTimeout(function () { leadForm(lead); }, 300);
+        body.scrollTop = body.scrollHeight;
       })
       .catch(function () {
-        typing.remove();
+        try { typing.remove(); } catch (e) {}
+        if (bubble && !stripLead(acc).trim()) { try { bubble.remove(); } catch (e) {} }
         aiOk = false;
         bot('Estou com as mãos na massa 😅 Usa os botões aqui em baixo que eu ajudo na mesma! 🥖');
         home();
       });
   }
+
+  // ---------- Captação de lead DENTRO da conversa ----------
+  // Regra da casa (Angola): capta nome+contacto e envia para o MESMO destino do formulário do site
+  // (Netlify Form "lead-joaquim" → submission-created → email da equipa). NUNCA WhatsApp.
+  var leadEnviado = false;
+  var LEAD_LABEL = {
+    revendedor: 'Boa! 🤝 Deixa o teu <b>nome</b> e <b>contacto</b> (telefone ou email) que a equipa comercial fala contigo rapidinho.',
+    cotacao: 'Combinado! 📋 Deixa o teu <b>nome</b> e <b>contacto</b> que a equipa te prepara a cotação e liga.',
+    negocio: 'Que bom! 🤝 Deixa o teu <b>nome</b> e <b>contacto</b> que a equipa comercial trata de tudo contigo.',
+    contacto: 'Com certeza! ✉️ Deixa o teu <b>nome</b> e <b>contacto</b> que a equipa te responde.'
+  };
+  function encodeForm(obj) {
+    return Object.keys(obj).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(obj[k]); }).join('&');
+  }
+  function ultimoPedido() {
+    for (var i = history.length - 1; i >= 0; i--) { if (history[i].role === 'user') return history[i].content; }
+    return '';
+  }
+  function leadForm(tipo) {
+    if (leadEnviado) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'msg bot lead-card';
+    wrap.innerHTML = (LEAD_LABEL[tipo] || LEAD_LABEL.contacto) +
+      '<div class="lead-f">' +
+      '<input type="text" class="lead-nome" placeholder="O teu nome" autocomplete="name" maxlength="80">' +
+      '<input type="text" class="lead-ct" placeholder="Telefone ou email" autocomplete="tel" maxlength="120">' +
+      '<button type="button" class="lead-go">Enviar à equipa ☀️</button>' +
+      '<div class="lead-err" hidden></div>' +
+      '<div class="lead-note">Ao enviar, a nossa equipa comercial entra em contacto contigo.</div>' +
+      '</div>';
+    body.appendChild(wrap); body.scrollTop = body.scrollHeight;
+    var nome = wrap.querySelector('.lead-nome'), ct = wrap.querySelector('.lead-ct'),
+      go = wrap.querySelector('.lead-go'), err = wrap.querySelector('.lead-err');
+    try { nome.focus(); } catch (e) {}
+    function bad(m) { err.textContent = m; err.hidden = false; }
+    go.addEventListener('click', function () {
+      var n = nome.value.trim(), c = ct.value.trim();
+      if (n.length < 2) return bad('Diz-me o teu nome, por favor. 🧡');
+      var okCt = /@/.test(c) ? /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c) : (c.replace(/\D/g, '').length >= 9);
+      if (!okCt) return bad('Deixa um telefone (9 dígitos) ou um email válido.');
+      go.disabled = true; go.textContent = 'A enviar…'; err.hidden = true;
+      fetch('/', {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: encodeForm({ 'form-name': 'lead-joaquim', nome: n, contacto: c, assunto: tipo, mensagem: ultimoPedido().slice(0, 400), origem: location.pathname, 'bot-field': '' })
+      })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); })
+        .then(function () {
+          leadEnviado = true;
+          if (window.qbTrack) { window.qbTrack('Lead', { content_name: 'joaquim', tipo: tipo }); window.qbTrack('lead_assistente', { tipo: tipo, pagina: location.pathname }); }
+          wrap.querySelector('.lead-f').innerHTML = '<div class="lead-ok">Recebido, ' + esc(n.split(/\s+/)[0]) + '! 🧡 A equipa comercial fala contigo em breve. Todos os dias, uma delícia. ☀️</div>';
+        })
+        .catch(function () {
+          go.disabled = false; go.textContent = 'Enviar à equipa ☀️';
+          bad('Ups, não consegui enviar agora. Abre o formulário em /profissional/ 🧡');
+        });
+    });
+    ct.addEventListener('keydown', function (e) { if (e.key === 'Enter') go.click(); });
+  }
+  window.joaquimLead = leadForm;
   input.addEventListener('keydown', function (e) { if (e.key === 'Enter') trySend(); });
   document.getElementById('bpSend').addEventListener('click', trySend);
   function trySend() {
@@ -157,9 +269,10 @@
     ]);
   }
   function revendedor() {
-    bot('Que bom quereres trabalhar connosco! 🤝 Preenche o formulário e a equipa comercial fala contigo rapidinho. 🥖');
+    bot('Que bom quereres trabalhar connosco! 🤝 Posso passar já o teu contacto à equipa comercial — ou abrir o formulário completo. 🥖');
     setBtns([
-      { label: 'Tornar-me revendedor', go: function () { location.href = '/profissional/revendedor/'; } },
+      { label: 'Deixar o meu contacto aqui', go: function () { leadForm('revendedor'); } },
+      { label: 'Abrir formulário', go: function () { location.href = '/profissional/revendedor/'; } },
       { label: 'Voltar', go: function () { home(); bot('Em que mais posso ajudar? 🧡'); } }
     ]);
   }

@@ -26,9 +26,12 @@
   function dlog() { if (DEBUG && window.console) try { console.info.apply(console, ['[QeB]'].concat([].slice.call(arguments))); } catch (e) {} }
 
   function assign(a, b) { for (var k in b) if (Object.prototype.hasOwnProperty.call(b, k)) a[k] = b[k]; return a; }
+  // GA4 usa nomes de evento recomendados; mapeamos os nomes do Pixel quando diferem
+  // (ex.: um lead é 'Lead' no Pixel e 'generate_lead' no GA4). Aditivo: não muda o Pixel.
+  var GA4_MAP = { Lead: 'generate_lead', CompleteRegistration: 'sign_up', Contact: 'contact', Search: 'search', ViewContent: 'view_item' };
   function dispatch(name, params) {
     if (window.fbq) { try { STD[name] ? fbq('track', name, params) : fbq('trackCustom', name, params); } catch (e) {} }
-    if (window.gtag && CONFIG.ga4) { try { gtag('event', name, params || {}); } catch (e) {} }
+    if (window.gtag && CONFIG.ga4) { try { gtag('event', GA4_MAP[name] || name, params || {}); } catch (e) {} }
   }
 
   // Camada central — TODO o site chama window.qebTrack('Evento', { ... })
