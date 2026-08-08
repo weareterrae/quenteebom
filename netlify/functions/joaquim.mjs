@@ -1,6 +1,5 @@
 // Chef Joaquim — cérebro de IA (Netlify Function v2)
-// Migrado do Supabase (bento-web) a 18/07/2026 após a perda da conta Console da Anthropic:
-// usa o AI Gateway da Netlify (injeta ANTHROPIC_API_KEY + ANTHROPIC_BASE_URL, fatura na conta Netlify).
+// Motor: Gemini (gemini-flash-latest) pelo AI Gateway da Netlify (GEMINI_API_KEY injetado).
 // O SYSTEM_PROMPT continua REMOTO em /bento-prompt.txt — git push = atualizar o cérebro (cache 5 min).
 
 const PROMPT_URL = "https://quenteebom.com/bento-prompt.txt";
@@ -116,7 +115,7 @@ async function planoBGemini(system, mensagens, maxTokens) {
   const base = (process.env.GOOGLE_GEMINI_BASE_URL || "https://generativelanguage.googleapis.com").replace(/\/$/, "");
   if (!chave || !base) return null;
   try {
-    const r = await fetch(`${base}/v1beta/models/gemini-2.5-flash:generateContent`, {
+    const r = await fetch(`${base}/v1beta/models/gemini-flash-latest:generateContent`, {
       method: "POST",
       headers: { "content-type": "application/json", "x-goog-api-key": chave },
       body: JSON.stringify({
@@ -125,7 +124,9 @@ async function planoBGemini(system, mensagens, maxTokens) {
           role: m.role === "assistant" ? "model" : "user",
           parts: [{ text: typeof m.content === "string" ? m.content : "" }],
         })),
-        generationConfig: { maxOutputTokens: maxTokens },
+        // gemini-flash-latest + teto folgado: o 2.5-flash "pensador" com poucos
+        // tokens gasta-os todos a pensar e devolve texto vazio → mínimo 1024.
+        generationConfig: { maxOutputTokens: Math.max(maxTokens, 1024) },
       }),
     });
     if (!r.ok) { console.error("joaquim: Gemini", r.status, (await r.text()).slice(0, 200)); return null; }
@@ -145,7 +146,7 @@ export default async (req, context) => {
   const ip = context?.ip || req.headers.get("x-nf-client-connection-ip") || "?";
   if (excedeuLimites(ip)) return json({ error: "IA indisponível" }, 429);
 
-  const chave = process.env.ANTHROPIC_API_KEY;
+  const chave = process.env.GEMINI_API_KEY;
   if (!chave) return texto(CONTINGENCIA);
 
   let corpo;
@@ -161,41 +162,8 @@ export default async (req, context) => {
   }
 
   const system = await getPrompt();
-  const modelo = process.env.CLAUDE_MODEL || "claude-sonnet-5";
-  const base = (process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com").replace(/\/$/, "");
-
-  try {
-    const pedirClaude = () => fetch(`${base}/v1/messages`, {
-      method: "POST",
-      headers: {
-        "x-api-key": chave,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ model: modelo, max_tokens: 800, system, messages, stream: true }),
-    });
-    let r = await pedirClaude();
-    // As rajadas de 429 do gateway duram ~1s — uma segunda tentativa resolve quase sempre.
-    if (!r.ok && (r.status === 429 || r.status >= 500)) {
-      console.error("joaquim: Anthropic", r.status, "→ retry em 1.2s");
-      await new Promise((res) => setTimeout(res, 1200));
-      r = await pedirClaude();
-    }
-    if (!r.ok || !r.body) {
-      console.error("joaquim: Anthropic", r.status, await r.text().catch(() => ""));
-      const b = await planoBGemini(system, messages, 800);
-      return texto(b || CONTINGENCIA);
-    }
-    // Streaming: entrega os deltas de texto à medida que a Anthropic os gera (velocidade percebida).
-    // Se algo falhar a meio, o stream fecha com o que tiver; o widget mantém o fallback de botões.
-    return new Response(streamAnthropic(r), {
-      headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
-    });
-  } catch (e) {
-    console.error("joaquim: falha de rede", e);
-    const b = await planoBGemini(system, messages, 800);
-    return texto(b || CONTINGENCIA);
-  }
+  const b = await planoBGemini(system, messages, 1024);
+  return texto(b || CONTINGENCIA);
 };
 
 export const config = { path: "/api/joaquim" };
