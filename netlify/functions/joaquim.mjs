@@ -2,6 +2,8 @@
 // Motor: Gemini (gemini-flash-latest) pelo AI Gateway da Netlify (GEMINI_API_KEY injetado).
 // O SYSTEM_PROMPT continua REMOTO em /bento-prompt.txt — git push = atualizar o cérebro (cache 5 min).
 
+import { chamarGemini } from "./_shared/gemini.mjs";
+
 const PROMPT_URL = "https://quenteebom.com/bento-prompt.txt";
 const PROMPT_TTL_MS = 5 * 60 * 1000;
 
@@ -110,33 +112,26 @@ function streamAnthropic(resp) {
 
 // PLANO B: se o Claude falhar (erro/429), tenta o Gemini — pelo MESMO gateway da
 // Netlify (GEMINI_API_KEY + GOOGLE_GEMINI_BASE_URL injetados; sem chaves pessoais).
+// A resiliência (várias chaves/modelos, retries com backoff a absorver os 503
+// "overloaded" da Google) fica no helper partilhado; aqui só montamos o pedido.
 async function planoBGemini(system, mensagens, maxTokens) {
-  const chave = process.env.GEMINI_API_KEY;
   const base = (process.env.GOOGLE_GEMINI_BASE_URL || "https://generativelanguage.googleapis.com").replace(/\/$/, "");
-  if (!chave || !base) return null;
-  try {
-    const r = await fetch(`${base}/v1beta/models/gemini-flash-latest:generateContent`, {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-goog-api-key": chave },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: system }] },
-        contents: mensagens.map((m) => ({
-          role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: typeof m.content === "string" ? m.content : "" }],
-        })),
-        // gemini-flash-latest + teto folgado: o 2.5-flash "pensador" com poucos
-        // tokens gasta-os todos a pensar e devolve texto vazio → mínimo 1024.
-        generationConfig: { maxOutputTokens: Math.max(maxTokens, 1024) },
-      }),
-    });
-    if (!r.ok) { console.error("joaquim: Gemini", r.status, (await r.text()).slice(0, 200)); return null; }
-    const j = await r.json();
-    const texto = (j?.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("").trim();
-    return texto || null;
-  } catch (e) {
-    console.error("joaquim: Gemini falha de rede", e);
-    return null;
-  }
+  const contents = mensagens.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: typeof m.content === "string" ? m.content : "" }],
+  }));
+  const r = await chamarGemini({
+    system,
+    contents,
+    // gemini-flash-latest + teto folgado: o 2.5-flash "pensador" com poucos
+    // tokens gasta-os todos a pensar e devolve texto vazio → mínimo 1024.
+    maxOutputTokens: Math.max(maxTokens, 1024),
+    // Principal atual + reserva estável, caso o "latest" ande sobrecarregado.
+    models: ["gemini-flash-latest", "gemini-2.0-flash"],
+    baseUrl: base,
+    logPrefix: "joaquim",
+  });
+  return r?.text || null;
 }
 
 export default async (req, context) => {

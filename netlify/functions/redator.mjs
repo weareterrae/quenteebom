@@ -7,6 +7,8 @@
 //   ({content:[{type:"text",...}]}), para o index.ts do meta-inbox não notar a diferença.
 // NÃO é público: sem a chave certa responde 401 e não gasta um token.
 
+import { chamarGemini } from "./_shared/gemini.mjs";
+
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
     status,
@@ -80,52 +82,42 @@ export default async (req) => {
 // pago (GEMINI_API_KEY) no endpoint público do Google — NÃO passa pela AI Gateway.
 // Modelo por omissão: gemini-2.5-pro (topo); pode mudar-se com a variável GEMINI_MODEL.
 async function geminiCall(pedido) {
-  const chave = process.env.GEMINI_API_KEY;
-  if (!chave) return null;
-  const base = "https://generativelanguage.googleapis.com"; // chave direta do plano pago (não a AI Gateway)
   const modelo = process.env.GEMINI_MODEL || "gemini-pro-latest";
-  try {
-    const contents = pedido.messages.map((m) => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: (Array.isArray(m.content) ? m.content : [{ type: "text", text: String(m.content ?? "") }])
-        .map((b) => {
-          if (b.type === "text") return { text: b.text || "" };
-          if (b.type === "image" && b.source?.type === "base64") {
-            return { inline_data: { mime_type: b.source.media_type, data: b.source.data } };
-          }
-          return null;
-        })
-        .filter(Boolean),
-    }));
-    const r = await fetch(`${base}/v1beta/models/${modelo}:generateContent`, {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-goog-api-key": chave },
-      body: JSON.stringify({
-        ...(pedido.system ? { system_instruction: { parts: [{ text: pedido.system }] } } : {}),
-        contents,
-        // Folga de tokens: os modelos "thinking" gastam parte do orçamento a raciocinar.
-        // Com prompts grandes (ex.: Massa Prima ~69 KB) o modelo gastava TODO o orçamento a
-        // pensar e devolvia texto vazio → o inbox caía no fallback. Damos margem generosa
-        // (8192) para caberem raciocínio + resposta (o texto final é curto).
-        generationConfig: { maxOutputTokens: Math.max(Number(pedido.max_tokens) || 400, 8192) },
-        safetySettings: [
-          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" },
-        ],
-      }),
-    });
-    if (!r.ok) { console.error("redator: Gemini", r.status, (await r.text()).slice(0, 200)); return null; }
-    const j = await r.json();
-    const texto = (j?.candidates?.[0]?.content?.parts || [])
-      .filter((p) => !p.thought)            // exclui as partes de "raciocínio" dos modelos thinking
-      .map((p) => p.text || "").join("").trim();
-    return texto ? { content: [{ type: "text", text: texto }], _via: modelo } : null;
-  } catch (e) {
-    console.error("redator: Gemini falha de rede", e);
-    return null;
-  }
+  const contents = pedido.messages.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: (Array.isArray(m.content) ? m.content : [{ type: "text", text: String(m.content ?? "") }])
+      .map((b) => {
+        if (b.type === "text") return { text: b.text || "" };
+        if (b.type === "image" && b.source?.type === "base64") {
+          return { inline_data: { mime_type: b.source.media_type, data: b.source.data } };
+        }
+        return null;
+      })
+      .filter(Boolean),
+  }));
+  // A resiliência (várias chaves/modelos, retries com backoff a absorver os 503
+  // "overloaded" da Google) fica no helper partilhado; aqui só montamos o pedido.
+  const r = await chamarGemini({
+    system: pedido.system,
+    contents,
+    // Folga de tokens: os modelos "thinking" gastam parte do orçamento a raciocinar.
+    // Com prompts grandes (ex.: Massa Prima ~69 KB) o modelo gastava TODO o orçamento a
+    // pensar e devolvia texto vazio → o inbox caía no fallback. Damos margem generosa
+    // (8192) para caberem raciocínio + resposta (o texto final é curto).
+    maxOutputTokens: Math.max(Number(pedido.max_tokens) || 400, 8192),
+    safetySettings: [
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" },
+    ],
+    // Principal atual (topo) + reserva estável, caso o "latest" ande sobrecarregado.
+    models: [modelo, "gemini-2.0-flash"],
+    baseUrl: "https://generativelanguage.googleapis.com", // chave direta do plano pago (não a AI Gateway)
+    logPrefix: "redator",
+  });
+  // Embrulha no formato Anthropic; _via reporta o modelo que respondeu de facto.
+  return r?.text ? { content: [{ type: "text", text: r.text }], _via: r.model } : null;
 }
 
 export const config = { path: "/api/redator" };
