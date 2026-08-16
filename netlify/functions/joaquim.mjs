@@ -130,10 +130,11 @@ async function planoBGemini(system, mensagens, maxTokens) {
     models: ["gemini-flash-latest", "gemini-flash-lite-latest"],
     baseUrl: base,
     logPrefix: "joaquim",
-    // Site: o visitante não espera — teto por tentativa e menos insistência.
-    // Pior caso ~ (2,5+0,4+2,5)s no principal + o mesmo na reserva, longe dos 10s de antes.
+    // Site: o visitante não espera — teto por tentativa e SEM repetições (repetir num
+    // modelo sobrecarregado raramente salva; a reserva lite responde num instante).
+    // Pior caso ~ 2,5s no principal + ~1s na reserva ≈ 3,5s.
     timeoutMs: 2500,
-    tentativas: 2,
+    tentativas: 1,
   });
   return r?.text || null;
 }
