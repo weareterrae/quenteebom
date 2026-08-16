@@ -126,10 +126,14 @@ async function planoBGemini(system, mensagens, maxTokens) {
     // gemini-flash-latest + teto folgado: o 2.5-flash "pensador" com poucos
     // tokens gasta-os todos a pensar e devolve texto vazio → mínimo 1024.
     maxOutputTokens: Math.max(maxTokens, 1024),
-    // Principal atual + reserva estável, caso o "latest" ande sobrecarregado.
-    models: ["gemini-flash-latest", "gemini-2.0-flash"],
+    // gemini-2.0-flash foi RETIRADO pela Google (404) — a reserva atual é a lite.
+    models: ["gemini-flash-latest", "gemini-flash-lite-latest"],
     baseUrl: base,
     logPrefix: "joaquim",
+    // Site: o visitante não espera — teto por tentativa e menos insistência.
+    // Pior caso ~ (2,5+0,4+2,5)s no principal + o mesmo na reserva, longe dos 10s de antes.
+    timeoutMs: 2500,
+    tentativas: 2,
   });
   return r?.text || null;
 }

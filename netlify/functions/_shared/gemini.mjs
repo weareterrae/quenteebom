@@ -25,6 +25,8 @@ export async function chamarGemini({
   models,
   baseUrl,
   logPrefix = "gemini",
+  timeoutMs = 0,      // teto por tentativa (0 = sem limite; o site do Joaquim usa ~2500 para não pendurar o visitante)
+  tentativas = 3,     // tentativas por (chave, modelo)
 }) {
   // Chaves por ordem: a principal e, se existir, a de reserva.
   const chaves = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2].filter(Boolean);
@@ -46,19 +48,23 @@ export async function chamarGemini({
       const cfg = { maxOutputTokens };
       if (/2\.5|latest/.test(modelo)) cfg.thinkingConfig = { thinkingBudget: 0 };
       const body = JSON.stringify({ ...bodyBase, generationConfig: cfg });
-      // Até 3 tentativas por (chave, modelo) com backoff 400ms*tentativa (400, 800).
-      for (let tentativa = 1; tentativa <= 3; tentativa++) {
+      // Até N tentativas por (chave, modelo) com backoff 400ms*tentativa (400, 800).
+      for (let tentativa = 1; tentativa <= tentativas; tentativa++) {
+        const ctl = timeoutMs ? new AbortController() : null;
+        const tm = ctl ? setTimeout(() => ctl.abort(), timeoutMs) : null;
         try {
           const r = await fetch(`${base}/v1beta/models/${modelo}:generateContent`, {
             method: "POST",
             headers: { "content-type": "application/json", "x-goog-api-key": chave },
             body,
+            ...(ctl ? { signal: ctl.signal } : {}),
           });
+          if (tm) clearTimeout(tm);
           if (!r.ok) {
             const detalhe = (await r.text()).slice(0, 200);
             if (TRANSITORIOS.has(r.status)) {
               // Transitório: repete no mesmo modelo enquanto houver tentativas.
-              if (tentativa < 3) {
+              if (tentativa < tentativas) {
                 console.error(`${logPrefix}: Gemini ${modelo}`, r.status, `→ retry ${tentativa}`);
                 await dorme(400 * tentativa);
                 continue;
@@ -80,7 +86,7 @@ export async function chamarGemini({
           break; // texto vazio → próximo modelo
         } catch (e) {
           // AbortError / falhas de rede contam como transitórias.
-          if (tentativa < 3) {
+          if (tentativa < tentativas) {
             console.error(`${logPrefix}: Gemini ${modelo} falha de rede`, e?.name || e, `→ retry ${tentativa}`);
             await dorme(400 * tentativa);
             continue;
