@@ -33,15 +33,19 @@ export async function chamarGemini({
   const base = (baseUrl || "https://generativelanguage.googleapis.com").replace(/\/$/, "");
   const listaModelos = (models || []).filter(Boolean);
 
-  const body = JSON.stringify({
+  const bodyBase = {
     ...(system ? { system_instruction: { parts: [{ text: system }] } } : {}),
     contents,
-    generationConfig: { maxOutputTokens },
     ...(safetySettings ? { safetySettings } : {}),
-  });
+  };
 
   for (const chave of chaves) {
     for (const modelo of listaModelos) {
+      // Modelos "pensantes" (2.5/latest): desligar o thinking — comia o orçamento de tokens
+      // (respostas cortadas a meio) e segundos de latência em cada resposta.
+      const cfg = { maxOutputTokens };
+      if (/2\.5|latest/.test(modelo)) cfg.thinkingConfig = { thinkingBudget: 0 };
+      const body = JSON.stringify({ ...bodyBase, generationConfig: cfg });
       // Até 3 tentativas por (chave, modelo) com backoff 400ms*tentativa (400, 800).
       for (let tentativa = 1; tentativa <= 3; tentativa++) {
         try {
