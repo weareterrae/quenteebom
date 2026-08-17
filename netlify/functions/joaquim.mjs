@@ -1,5 +1,5 @@
 // Chef Joaquim — cérebro de IA (Netlify Function v2)
-// Motor: Gemini (gemini-flash-latest) pelo AI Gateway da Netlify (GEMINI_API_KEY injetado).
+// Motor: Gemini (gemini-2.5-pro, reservas flash) pelo AI Gateway da Netlify (GEMINI_API_KEY injetado).
 // O SYSTEM_PROMPT continua REMOTO em /bento-prompt.txt — git push = atualizar o cérebro (cache 5 min).
 
 import { chamarGemini } from "./_shared/gemini.mjs";
@@ -126,14 +126,13 @@ async function planoBGemini(system, mensagens, maxTokens) {
     // gemini-flash-latest + teto folgado: o 2.5-flash "pensador" com poucos
     // tokens gasta-os todos a pensar e devolve texto vazio → mínimo 1024.
     maxOutputTokens: Math.max(maxTokens, 1024),
-    // gemini-2.0-flash foi RETIRADO pela Google (404) — a reserva atual é a lite.
-    models: ["gemini-flash-latest", "gemini-flash-lite-latest"],
+    // gemini-2.5-pro (rico) primário; flash-latest e a lite como reservas rápidas.
+    models: ["gemini-2.5-pro", "gemini-flash-latest", "gemini-flash-lite-latest"],
     baseUrl: base,
     logPrefix: "joaquim",
-    // Site: o visitante não espera — teto por tentativa e SEM repetições (repetir num
-    // modelo sobrecarregado raramente salva; a reserva lite responde num instante).
-    // Pior caso ~ 2,5s no principal + ~1s na reserva ≈ 3,5s.
-    timeoutMs: 2500,
+    // O pro (rico) precisa de ~6s; damos-lhe até 9s. Se falhar/demorar, cai logo na
+    // reserva flash (rápida). SEM repetições no mesmo modelo (a reserva responde num instante).
+    timeoutMs: 9000,
     tentativas: 1,
   });
   return r?.text || null;

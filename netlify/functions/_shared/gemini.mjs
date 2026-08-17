@@ -43,10 +43,10 @@ export async function chamarGemini({
 
   for (const chave of chaves) {
     for (const modelo of listaModelos) {
-      // Modelos "pensantes" (2.5/latest): desligar o thinking — comia o orçamento de tokens
-      // (respostas cortadas a meio) e segundos de latência em cada resposta.
+      // Pensamento: o pro leva um pouco (128) para ter alma; as reservas flash ficam a 0 (rápidas).
       const cfg = { maxOutputTokens };
-      if (/2\.5|latest/.test(modelo)) cfg.thinkingConfig = { thinkingBudget: 0 };
+      if (/pro/.test(modelo)) cfg.thinkingConfig = { thinkingBudget: 128 };
+      else if (/2\.5|latest/.test(modelo)) cfg.thinkingConfig = { thinkingBudget: 0 };
       const body = JSON.stringify({ ...bodyBase, generationConfig: cfg });
       // Até N tentativas por (chave, modelo) com backoff 400ms*tentativa (400, 800).
       for (let tentativa = 1; tentativa <= tentativas; tentativa++) {
