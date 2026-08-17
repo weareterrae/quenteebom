@@ -41,23 +41,20 @@ function waNumber(raw) {
   return d;
 }
 
-// Sincroniza a lead no pipeline do CRM Nº5 (além do email abaixo). À prova de falha.
-// Precisa de N5_SUPABASE_KEY (service_role do projeto Nº5) nas variáveis do Netlify.
-const N5_URL = "https://rycgekqszxyudmchpqvs.supabase.co";
-const N5_ORG = "303474cd-bb80-4fb9-ad48-df17d2e38fae"; // Quente e Bom
-let n5Etapa = null;
+// Sincroniza a lead no CRM Nº5 pelo endpoint seguro (além do email abaixo).
+// Usa um token scoped desta org (env CRM_INGEST_TOKEN), não a service_role. À prova de falha.
+const CRM_INGEST = "https://app.numerocinco.pt/api/leads/ingest";
 async function sincronizarCRM(payload, data) {
-  const KEY = process.env.N5_SUPABASE_KEY;
-  if (!KEY) return;
-  const h = { "Content-Type": "application/json", apikey: KEY, Authorization: `Bearer ${KEY}`, Prefer: "return=minimal" };
-  if (!n5Etapa) { try { const r = await fetch(`${N5_URL}/rest/v1/crm_etapas?org_id=eq.${N5_ORG}&chave=eq.nova&select=id`, { headers: h }); if (r.ok) n5Etapa = (await r.json())[0]?.id || null; } catch {} }
+  const token = process.env.CRM_INGEST_TOKEN;
+  if (!token) return;
   const form = payload?.form_name || "desconhecido";
   const email = data.email || (String(data.contacto || "").includes("@") ? data.contacto : "");
   const telefone = data.telefone || data.telemovel || data.whatsapp || (String(data.contacto || "").includes("@") ? "" : (data.contacto || ""));
-  const nome = data.nome || data.name || email || "Lead do site";
-  const extra = Object.entries(data).filter(([k, v]) => v && typeof v !== "object" && !["bot-field", "form-name", "nome", "name", "email", "contacto", "telefone", "telemovel", "whatsapp", "mensagem"].includes(k)).map(([k, v]) => `${k}: ${v}`);
-  const notas = [data.mensagem ? `— Mensagem —\n${data.mensagem}` : "", extra.join("\n")].filter(Boolean).join("\n\n");
-  try { await fetch(`${N5_URL}/rest/v1/crm_leads`, { method: "POST", headers: h, body: JSON.stringify({ org_id: N5_ORG, etapa_id: n5Etapa, nome, email, telefone, origem: "site", fonte_detalhe: `Formulário: ${form}`, notas, campos: { form } }) }); } catch {}
+  const nome = data.nome || data.name || "";
+  const { "bot-field": _bf, "form-name": _fn, ...campos } = data;
+  try {
+    await fetch(CRM_INGEST, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token, nome, telefone, email, origem: "site", fonte_detalhe: `Formulário: ${form}`, campos }) });
+  } catch {}
 }
 
 exports.handler = async (event) => {
