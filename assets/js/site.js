@@ -47,11 +47,27 @@
     panel.addEventListener('click', function (e) { if (e.target.tagName === 'A') setMenu(false); });
   }
 
-  // reveal
+  // reveal com stagger ascendente: irmãos [data-reveal] sobem em cascata (o sol/pão a levedar)
+  // sob prefers-reduced-motion o CSS zera a transição, por isso o delay fica inofensivo.
   var io = new IntersectionObserver(function (es) {
-    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    es.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      var el = e.target, idx = 0, p = el.previousElementSibling;
+      while (p) { if (p.hasAttribute && p.hasAttribute('data-reveal')) idx++; p = p.previousElementSibling; }
+      if (idx) el.style.transitionDelay = (Math.min(idx, 6) * 0.06) + 's';
+      el.classList.add('in');
+      io.unobserve(el);
+    });
   }, { threshold: 0.14 });
   document.querySelectorAll('[data-reveal]').forEach(function (el) { io.observe(el); });
+
+  // scroll cue esbate ao sair do herói (o convite termina após o 1.º scroll)
+  var cue = document.querySelector('.scrollcue');
+  if (cue) {
+    var fadeCue = function () { cue.style.opacity = Math.max(0, 0.85 - scrollY / 300); };
+    addEventListener('scroll', fadeCue, { passive: true });
+    fadeCue();
+  }
 
   // living sun (homepage hero) — rises with scroll
   var cv = document.getElementById('sun');

@@ -10,6 +10,10 @@
   --ink:#33210F; --muted:#8a7157; --line:#eaddc9; --brown:#26150A;
   --display:'Rockwell EB',Georgia,serif;
   --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  /* movimento — curva-da-casa (subida quente, assenta suave) + durações */
+  --ease-warm:cubic-bezier(.2,.7,.2,1);
+  --ease-io:cubic-bezier(.65,0,.35,1);
+  --d-press:130ms; --d-hover:200ms; --d-reveal:.55s;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -190,9 +194,9 @@ a{text-decoration:none;color:inherit;}
 .bento-btn{position:fixed;right:24px;bottom:24px;z-index:60;background:var(--orange);color:#fff;border:none;border-radius:999px;padding:12px 20px 12px 12px;font-weight:800;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px rgba(204,90,8,.45);transition:.2s;font-family:var(--sans);}
 .bento-btn:hover{transform:translateY(-2px);background:var(--orange-deep);}
 .bento-btn-av{width:34px;height:34px;border-radius:50%;object-fit:cover;}
-.bento-panel{position:fixed;right:24px;bottom:92px;z-index:60;width:360px;max-width:calc(100vw - 40px);background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(38,21,10,.34);display:none;flex-direction:column;}
-.bento-panel.open{display:flex;animation:pop .25s ease;}
-@keyframes pop{from{transform:translateY(14px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.bento-panel{position:fixed;right:24px;bottom:92px;z-index:60;width:360px;max-width:calc(100vw - 40px);background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(38,21,10,.34);display:none;flex-direction:column;transform-origin:bottom right;}
+.bento-panel.open{display:flex;animation:pop .25s var(--ease-warm);}
+@keyframes pop{from{transform:translateY(14px) scale(.96);opacity:0;}to{transform:none;opacity:1;}}
 .bp-head{background:linear-gradient(150deg,var(--orange),var(--orange-deep));color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;}
 .bp-av{width:46px;height:46px;border-radius:50%;background:var(--sun);overflow:hidden;flex:0 0 auto;}
 .bp-av img{width:100%;height:100%;object-fit:cover;}
@@ -207,7 +211,7 @@ a{text-decoration:none;color:inherit;}
 .qbtn:hover{background:var(--orange);color:#fff;}
 
 /* ---------- reveal ---------- */
-[data-reveal]{opacity:0;transform:translateY(28px);transition:.8s cubic-bezier(.2,.7,.2,1);}
+[data-reveal]{opacity:0;transform:translateY(28px);transition:opacity var(--d-reveal) var(--ease-warm),transform var(--d-reveal) var(--ease-warm);}
 [data-reveal].in{opacity:1;transform:none;}
 @media(prefers-reduced-motion:reduce){[data-reveal]{opacity:1;transform:none;transition:none;}}
 
@@ -455,6 +459,32 @@ a.prod{text-decoration:none;color:inherit;display:block}
 }
 @media(prefers-reduced-motion:reduce){
   @view-transition{navigation:none;}
+}
+
+/* ============================================================
+   MOTION POLISH — craft: a massa que cede, o sol que sobe
+   Só transform/opacity · reduced-motion no fim
+   ============================================================ */
+
+/* pressáveis: transição nomeada (transform rápido; cor/sombra suaves) + feedback de pressão */
+.btn,.nav .cta,.chip,.qbtn,.bento-btn{transition:transform var(--d-press) var(--ease-warm),background-color var(--d-hover) ease,color var(--d-hover) ease,box-shadow var(--d-hover) ease,border-color var(--d-hover) ease;}
+.btn:active,.nav .cta:active,.chip:active,.qbtn:active,.bento-btn:active{transform:scale(.97);}
+
+/* filete de sol que cresce da esquerda no hover (só rato) */
+@media(hover:hover) and (pointer:fine){
+  .nav a:not(.cta){background-image:linear-gradient(var(--sun),var(--sun));background-repeat:no-repeat;background-position:0 100%;background-size:0% 2px;transition:background-size var(--d-hover) var(--ease-warm),color var(--d-hover) ease;}
+  .nav a:not(.cta):hover{background-size:100% 2px;}
+  .hdr.scrolled .nav a:not(.cta),.hdr.solid .nav a:not(.cta){background-image:linear-gradient(var(--orange),var(--orange));}
+}
+
+/* brilho quente no focus dos campos (coerente com a busca de receitas) */
+.form-card input:focus,.form-card textarea:focus,.form-card select:focus{box-shadow:0 6px 20px rgba(238,122,27,.12);}
+
+/* reduced-motion: mantém opacidade/cor, tira os transforms novos */
+@media(prefers-reduced-motion:reduce){
+  .btn:active,.nav .cta:active,.chip:active,.qbtn:active,.bento-btn:active{transform:none;}
+  .nav a:not(.cta){background-size:0 0;transition:color var(--d-hover) ease;}
+  .bento-panel.open{animation:none;}
 }
 
 @media print{

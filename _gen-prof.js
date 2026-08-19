@@ -243,7 +243,7 @@ function shell(title, desc, canonical, body){
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://quenteebom.com/assets/social/og_home.jpg?v=1">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=8">
+<link rel="stylesheet" href="/assets/css/qeb.css?v=9">
 ${CSS_EXTRA}
 </head>
 <body>
@@ -251,7 +251,7 @@ ${headerHTML()}
 ${body}
 ${footerHTML()}
 <script src="/assets/js/analytics.js?v=3"></script>
-<script src="/assets/js/site.js?v=11"></script>
+<script src="/assets/js/site.js?v=12"></script>
 <script src="/assets/js/bento.js?v=6"></script>
 </body>
 </html>`;

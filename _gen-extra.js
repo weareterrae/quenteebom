@@ -1851,7 +1851,7 @@ function headHTML(titulo, desc, canon, ogimg) {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://quenteebom.com${ogimg}">
 <link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
-<link rel="stylesheet" href="/assets/css/qeb.css?v=8">`;
+<link rel="stylesheet" href="/assets/css/qeb.css?v=9">`;
 }
 
 // ---------- hub de receitas (estilo revista: destaque + pesquisa + filtros) ----------
@@ -1910,7 +1910,7 @@ ${cards}
 </section>
 ${footerHTML()}
 <script src="/assets/js/analytics.js?v=3"></script>
-<script src="/assets/js/site.js?v=11"></script>
+<script src="/assets/js/site.js?v=12"></script>
 <script src="/assets/js/bento.js?v=6"></script>
 <script>
 (function(){
@@ -2042,7 +2042,7 @@ ${relHTML}
 ${footerHTML()}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="/assets/js/analytics.js?v=3"></script>
-<script src="/assets/js/site.js?v=11"></script>
+<script src="/assets/js/site.js?v=12"></script>
 <script src="/assets/js/bento.js?v=6"></script>
 <script>
 (function(){
@@ -2110,7 +2110,7 @@ ${cards}
 </section>
 ${footerHTML()}
 <script src="/assets/js/analytics.js?v=3"></script>
-<script src="/assets/js/site.js?v=11"></script>
+<script src="/assets/js/site.js?v=12"></script>
 <script src="/assets/js/bento.js?v=6"></script>
 </body>
 </html>
