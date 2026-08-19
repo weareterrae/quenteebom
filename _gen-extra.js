@@ -1971,12 +1971,12 @@ function recipeSchema(r) {
 }
 function pagReceita(r) {
   const ings = r.ingredientes.map(i => `        <li>${i}</li>`).join('\n');
-  const passos = r.passos.map(([t, p]) => `        <li><h4>${t}</h4><p>${p}</p></li>`).join('\n');
+  const passos = r.passos.map(([t, p]) => `        <li data-reveal><h4>${t}</h4><p>${p}</p></li>`).join('\n');
   const cb = crumbs([{ name: 'Início', url: '/' }, { name: 'Receitas', url: '/receitas/' }, { name: r.titulo }]);
   const catR = (META[r.slug] || {}).cat || 'Receita';
   let related = RECEITAS.filter(x => x.slug !== r.slug && (META[x.slug] || {}).cat === catR).slice(0, 3);
   if (related.length < 3) RECEITAS.filter(x => x.slug !== r.slug && related.indexOf(x) < 0).slice(0, 3 - related.length).forEach(x => related.push(x));
-  const relHTML = related.map(x => `      <a class="rec-card" href="/receitas/${x.slug}/">
+  const relHTML = related.map(x => `      <a class="rec-card" href="/receitas/${x.slug}/" data-reveal>
         <div class="im"><img src="${x.img}" alt="${x.titulo}" loading="lazy"><span class="tempo">⏱ ${x.tempo}</span></div>
         <div class="bd"><div class="cat">${(META[x.slug] || {}).cat || 'Receita'}</div><h3>${x.titulo}</h3></div>
       </a>`).join('\n');
@@ -2022,11 +2022,11 @@ ${ings}
         ${prodChips ? `<div class="rec-prods-in"><b>Com produtos Quente e Bom:</b><div class="rec-prods">${prodChips}</div><a class="rec-find" href="/produtos/">Encontrar os produtos →</a></div>` : ''}
       </div>
     </div>
-    <div data-reveal>
+    <div>
       <ol class="steps">
 ${passos}
       </ol>
-      <div class="bento-tip">
+      <div class="bento-tip" data-reveal>
         <img src="/assets/img/bento_face.jpg" alt="Joaquim">
         <div><b>Dica do Joaquim</b><p>${r.dicaBento}</p></div>
       </div>
