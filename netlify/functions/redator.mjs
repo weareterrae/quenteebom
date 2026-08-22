@@ -48,7 +48,24 @@ export default async (req) => {
     messages: mensagens,
   };
 
-  // PRINCIPAL: Google Gemini (se GEMINI_API_KEY estiver configurada).
+  // PRINCIPAL: o gateway do Nº 5.
+  //
+  // Os oito bots sociais nunca passaram por ele — falavam com a Google
+  // diretamente daqui. Isso deixava-os sem tudo o que o gateway tem:
+  // disjuntor, cadeia de modelos entre DOIS fornecedores, registo de
+  // pedidos, incidentes, orçamento. Se a Google tivesse um mau dia, os
+  // oito calavam-se ao mesmo tempo e nada dizia porquê.
+  //
+  // Mudou-se aqui e não nos oito projetos Supabase de propósito: uma só
+  // publicação, e o `meta-inbox` não muda uma linha.
+  const viaGateway = await gatewayN5(pedido);
+  if (viaGateway) return json(viaGateway);
+
+  // RESERVA: Google Gemini direto, como era até agora.
+  //
+  // O gateway é uma melhoria, não uma dependência nova. Se ele estiver em
+  // baixo, os bots continuam a responder pelo caminho antigo — que é
+  // exatamente o que se quer de uma migração: nunca ficar pior.
   const g = await geminiCall(pedido);
   if (g) return json(g);
 
@@ -81,6 +98,74 @@ export default async (req) => {
 // Anthropic → Gemini (incluindo imagens base64 das stories). Usa a chave DIRETA do plano
 // pago (GEMINI_API_KEY) no endpoint público do Google — NÃO passa pela AI Gateway.
 // Modelo por omissão: gemini-2.5-pro (topo); pode mudar-se com a variável GEMINI_MODEL.
+/**
+ * Fala com o gateway do Nº 5 e devolve no formato que o meta-inbox espera.
+ *
+ * O gateway responde em SSE (streaming), porque é isso que um chat de site
+ * precisa. Aqui não há ninguém a ver as letras a aparecer — a resposta vai
+ * para uma caixa de entrada do Instagram. Junta-se tudo e devolve-se de uma
+ * vez, no envelope Anthropic que o meta-inbox já sabe ler.
+ *
+ * DEVOLVE NULL EM VEZ DE ATIRAR. Quem chama tem uma reserva a seguir, e uma
+ * exceção aqui apagaria essa reserva — o bot ficava mudo por causa da
+ * melhoria que o vinha proteger.
+ */
+async function gatewayN5(pedido) {
+  const url = process.env.N5_GATEWAY_URL;
+  if (!url) return null;
+
+  const ctrl = new AbortController();
+  // Uma caixa de entrada tolera segundos, não minutos. Passado isto, mais
+  // vale ir pela reserva do que deixar a pessoa sem resposta.
+  const t = setTimeout(() => ctrl.abort(), 25_000);
+  try {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        // O gateway usa allowlist de origem. Isto é servidor-para-servidor,
+        // por isso a origem é declarada — quem protege este endpoint é a
+        // REDATOR_KEY que já foi verificada acima.
+        origin: process.env.N5_GATEWAY_ORIGIN || "https://quenteebom.com",
+      },
+      body: JSON.stringify({
+        assistant_key: process.env.N5_ASSISTANT_KEY || "social-inbox",
+        system: pedido.system,
+        messages: (pedido.messages || []).map((m) => ({
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: typeof m.content === "string"
+            ? m.content
+            : (m.content || []).map((b) => b?.text || "").join("\n"),
+        })),
+        max_output_tokens: pedido.max_tokens,
+      }),
+      signal: ctrl.signal,
+    });
+    if (!r.ok) { console.error("redator/gateway:", r.status); return null; }
+
+    const bruto = await r.text();
+    let texto = "";
+    let erro = null;
+    for (const linha of bruto.split("\n")) {
+      if (!linha.startsWith("data: ")) continue;
+      let j;
+      try { j = JSON.parse(linha.slice(6)); } catch { continue; }
+      if (j.type === "delta") texto += (j.text ?? j.data?.text ?? "");
+      if (j.type === "error") erro = j.message;
+    }
+    if (erro || !texto.trim()) {
+      console.error("redator/gateway:", erro || "resposta vazia");
+      return null;
+    }
+    return { content: [{ type: "text", text: texto.trim() }], _via: "n5-gateway" };
+  } catch (e) {
+    console.error("redator/gateway:", (e && e.message) || e);
+    return null;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 async function geminiCall(pedido) {
   const modelo = process.env.GEMINI_MODEL || "gemini-pro-latest";
   const contents = pedido.messages.map((m) => ({
