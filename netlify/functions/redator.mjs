@@ -110,6 +110,39 @@ export default async (req) => {
  * exceção aqui apagaria essa reserva — o bot ficava mudo por causa da
  * melhoria que o vinha proteger.
  */
+/**
+ * De que marca é este pedido, lido pelo prompt que veio.
+ *
+ * Os oito bots partilham este proxy e cada um envia o SEU prompt. Sem os
+ * distinguir, o custo de todos aparecia numa linha só — e «social-inbox:
+ * 4 dólares» não permite decidir nada sobre nenhuma marca.
+ *
+ * A via limpa é cada projeto dizer quem é num cabeçalho. Isso obriga a
+ * publicar os oito, e a medição não pode esperar por isso: reconhece-se
+ * pelo texto, que é determinístico e não custa nada.
+ *
+ * O que não se reconhece cai em `social-inbox`, e isso é informação: uma
+ * marca a aparecer ali quer dizer que falta registá-la, em vez de
+ * desaparecer diluída numa média.
+ */
+function marcaDoPrompt(system) {
+  const t = String(system || "").toLowerCase();
+  // Ordem importa: os nomes mais específicos primeiro, para «joaquim»
+  // (que é da Terrae e da Quente e Bom) não roubar o outro.
+  const marcas = [
+    [/chef\s*kool|kool\s*nature/, "social-koolnature"],
+    [/massa\s*prima|chef\s*prima/, "social-massaprima"],
+    [/[áa]gua\s*minda|kianda/, "social-aguaminda"],
+    [/av[óo]\s*maria|externato/, "social-externato"],
+    [/maria\s*goreti/, "social-mariagoreti"],
+    [/quente\s*e\s*bom/, "social-quenteebom"],
+    [/terrae/, "social-terrae"],
+    [/n[úu]mero\s*cinco|\bquinto\b/, "social-numerocinco"],
+  ];
+  for (const [re, chave] of marcas) if (re.test(t)) return chave;
+  return process.env.N5_ASSISTANT_KEY || "social-inbox";
+}
+
 async function gatewayN5(pedido) {
   const url = process.env.N5_GATEWAY_URL;
   if (!url) return null;
@@ -129,7 +162,7 @@ async function gatewayN5(pedido) {
         origin: process.env.N5_GATEWAY_ORIGIN || "https://quenteebom.com",
       },
       body: JSON.stringify({
-        assistant_key: process.env.N5_ASSISTANT_KEY || "social-inbox",
+        assistant_key: marcaDoPrompt(pedido.system),
         system: pedido.system,
         messages: (pedido.messages || []).map((m) => ({
           role: m.role === "assistant" ? "assistant" : "user",
