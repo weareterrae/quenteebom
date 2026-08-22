@@ -111,8 +111,17 @@ async function geminiCall(pedido) {
       { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
       { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" },
     ],
-    // Principal atual (topo) + reserva estável, caso o "latest" ande sobrecarregado.
-    models: [modelo, "gemini-2.0-flash"],
+    // Principal (topo) + duas reservas, caso o "latest" ande sobrecarregado.
+    //
+    // A reserva era só `gemini-2.0-flash`, e esse modelo já está aposentado
+    // — está OFF no registo de modelos do Nº 5. Quando o principal se
+    // sobrecarregasse, a rede que devia apanhá-lo já não existia, e os oito
+    // bots sociais ficariam mudos ao mesmo tempo. Uma reserva caducada é
+    // pior do que não ter reserva: dá a sensação de haver uma.
+    //
+    // As duas de agora estão HEALTHY no registo, contra a mesma API da
+    // Google. Quem mexer nisto tem de as ir lá confirmar primeiro.
+    models: [modelo, "gemini-3.5-flash", "gemini-flash-lite-latest"],
     baseUrl: "https://generativelanguage.googleapis.com", // chave direta do plano pago (não a AI Gateway)
     logPrefix: "redator",
   });
