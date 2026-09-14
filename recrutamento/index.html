@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Junta-te à Equipa — Quente e Bom · Recrutamento</title>
-<meta name="description" content="Trabalha na Quente e Bom! Candidata-te às nossas equipas de Logística, Produção, Manutenção, Qualidade, Comercial, Administrativa, Recursos Humanos ou Financeira.">
+<meta name="description" content="Estamos a recrutar! Candidata-te a Técnico(a) Administrativo(a), Coordenador(a) da Qualidade ou Supervisor(a) de Área Qualidade na Quente e Bom, fábrica em Viana, Luanda.">
 <link rel="canonical" href="https://quenteebom.com/recrutamento/">
 <meta property="og:title" content="Junta-te à Equipa Quente e Bom">
 <meta property="og:description" content="Feito em Angola, por angolanos. Candidata-te e faz parte da família do pão fresquinho.">
@@ -18,7 +18,8 @@
   .rc-arg h3{font-family:var(--display);font-size:21px;color:var(--ink);margin:12px 0 8px;}
   .rc-arg p{font-size:15px;color:var(--muted);line-height:1.55;}
   @media(max-width:820px){.rc-args{grid-template-columns:1fr;}}
-  .deps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .deps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .dep .vg{font-family:var(--sans);font-weight:700;font-size:13px;color:var(--orange-deep);margin-top:6px;}
   @media(max-width:900px){.deps{grid-template-columns:1fr 1fr;}}
   .dep{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:22px 16px;text-align:center;cursor:pointer;transition:.25s;}
   .dep:hover{border-color:var(--orange);transform:translateY(-3px);box-shadow:0 14px 30px rgba(38,21,10,.12);}
@@ -82,19 +83,14 @@
 <section class="sec" style="padding-top:0;">
   <div class="wrap">
     <div class="sec-h" data-reveal>
-      <div class="eyebrow">As nossas equipas</div>
-      <h2>Escolhe o teu departamento</h2>
-      <p>Toca num departamento para começares a candidatura.</p>
+      <div class="eyebrow">Estamos a recrutar</div>
+      <h2>Vagas abertas</h2>
+      <p>Toca numa vaga para te candidatares. Fábrica em Viana, Luanda.</p>
     </div>
     <div class="deps" data-reveal>
-      <div class="dep" data-dep="Logística"><div class="ico">🚚</div><h3>Logística</h3></div>
-      <div class="dep" data-dep="Produção"><div class="ico">🥖</div><h3>Produção</h3></div>
-      <div class="dep" data-dep="Manutenção"><div class="ico">🔧</div><h3>Manutenção</h3></div>
-      <div class="dep" data-dep="Qualidade e Limpeza"><div class="ico">✨</div><h3>Qualidade e Limpeza</h3></div>
-      <div class="dep" data-dep="Comercial"><div class="ico">🛒</div><h3>Comercial</h3></div>
-      <div class="dep" data-dep="Administrativo"><div class="ico">🗂️</div><h3>Administrativo</h3></div>
-      <div class="dep" data-dep="Recursos Humanos"><div class="ico">👥</div><h3>Recursos Humanos</h3></div>
-      <div class="dep" data-dep="Financeira"><div class="ico">📊</div><h3>Financeira</h3></div>
+      <div class="dep" data-vaga="Técnico(a) Administrativo(a) 3ª"><div class="ico">🗂️</div><h3>Técnico(a) Administrativo(a) 3ª</h3><div class="vg">1 vaga</div></div>
+      <div class="dep" data-vaga="Coordenador(a) da Qualidade"><div class="ico">✅</div><h3>Coordenador(a) da Qualidade</h3><div class="vg">1 vaga</div></div>
+      <div class="dep" data-vaga="Supervisor(a) de Área Qualidade"><div class="ico">🔎</div><h3>Supervisor(a) de Área Qualidade</h3><div class="vg">2 vagas</div></div>
     </div>
   </div>
 </section>
@@ -102,19 +98,10 @@
 <section class="sec" id="candidatura" style="background:var(--cream-2);">
   <div class="wrap" style="max-width:860px;">
     <div class="sec-h ctr" data-reveal>
-      <div class="eyebrow">Candidatura espontânea</div>
-      <h2>Candidaturas encerradas, por agora 🧡</h2>
-      <p>Recebemos um carinho enorme — obrigado a toda a gente que se candidatou! A nossa equipa de Recursos Humanos já está a analisar todas as candidaturas, e os candidatos selecionados serão contactados diretamente.<br><br>Volta em breve — haverá sempre novas oportunidades para juntar-te à família Quente e Bom. ☀️</p>
+      <div class="eyebrow">Candidatura</div>
+      <h2>Candidata-te agora 🧡</h2>
+      <p>Preenche o formulário, escolhe a vaga e anexa o teu CV. A equipa de Recursos Humanos analisa as candidaturas e contacta os selecionados.</p>
     </div>
-    <div class="ctr" style="margin-top:26px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-      <a class="btn btn-sun" href="/">Voltar ao início ☀️</a>
-      <a class="btn btn-glass" href="/profissional/">Conhecer a Quente e Bom</a>
-    </div>
-    <!-- CANDIDATURAS FECHADAS 09/07/2026 (523 recebidas em <12h).
-         Formulário DESATIVADO por completo: comentado = fora do DOM, da ordem de tabulação e do upload de CV,
-         e NÃO é registado nos Netlify Forms enquanto estiver comentado (não aceita submissões).
-         PARA REABRIR: descomentar o <form> abaixo, apagar a mensagem "Candidaturas encerradas" e o CTA acima.
-         [VALIDAÇÃO INTERNA NECESSÁRIA antes de reativar]
     <form class="form-card" name="candidatura" method="POST" action="/obrigado.html" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data" id="rcForm">
       <input type="hidden" name="form-name" value="candidatura">
       <p style="display:none;"><label>Não preencher: <input name="bot-field"></label></p>
@@ -140,17 +127,13 @@
           <input id="c-morada" name="morada" required placeholder="ex.: Viana, Luanda">
         </div>
         <div>
-          <label for="c-dep">Departamento *</label>
-          <select id="c-dep" name="departamento" required>
-            <option value="" disabled selected>Escolhe o departamento…</option>
-            <option>Logística</option>
-            <option>Produção</option>
-            <option>Manutenção</option>
-            <option>Qualidade e Limpeza</option>
-            <option>Comercial</option>
-            <option>Administrativo</option>
-            <option>Recursos Humanos</option>
-            <option>Financeira</option>
+          <label for="c-vaga">Vaga *</label>
+          <select id="c-vaga" name="vaga" required>
+            <option value="" disabled selected>Escolhe a vaga…</option>
+            <option>Técnico(a) Administrativo(a) 3ª</option>
+            <option>Coordenador(a) da Qualidade</option>
+            <option>Supervisor(a) de Área Qualidade</option>
+            <option>Outra área (candidatura espontânea)</option>
           </select>
         </div>
       </div>
@@ -167,10 +150,8 @@
         <label for="c-rgpd" style="all:unset;font-size:13.5px;color:var(--muted);">Autorizo o tratamento dos meus dados pela Quente e Bom exclusivamente para fins de recrutamento.</label>
       </div>
       <button class="btn btn-orange" type="submit" id="rcBtn" style="width:100%;">Enviar candidatura ☀️</button>
-      <div class="form-ok" id="formOk">Candidatura recebida! 🧡 Obrigado pelo interesse em juntar-te à família Quente e Bom — a nossa equipa de Recursos Humanos vai analisar e entra em contacto.</div>
+      <div class="form-ok" id="formOk">Candidatura recebida! 🧡 Obrigado pelo interesse em juntar-te à família Quente e Bom. A equipa de Recursos Humanos vai analisar e entra em contacto.</div>
     </form>
-    -->
-    <!-- fim do formulário desativado -->
   </div>
 </section>
 
@@ -207,7 +188,7 @@ document.querySelectorAll('.dep').forEach(function (d) {
   d.addEventListener('click', function () {
     document.querySelectorAll('.dep').forEach(function (x) { x.classList.remove('sel'); });
     d.classList.add('sel');
-    var _dep = document.getElementById('c-dep'); if (_dep) _dep.value = d.getAttribute('data-dep');
+    var _v = document.getElementById('c-vaga'); if (_v) _v.value = d.getAttribute('data-vaga');
     document.getElementById('candidatura').scrollIntoView({ behavior: 'smooth' });
   });
 });
