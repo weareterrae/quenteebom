@@ -10,7 +10,7 @@ const CLAUDE_MODEL = Deno.env.get("CLAUDE_MODEL") || "claude-sonnet-5";
 const PROMPT_URL = "https://quenteebom.netlify.app/bento-prompt.txt";
 const PROMPT_TTL_MS = 5 * 60 * 1000;
 
-const FALLBACK_PROMPT = `És o Joaquim, o Chef da Quente e Bom — marca angolana de padaria e pastelaria, feita em Angola desde 2012 (fábrica em Viana, Luanda). Tom caloroso, português de Angola, respostas curtas com 1-2 emojis. A marca vende só a profissionais; o consumidor compra nos supermercados de todo o Angola (a oferta varia por loja — pede a zona). Revendedores → formulário em /revendedores/. Emprego → /recrutamento/. Receitas → https://quenteebom.com/receitas/. Nunca inventes preços, moradas ou stocks. Assinatura: "Todos os dias, uma delícia." ☀️`;
+const FALLBACK_PROMPT = `És o Joaquim, o Chef da Quente e Bom — marca angolana de padaria e pastelaria, feita em Angola desde 2012 (fábrica em Viana, Luanda). Tom caloroso, português de Angola, respostas curtas com 1-2 emojis. A marca vende só a profissionais; o consumidor compra nos supermercados de toda a Angola (a oferta varia por loja — pede a zona). Revendedores → formulário em /revendedores/. Emprego → /recrutamento/. Receitas → https://quenteebom.com/receitas/. Nunca inventes preços, moradas ou stocks. Assinatura: "Todos os dias, uma delícia." ☀️`;
 
 let promptCache = { text: "", ts: 0 };
 
@@ -40,10 +40,40 @@ function cors(_origin: string | null) {
   };
 }
 
+// Modo de contingência: quando a IA não está disponível, o Joaquim responde com
+// os encaminhamentos essenciais em vez de um erro.
+const CONTINGENCIA =
+  "Olá! ☀️ Estou numa pausa rápida, mas ajudo-te já: encontras as nossas delícias nos supermercados de toda a Angola (a oferta varia por loja — pergunta na tua zona). Revendedores: quenteebom.com/revendedores • Receitas: quenteebom.com/receitas • Emprego: quenteebom.com/recrutamento. Volto já — todos os dias, uma delícia!";
+
+// Proteção anti-abuso: limite por IP (janela deslizante) + teto diário global.
+// Em memória por isolate — best-effort, suficiente para travar floods e bots.
+const IP_LIMITE = 8;            // pedidos por IP
+const IP_JANELA_MS = 60_000;    // por minuto
+const DIA_LIMITE = 400;         // teto de pedidos por isolate e por dia
+const baldeIp = new Map<string, number[]>();
+let diaTotal = 0;
+let diaInicio = 0;
+
+function excedeuLimites(ip: string): boolean {
+  const agora = Date.now();
+  if (agora - diaInicio > 86_400_000) { diaInicio = agora; diaTotal = 0; }
+  if (++diaTotal > DIA_LIMITE) return true;
+  const recentes = (baldeIp.get(ip) ?? []).filter((t) => agora - t < IP_JANELA_MS);
+  recentes.push(agora);
+  baldeIp.set(ip, recentes);
+  if (baldeIp.size > 5000) baldeIp.clear(); // trava crescimento de memória
+  return recentes.length > IP_LIMITE;
+}
+
 Deno.serve(async (req) => {
   const headers = cors(req.headers.get("origin"));
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
   if (req.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers });
+
+  const ip = (req.headers.get("x-forwarded-for") || "?").split(",")[0].trim();
+  if (excedeuLimites(ip)) {
+    return new Response(JSON.stringify({ error: "IA indisponível" }), { status: 429, headers });
+  }
 
   try {
     const { messages } = await req.json();
@@ -75,7 +105,7 @@ Deno.serve(async (req) => {
     if (!r.ok) {
       const err = await r.text();
       console.error("Claude API error:", err);
-      return new Response(JSON.stringify({ error: "IA indisponível" }), { status: 502, headers });
+      return new Response(JSON.stringify({ reply: CONTINGENCIA }), { status: 200, headers });
     }
     const data = await r.json();
     const reply = (data.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n").trim();

@@ -13,7 +13,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const GRAPH = "https://graph.facebook.com/v21.0";
-const env = (k: string, d = "") => Deno.env.get(k) ?? d;
+// Cópia para o inbox pessoal do Sandro: vive no projecto do Nº 5, por isso lê secrets com prefixo SANDRO_ (fallback aos partilhados: REDATOR_KEY, RESEND_API_KEY, SUPABASE_*).
+const PREFIX = "SANDRO_";
+const env = (k: string, d = "") => Deno.env.get(PREFIX + k) ?? Deno.env.get(k) ?? d;
+const TABLE = "pending_replies_sandro";
 
 const VERIFY_TOKEN = env("META_VERIFY_TOKEN");
 const APP_SECRET   = env("META_APP_SECRET");
@@ -225,7 +228,7 @@ async function convoHistory(recipientId: string): Promise<string> {
   if (!recipientId) return "";
   try {
     const desde = new Date(Date.now() - 7 * 864e5).toISOString();
-    const { data } = await db.from("pending_replies")
+    const { data } = await db.from(TABLE)
       .select("kind,incoming,reply,private_reply,status,created_at")
       .in("kind", ["message", "comment", "story_mention", "story_reaction"])
       .eq("recipient_id", recipientId)
@@ -384,6 +387,7 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
     ${p.holdReason ? `<div style="text-align:center;margin:12px 0;font-size:13px;color:#9b8290">🤖 O piloto automático deixou esta para ti: <b>${escapeHtml(p.holdReason)}</b></div>` : ""}
     <div style="text-align:center;margin:22px 0">
       <a href="${link}" style="background:${BRAND_ACCENT};color:${BRAND_BG};font-weight:800;text-decoration:none;padding:14px 34px;border-radius:999px;font-size:16px;display:inline-block">Aprovar e enviar ${p.kind === "comment" ? "(resposta + DM)" : ""} ☀️</a>
+      <div style="margin-top:12px"><a href="${BRAND_SITE}/editar.html?fn=${encodeURIComponent(FN_BASE)}&id=${p.id}&sig=${p.sig}&kind=${p.kind}&pub=${encodeURIComponent(p.pub || "")}&priv=${encodeURIComponent(p.priv || "")}&in=${encodeURIComponent(String(p.incoming || "").slice(0, 300))}" style="color:${BRAND_ACCENT};font-weight:600;text-decoration:none;font-size:14px;border:1px solid ${BRAND_ACCENT};padding:10px 22px;border-radius:999px;display:inline-block">Editar e enviar</a></div>
     </div>
     <div style="font-size:12.5px;color:#9b8290;text-align:center">Só é publicado quando carregas no botão. Se não quiseres responder, ignora este email. · v4</div>`}
   </div>`;
@@ -401,7 +405,7 @@ async function notify(p: { id: string; platform: string; kind: string; author: s
     emailDiag = "email:fetch-erro " + String(e).slice(0, 200);
   }
   console.log("[notify]", emailDiag);
-  try { await db.from("pending_replies").update({ detail: emailDiag }).eq("id", p.id); } catch (_) { /* diagnóstico best-effort */ }
+  try { await db.from(TABLE).update({ detail: emailDiag }).eq("id", p.id); } catch (_) { /* diagnóstico best-effort */ }
 }
 function escapeHtml(s: string) { return (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!)); }
 
@@ -632,7 +636,7 @@ Deno.serve(async (req) => {
   // ADMIN: últimas 5 interações com estado/erro (diagnóstico de envios)
   // GET /last?key=<META_VERIFY_TOKEN>
   if (req.method === "GET" && url.pathname.endsWith("/last") && url.searchParams.get("key") === VERIFY_TOKEN) {
-    const { data, error } = await db.from("pending_replies")
+    const { data, error } = await db.from(TABLE)
       .select("created_at,platform,kind,author,status,detail,incoming")
       .neq("status", "dropped")   // as menções filtradas vivem em /dropped, não poluem o /last
       .neq("status", "debug")     // esconde eventuais registos antigos de diagnóstico
@@ -644,7 +648,7 @@ Deno.serve(async (req) => {
   // ADMIN: menções que o filtro NÃO respondeu (sem email) — auditar se algum falso negativo escapou.
   // GET /dropped?key=<META_VERIFY_TOKEN>
   if (req.method === "GET" && url.pathname.endsWith("/dropped") && url.searchParams.get("key") === VERIFY_TOKEN) {
-    const { data, error } = await db.from("pending_replies")
+    const { data, error } = await db.from(TABLE)
       .select("created_at,platform,author,detail,incoming")
       .eq("status", "dropped")
       .order("created_at", { ascending: false }).limit(15);
@@ -658,7 +662,7 @@ Deno.serve(async (req) => {
   if (req.method === "GET" && url.pathname.endsWith("/digest") && url.searchParams.get("key") === VERIFY_TOKEN) {
     const dias = Math.max(1, Math.min(31, parseInt(url.searchParams.get("dias") || "7", 10) || 7));
     const desde = new Date(Date.now() - dias * 864e5).toISOString();
-    const { data } = await db.from("pending_replies")
+    const { data } = await db.from(TABLE)
       .select("kind,platform,status,author,incoming,created_at")
       .gte("created_at", desde).order("created_at", { ascending: false }).limit(600);
     const rows = data || [];
@@ -750,21 +754,38 @@ Deno.serve(async (req) => {
   if (req.method === "GET" && url.pathname.endsWith("/send")) {
     const id = url.searchParams.get("id") || "", sig = url.searchParams.get("sig") || "";
     if (sig !== await hmacHex(HMAC_SECRET, id)) return htmlPage("Link inválido.", false);
-    const { data: row } = await db.from("pending_replies").select("*").eq("id", id).single();
+    const { data: row } = await db.from(TABLE).select("*").eq("id", id).single();
     if (!row) return htmlPage("Resposta não encontrada.", false);
     if (row.status === "sent") return htmlPage("Isto já tinha sido enviado. ✅", true);
+    // edição antes de enviar (página editar.html do site): substitui o rascunho pelo texto do Sandro
+    const ePub = url.searchParams.get("pub"), ePriv = url.searchParams.get("priv");
+    if (ePub !== null && ePub.trim()) { row.reply = ePub.trim(); if (ePriv !== null) row.private_reply = ePriv.trim(); await db.from(TABLE).update({ reply: row.reply, private_reply: row.private_reply, detail: "editado pelo Sandro" }).eq("id", id); }
     const res = await publish(row);
-    await db.from("pending_replies").update({ status: res.ok ? "sent" : "error", detail: res.detail }).eq("id", id);
+    await db.from(TABLE).update({ status: res.ok ? "sent" : "error", detail: res.detail }).eq("id", id);
     return htmlPage(res.ok
       ? (row.kind === "comment" ? "Resposta pública + mensagem privada enviadas! ☀️🧡" : "Resposta enviada! ☀️🧡")
       : "Não foi possível enviar tudo. Verifica na app.", res.ok);
   }
 
+  if (req.method === "GET" && url.pathname.endsWith("/selftest") && url.searchParams.get("key") === VERIFY_TOKEN) {
+    const out: any = {};
+    try { const tk = await pageTok(); out.pageTok = tk ? "ok" : "vazio"; } catch (e) { out.pageTok = "erro " + String(e); }
+    try { const h = await convoHistory("0"); out.convo = "ok " + JSON.stringify(h).slice(0, 40); } catch (e) { out.convo = "erro " + String(e); }
+    try { const p = await brand(); out.prompt = p.slice(0, 60); } catch (e) { out.prompt = "erro " + String(e); }
+    try { const t0 = Date.now(); const r = await claude("Responde só com a palavra OK.", "teste", 20); out.claude = (r || "(vazio)") + " " + (Date.now() - t0) + "ms"; } catch (e) { out.claude = "erro " + String(e); }
+    try {
+      const { data, error } = await db.from(TABLE).insert({ platform: "Teste", kind: "message", account_id: "0", target_id: "0", recipient_id: "0", author: "selftest", incoming: "selftest", reply: "", private_reply: "", status: "test" }).select("id").single();
+      out.insert = error ? "erro " + JSON.stringify(error) : "ok";
+      if (data?.id) await db.from(TABLE).delete().eq("id", data.id);
+    } catch (e) { out.insert = "erro " + String(e); }
+    return new Response(JSON.stringify(out, null, 1), { headers: { "content-type": "application/json" } });
+  }
   if (req.method === "POST") {
     const raw = await req.text();
-    if (!await validSignature(req, raw)) return new Response("bad sig", { status: 401 });
+    const sigOk = await validSignature(req, raw);
+    console.log("WEBHOOK_POST", url.pathname, "sig", sigOk);
+    if (!sigOk) return new Response("bad sig", { status: 401 });
     let payload: any; try { payload = JSON.parse(raw); } catch { return new Response("ok"); }
-    console.log("AVO_DIAG_WEBHOOK", JSON.stringify(payload).slice(0, 1400)); // DIAGNÓSTICO reações a stories — REMOVER depois de percebermos a forma
     // LEADS primeiro: os eventos "leadgen" vão direto por email (não precisam de aprovação).
     for (const entry of payload.entry || []) {
       for (const ch of entry.changes || []) {
@@ -772,18 +793,18 @@ Deno.serve(async (req) => {
         const leadgenId = ch.value?.leadgen_id; if (!leadgenId) continue;
         try {
           // dedup: o Meta reenvia webhooks — não mandar 2 emails do mesmo lead
-          const { data: seen } = await db.from("pending_replies").select("id")
+          const { data: seen } = await db.from(TABLE).select("id")
             .eq("kind", "lead").eq("target_id", String(leadgenId)).limit(1);
           if (seen?.length) continue;
           const lead = await fetchLead(String(leadgenId));
-          await db.from("pending_replies").insert({
+          await db.from(TABLE).insert({
             platform: "Facebook", kind: "lead", account_id: entry.id, target_id: String(leadgenId),
             recipient_id: "", author: (lead.fields.find((f) => f.name === "full_name")?.values?.[0]) || "",
             incoming: JSON.stringify(lead.fields), reply: "", private_reply: "",
             status: lead.ok ? "lead" : "lead_error", detail: lead.detail,
           });
           const emailRes = await notifyLead(lead.fields, lead.ok, lead.detail);
-          await db.from("pending_replies").update({ detail: `read:${lead.detail} | email:${emailRes}` })
+          await db.from(TABLE).update({ detail: `read:${lead.detail} | email:${emailRes}` })
             .eq("kind", "lead").eq("target_id", String(leadgenId));
         } catch (e) { console.error("erro lead", e); }
       }
@@ -801,6 +822,18 @@ Deno.serve(async (req) => {
           } catch { /* fica o id */ }
         }
         let pub = "", priv = "", autoOk = false, autoMotivo = "";
+        // Temas sensíveis (estratégia 5 Set): nunca há rascunho. O email vem marcado "só à mão".
+        const SENSIVEL = /(partid[oa]s?|governo|governos|presidente|ministro|corrup[çc][aã]o|colonial|colonialismo|sal[áa]rios?|ordenados?|despedid[oa]s?|despedimentos?|tribunal|tribunais|processo judicial|advogad[oa]s?|religi[aã]o|deus|pol[íi]tica|elei[çc][õo]es|MPLA|UNITA|imigrantes?|racis(mo|ta))/i;
+        if (SENSIVEL.test(String(it.incoming || ""))) {
+          const { data: insS } = await db.from(TABLE).insert({
+            platform: it.platform, kind: it.kind, account_id: it.account_id, target_id: it.target_id,
+            recipient_id: it.recipient_id, author: it.author, incoming: it.incoming,
+            reply: "", private_reply: "", status: "pending", detail: "tema sensível: só à mão",
+          }).select("id").single();
+          if (insS?.id) await notify({ ...it, id: insS.id, pub: "", priv: "", sig: await hmacHex(HMAC_SECRET, insS.id),
+            holdReason: "Tema sensível (política, salários, tribunais ou religião). Sem rascunho de propósito: responde à mão na app, ou ignora." });
+          continue;
+        }
         if (it.kind === "comment") {
           const hist = await convoHistory(String(it.recipient_id || ""));
           const d = await draftForComment(it.platform, it.incoming, it.author, hist);
@@ -823,7 +856,7 @@ Deno.serve(async (req) => {
           const d = await draftForMention(mText, it.author, mCtx, it.platform);
           if (!d.shouldReply) {
             // menção negativa/sensível/spam — não respondemos, mas guardamos p/ auditoria em /dropped (SEM email)
-            await db.from("pending_replies").insert({
+            await db.from(TABLE).insert({
               platform: it.platform, kind: "mention", account_id: it.account_id, target_id: it.target_id,
               recipient_id: "", author: it.author, incoming: it.incoming,
               reply: "", private_reply: "", status: "dropped", detail: "motivo: " + (d.reason || "não especificado"),
@@ -850,7 +883,7 @@ Deno.serve(async (req) => {
           }
           if (it.story_url) it.incoming = `[Resposta à vossa story] ${it.incoming}`; // contexto no email/registo
         }
-        const { data: ins } = await db.from("pending_replies").insert({
+        const { data: ins } = await db.from(TABLE).insert({
           platform: it.platform, kind: it.kind, account_id: it.account_id, target_id: it.target_id,
           recipient_id: it.recipient_id, author: it.author, incoming: it.incoming,
           reply: pub, private_reply: priv, status: "pending",
@@ -860,7 +893,7 @@ Deno.serve(async (req) => {
             // envia já; se falhar, cai para o circuito normal de aprovação (email com botão)
             const res = await publish({ kind: it.kind, platform: it.platform, target_id: it.target_id,
               reply: pub, private_reply: priv, recipient_id: it.recipient_id, account_id: it.account_id });
-            await db.from("pending_replies").update({
+            await db.from(TABLE).update({
               status: res.ok ? "sent" : "pending",
               detail: (res.ok ? "auto: " : "auto FALHOU: ") + res.detail,
             }).eq("id", ins.id);

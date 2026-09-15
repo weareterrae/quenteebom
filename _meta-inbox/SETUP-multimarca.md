@@ -46,6 +46,14 @@ Todas as funções de um projeto Supabase **partilham os mesmos secrets**. Como 
 
 **Decisão pendente do Sandro.** Por defeito seguimos (A) quando chegarmos ao setup.
 
+## EXTERNATO SANTA MARIA DE BELÉM (5.ª marca — «a Avó Maria»; lado do site PRONTO a 20/07/2026; falta Meta+Supabase)
+- Escola privada (Restelo, Lisboa). A voz é a **Avó Maria** (já existia como assistente do site via Netlify Function `avo-maria.mts`; agora tem voz social própria em `avo-prompt.txt`).
+- Páginas vivas (site Netlify `externatosantamariadebelem`): **/privacidade.html** (Privacy Policy URL da app Meta) · **/inbox.html** (confirmação, fundo verde) · **/avo-prompt.txt** (voz social da Avó — atualiza-se por deploy do site).
+- Config por deployment: `BRAND_NAME=Externato Santa Maria de Belém` · `BRAND_BG=#3B6B50` (pinho) · `BRAND_ACCENT=#C9993F` (ocre) · `BRAND_SITE=https://externatosantamariadebelem.netlify.app` · `PROMPT_URL=https://externatosantamariadebelem.netlify.app/avo-prompt.txt` · `NOTIFY_EMAIL=sandro.qb@gmail.com` · `META_VERIFY_TOKEN=externato-avomaria-2026`.
+- Secrets em `_meta-inbox/EXTERNATO-SECRETS.local.txt` (fora do git): VERIFY, HMAC_SECRET novo, REDATOR_KEY (a mesma das outras 4). **SEM ANTHROPIC_API_KEY** — IA pelo redator.
+- Página FB: 687996854629618 · IG: @externatosantamariadebelem · Metricool brandId 6575712 (IG+FB+GMB já ligados).
+- FALTA (Sandro, ~1h, modelo QeB "Opção A/B"): app Meta "Externato Inbox" (3 use cases: Page + Instagram [+ Messenger], SEM `instagram_content_publish`, SEM Tech Provider) → system user + Página + IG + App → token 9-10 permissões (ver Lição 1/7) → projeto Supabase novo (org Terrae, opção A) com `schema.sql` + função `meta-inbox` (o `index.ts` atual, sem alterações) + secrets (tabela acima + META_APP_SECRET/META_PAGE_TOKEN/RESEND_API_KEY/FN_BASE) → `/subscribe?key=...` + `/igtest` → Privacy Policy URL nas app settings → dança do `pages_manage_engagement` → **Publish** → teste E2E (email verde/ocre com a voz da Avó Maria 🌿). Pós-live: desligar automações nativas do Business Suite/ManyChat do @externatosantamariadebelem.
+
 ## Passos por marca (quando a verificação/app estiverem prontas)
 1. App criada no portefólio da marca (casos de utilização: Instagram + Manage everything on your Page; remover `instagram_content_publish`).
 2. System user + atribuir Página + IG + App; gerar token de Página (com `pages_manage_engagement`, `instagram_manage_comments/messages`, etc.).

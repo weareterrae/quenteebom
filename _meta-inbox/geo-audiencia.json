@@ -1,0 +1,51 @@
+[
+ {
+  "zona": "Vila Real",
+  "key": "3026",
+  "audiencia": 39600,
+  "lo": 36400,
+  "hi": 42800
+ },
+ {
+  "zona": "Bragança",
+  "key": "3012",
+  "audiencia": 24700,
+  "lo": 22700,
+  "hi": 26700
+ },
+ {
+  "zona": "Guarda",
+  "key": "3018",
+  "audiencia": 26450,
+  "lo": 24300,
+  "hi": 28600
+ },
+ {
+  "zona": "Évora",
+  "key": "3015",
+  "audiencia": 39900,
+  "lo": 36700,
+  "hi": 43100
+ },
+ {
+  "zona": "Portalegre",
+  "key": "3021",
+  "audiencia": 23850,
+  "lo": 21900,
+  "hi": 25800
+ },
+ {
+  "zona": "Madeira",
+  "key": "3017",
+  "audiencia": 61250,
+  "lo": 56300,
+  "hi": 66200
+ },
+ {
+  "zona": "Açores",
+  "key": "3028",
+  "audiencia": 54300,
+  "lo": 49900,
+  "hi": 58700
+ }
+]
