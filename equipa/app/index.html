@@ -1,0 +1,143 @@
+<!DOCTYPE html><html lang="pt-AO"><head><meta charset="UTF-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>App Quente e Bom · especificação (interno)</title>
+<style>
+*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#FBF6EE;color:#3A2030;margin:0;padding:0 16px 72px;line-height:1.6}
+.wrap{max-width:960px;margin:0 auto}
+.kick{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#B07A2E;font-weight:700;padding-top:44px}
+h1{font-family:Georgia,serif;font-size:40px;line-height:1.08;color:#5B2A4A;margin:8px 0 6px;font-weight:800}
+.sub{font-size:16px;color:#6b5060;max-width:720px}
+h2{font-family:Georgia,serif;font-size:25px;color:#5B2A4A;border-bottom:2px solid #eadbc8;padding-bottom:8px;margin:40px 0 14px}
+h3{font-size:17px;color:#CC5A08;margin:22px 0 6px}
+.card{background:#fff;border:1px solid #eee1d6;border-radius:16px;padding:18px 22px;margin:12px 0;box-shadow:0 4px 14px rgba(91,42,74,.06)}
+.tema{background:#5B2A4A;color:#fff;border-radius:18px;padding:26px 30px;margin:18px 0}
+.tema b{color:#F6C440}
+.tema .tt{font-family:Georgia,serif;font-size:28px;font-weight:800;color:#F6C440;margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:14.5px;background:#fff;border-radius:12px;overflow:hidden}
+th{background:#5B2A4A;color:#fff;text-align:left;padding:10px 12px;font-size:13px;letter-spacing:.5px}
+td{padding:10px 12px;border-bottom:1px solid #f0e6d6;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.tw{overflow-x:auto}
+.pill{display:inline-block;background:#F6C440;color:#5B2A4A;font-weight:800;font-size:12px;padding:3px 12px;border-radius:999px;margin-right:6px}
+.f1{background:#CC5A08;color:#fff}.f2{background:#5B2A4A;color:#fff}.f3{background:#9b8290;color:#fff}
+.aviso{background:#fff7e0;border:1px solid #eeda9a;border-radius:12px;padding:14px 18px;font-size:14.5px}
+ul{margin:8px 0;padding-left:22px}
+li{margin:5px 0}
+.foot{margin-top:44px;font-size:13px;color:#9b8290;text-align:center}
+@media(max-width:640px){h1{font-size:30px}.tema{padding:20px}}
+</style></head><body><div class="wrap">
+<div class="kick">Quente e Bom · App · uso interno</div>
+<h1>A app Quente e Bom</h1>
+<p class="sub">Especificação da web app para o consumidor angolano. Versão 1, 10 de Outubro de 2026. Serve para alinhar a equipa antes de construir. As decisões que faltam estão no ponto 8.</p>
+
+<div class="tema">
+<div class="tt">Para que serve a app</div>
+A Quente e Bom não vende ao consumidor, por isso a app não tem carrinho. Tem dois trabalhos: <b>levar as pessoas aos supermercados</b> (Kero, Candando, Shoprite, Maxi e restantes insígnias) e <b>trazer de volta informação</b> que hoje não temos: o que se compra, onde, e onde falta produto. Pelo caminho, ensina a comer melhor.
+</div>
+
+<h2>1 · Regras que a app nunca quebra</h2>
+<div class="card"><ul>
+<li><b>B2B only.</b> Sem venda directa, sem preços, sem stock por loja. Encomendas só na área profissional.</li>
+<li><b>Não fazemos bolos por encomenda.</b> Quem quer bolo de festa vai aos Bolos da Avó no supermercado ou às receitas com os Cakes.</li>
+<li><b>Onde comprar:</b> só as insígnias aprovadas. Nunca nomear clientes Horeca nem publicar dados do Reporte Comercial.</li>
+<li><b>O assistente é o Chef Joaquim.</b> O mesmo cérebro do site (função /api/joaquim).</li>
+<li><b>Números certos em todo o lado:</b> 80 produtos, 80 receitas. Valores nutricionais só das fichas técnicas.</li>
+<li><b>Leve:</b> abre com rede fraca e gasta poucos dados. Se pesar, ninguém usa.</li>
+</ul></div>
+
+<h2>2 · Os módulos</h2>
+<div class="tw"><table>
+<tr><th>Módulo</th><th>O que faz</th><th>O que nos dá</th><th>Fase</th></tr>
+<tr><td><b>Talão vale pontos</b></td><td>O cliente fotografa o talão do supermercado. A IA lê as linhas com produtos Quente e Bom e dá pontos por produto.</td><td>Vendas por insígnia, município e dia da semana. Base do sorteio.</td><td><span class="pill f1">Fase 1</span></td></tr>
+<tr><td><b>Não encontrei</b></td><td>Botão em cada produto: "Procurei no Candando de Talatona e não havia."</td><td>Mapa de rupturas por loja para a equipa comercial.</td><td><span class="pill f1">Fase 1</span></td></tr>
+<tr><td><b>O Sol Nasce</b></td><td>Todas as manhãs há algo novo: receita do mata-bicho, uma pergunta, uma dica. 7 dias seguidos dá pontos a dobrar.</td><td>Hábito diário de abrir a app.</td><td><span class="pill f1">Fase 1</span></td></tr>
+<tr><td><b>Receitas e produtos</b></td><td>As 80 receitas e os 80 produtos do site, com tabela nutricional em cada produto.</td><td>Conteúdo que já existe, reaproveitado.</td><td><span class="pill f1">Fase 1</span></td></tr>
+<tr><td><b>Chef Joaquim</b></td><td>O assistente dentro da app, com "O que tens em casa?" (foto do frigorífico ou lista → receita).</td><td>Conversas que mostram o que as famílias cozinham.</td><td><span class="pill f1">Fase 1</span></td></tr>
+<tr><td><b>Saber Comer</b></td><td>Educação alimentar (ver ponto 3).</td><td>A marca ao lado da saúde.</td><td><span class="pill f2">Fase 2</span></td></tr>
+<tr><td><b>Lancheira da semana</b></td><td>Diz quantos filhos e que dias há escola. Sai o plano de 5 lanches e a lista de compras para o WhatsApp.</td><td>Compras planeadas com os nossos produtos.</td><td><span class="pill f2">Fase 2</span></td></tr>
+<tr><td><b>Fiz em casa</b></td><td>Fotos das receitas feitas pelos clientes, votação, a melhor do mês vai para o Instagram com o nome da pessoa.</td><td>Conteúdo dos clientes todas as semanas.</td><td><span class="pill f2">Fase 2</span></td></tr>
+<tr><td><b>Manda um pão</b></td><td>Cartão digital de aniversário ou de bom dia para enviar por WhatsApp.</td><td>Novos utilizadores por convite.</td><td><span class="pill f2">Fase 2</span></td></tr>
+<tr><td><b>Joaquim em áudio</b></td><td>Receitas contadas passo a passo em nota de voz.</td><td>Uso na cozinha, de mãos ocupadas.</td><td><span class="pill f2">Fase 2</span></td></tr>
+<tr><td><b>Bairro contra bairro</b></td><td>Os pontos de cada pessoa somam para o seu bairro. O bairro vencedor do trimestre recebe um pequeno-almoço numa escola ou igreja.</td><td>Rivalidade saudável e conteúdo para a Olokuanda.</td><td><span class="pill f3">Fase 3</span></td></tr>
+<tr><td><b>A embalagem fala</b></td><td>QR na embalagem: "Esta fornada saiu de Viana às 04:12 de terça-feira."</td><td>Frescura provada.</td><td><span class="pill f3">Fase 3</span></td></tr>
+<tr><td><b>Área profissional</b></td><td>Login para cafés e lojas: catálogo, fichas técnicas, encomenda repetida em dois toques.</td><td>Encomendas B2B mais rápidas.</td><td><span class="pill f3">Fase 3</span></td></tr>
+</table></div>
+
+<h2>3 · Saber Comer</h2>
+<div class="card">
+<p>Educação alimentar sem diário de calorias. Um contador de calorias numa marca de padaria punha os nossos produtos no papel de vilão, falava para uma minoria e dependia de uma base de dados de pratos angolanos que não existe.</p>
+<h3>O meu prato</h3>
+<p>A pessoa escolhe o que comeu (funge, muamba, calulu, mufete, arroz, feijão de óleo de palma, kizaca e outros). A app mostra 4 cores: energia, proteína, legumes e fruta. Sem números. Uma dica no fim: "Faltou verde. Junta gimboa ou couve amanhã."</p>
+<h3>Mata-bicho para a escola</h3>
+<p>Pequeno-almoço equilibrado para crianças: um produto Quente e Bom com fruta e leite. Liga à Lancheira da semana.</p>
+<h3>Ler o rótulo</h3>
+<p>Fotografas uma embalagem e o Joaquim explica em linguagem simples o açúcar, o sal e a porção.</p>
+<h3>Tabela nutricional por produto</h3>
+<p>As calorias aparecem aqui, com os valores reais das fichas técnicas e a porção certa.</p>
+<div class="aviso">⚠️ <b>Condição para lançar:</b> todos os conteúdos do Saber Comer são revistos e assinados por um nutricionista angolano (parceiro proposto: uma faculdade de nutrição em Luanda). A lista de pratos e a classificação nas 4 cores são feitas com ele. Sem esta validação, o módulo não sai.</div>
+</div>
+
+<h2>4 · Prémios (proposta)</h2>
+<div class="card">
+<p>A ideia de dar electrodomésticos que se usam com os nossos produtos é a certa: o prémio continua a puxar pela marca depois de entregue. Proposta em três níveis:</p>
+<div class="tw"><table>
+<tr><th>Nível</th><th>Prémio</th><th>Liga a</th><th>Frequência</th></tr>
+<tr><td><b>Grande prémio</b></td><td>Forno eléctrico de bancada</td><td>Receitas com massas, pizzas, gratinados</td><td>1 por mês</td></tr>
+<tr><td><b>Prémios do mês</b></td><td>Torradeira e sanduicheira (tostadeira)</td><td>Pão de forma, tostas, pão de leite</td><td>4 a 6 por mês</td></tr>
+<tr><td><b>Prémios da semana</b></td><td>Cabaz de produtos Quente e Bom</td><td>Toda a gama</td><td>1 por semana</td></tr>
+<tr><td><b>Bairro vencedor</b></td><td>Pequeno-almoço numa escola ou igreja do bairro</td><td>Bairro contra bairro</td><td>1 por trimestre</td></tr>
+</table></div>
+<h3>Duas ideias para ir mais longe</h3>
+<ul>
+<li><b>Edição de colecção.</b> Torradeiras com o sol da marca e "Todos os dias, uma delícia" gravados. Ninguém as compra em lado nenhum, e quem ganha mostra.</li>
+<li><b>Parceria com uma marca de electrodomésticos.</b> Eles dão os aparelhos, nós damos visibilidade na app e nas redes. Pode baixar o custo dos prémios para perto de zero.</li>
+</ul>
+<div class="aviso">⚠️ Antes de lançar o sorteio: confirmar com o jurídico as regras de concursos e sorteios em Angola (autorização, regulamento publicado, entrega de prémios). Os pontos podem começar a contar antes disso; o primeiro sorteio só depois.</div>
+</div>
+
+<h2>5 · Como se constrói</h2>
+<div class="card"><ul>
+<li><b>Formato:</b> PWA (abre no browser, instala-se no ecrã do telemóvel sem passar pela loja de apps). Endereço proposto: app.quenteebom.com.</li>
+<li><b>Alojamento:</b> Netlify, como o site.</li>
+<li><b>Dados (utilizadores, pontos, talões, relatos de "não encontrei"):</b> Supabase.</li>
+<li><b>IA (leitura de talões, Joaquim, Ler o rótulo):</b> funções Netlify com o AI Gateway, o mesmo esquema do /api/joaquim.</li>
+<li><b>Entrada:</b> número de telemóvel com código por SMS. Custo por SMS a orçamentar.</li>
+<li><b>Reaproveita do site:</b> as 80 receitas, os 80 produtos, as fotos, o Joaquim e a identidade (ameixa, dourado, Rockwell).</li>
+</ul>
+<h3>Contra a batota no talão</h3>
+<ul>
+<li>Cada talão só conta uma vez (impressão digital da imagem e número do talão).</li>
+<li>Só talões dos últimos 7 dias e de insígnias da lista.</li>
+<li>Limite de talões por pessoa por dia.</li>
+<li>Talões duvidosos ficam em revisão manual antes de dar pontos.</li>
+</ul></div>
+
+<h2>6 · O painel da equipa</h2>
+<div class="card">
+<p>Página interna em /equipa/ com os dados que a app recolhe, actualizada todos os dias:</p>
+<ul>
+<li>Talões por insígnia, município e produto.</li>
+<li>Relatos de "não encontrei" por loja, para a equipa comercial levar às reuniões.</li>
+<li>Receitas mais vistas e perguntas mais feitas ao Joaquim.</li>
+</ul></div>
+
+<h2>7 · Como medimos</h2>
+<div class="tw"><table>
+<tr><th>Indicador</th><th>Porque importa</th></tr>
+<tr><td>Talões enviados por semana</td><td>É o número que diz se a app vende. Decide se avançamos para a Fase 2.</td></tr>
+<tr><td>Utilizadores activos por semana</td><td>Quantas pessoas voltam.</td></tr>
+<tr><td>% que abre 7 dias seguidos</td><td>Mede se o ritual da manhã pegou.</td></tr>
+<tr><td>Relatos de "não encontrei" resolvidos</td><td>Mede se a equipa comercial usa os dados.</td></tr>
+</table></div>
+<p>Revisão aos 60 dias depois do lançamento da Fase 1.</p>
+
+<h2>8 · Decisões do Sandro</h2>
+<div class="card" style="border:2px solid #F6C440"><ul>
+<li><b>Prémios:</b> aprovar os três níveis e definir o orçamento mensal. Avançamos com a parceria de electrodomésticos?</li>
+<li><b>Jurídico:</b> quem confirma as regras dos sorteios em Angola?</li>
+<li><b>Nutricionista:</b> avançamos com o contacto a uma faculdade de nutrição em Luanda?</li>
+<li><b>Fichas técnicas:</b> todas as 80 têm tabela nutricional? Se não, quem as completa?</li>
+<li><b>Fábrica (Fase 3):</b> o lote de cada embalagem fica registado com a hora de fabrico?</li>
+<li><b>SMS:</b> aprovar o fornecedor e o custo do código de entrada.</li>
+</ul></div>
+
+<div class="foot">Quente e Bom · Todos os dias, uma delícia · documento interno, não partilhar fora da equipa</div>
+</div></body></html>
