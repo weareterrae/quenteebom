@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#5B2A4A">
+<title>Quente e Bom</title>
+<meta name="description" content="Receitas, produtos e pontos com os teus talões. Todos os dias, uma delícia.">
+<link rel="manifest" href="/app/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/assets/logos/favicon.png?v=1">
+<link rel="apple-touch-icon" href="/app/icons/icon-192.png">
+<style>
+@font-face{font-family:'Rockwell EB';src:url(/assets/font/ROCKEB.TTF) format('truetype');font-weight:800;font-display:swap}
+:root{
+  --ameixa:#5B2A4A;--ameixa-2:#7A3D63;--ouro:#F6C440;--laranja:#CC5A08;--laranja-2:#EE7A1B;
+  --creme:#FBF6EE;--creme-2:#F3E7D6;--tinta:#33210F;--suave:#8a7157;--linha:#eaddc9;--branco:#fff;
+  --verde:#2E7D4F;--vermelho:#B03030;
+  --display:'Rockwell EB',Georgia,serif;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --tab:64px;
+  /* variáveis que o widget do Joaquim espera */
+  --orange:#EE7A1B;--orange-deep:#CC5A08;--sun:#FEC64A;--cream:#FFF6EA;--ink:#33210F;--line:#eaddc9;--ease-warm:cubic-bezier(.2,.7,.2,1)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--creme);color:var(--tinta);font-family:var(--sans);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+body{padding-bottom:calc(var(--tab) + env(safe-area-inset-bottom) + 16px);min-height:100vh}
+img{display:block;max-width:100%}
+button,input,select{font:inherit;color:inherit}
+a{color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+
+/* topo */
+.topo{background:var(--ameixa);color:#fff;padding:calc(env(safe-area-inset-top) + 12px) 0 14px;position:sticky;top:0;z-index:20}
+.topo .wrap{display:flex;align-items:center;gap:12px}
+.topo img.logo{height:32px;width:auto;margin-right:auto}
+.topo .pts{background:rgba(255,255,255,.14);border-radius:999px;padding:6px 12px;font-weight:800;font-size:14px;white-space:nowrap;text-decoration:none}
+.topo .pts b{color:var(--ouro)}
+.topo .chef{width:38px;height:38px;border-radius:50%;border:2px solid var(--ouro);overflow:hidden;background:none;cursor:pointer;flex:0 0 auto;padding:0}
+.topo .chef img{width:100%;height:100%;object-fit:cover}
+
+h1,h2,h3{font-family:var(--display);font-weight:800;color:var(--ameixa);line-height:1.12}
+h1{font-size:28px}h2{font-size:22px;margin:26px 0 10px}h3{font-size:17px}
+.sub{color:var(--suave);font-size:14.5px}
+.eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:800;color:var(--laranja)}
+
+.card{background:var(--branco);border:1px solid var(--linha);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(91,42,74,.06)}
+.sol{background:linear-gradient(160deg,var(--ameixa),var(--ameixa-2));color:#fff;border:0;position:relative;overflow:hidden}
+.sol h2{color:var(--ouro);margin:4px 0 6px}
+.sol>*{position:relative;z-index:1}
+.sol::after{content:"";position:absolute;right:-50px;top:-50px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,var(--ouro) 0 38%,rgba(246,196,64,.25) 39% 60%,transparent 61%);opacity:.55;z-index:0}
+.dias{display:flex;gap:6px;margin:12px 0}
+.dias span{flex:1;height:8px;border-radius:4px;background:rgba(255,255,255,.2)}
+.dias span.on{background:var(--ouro)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:13px 20px;font-weight:800;font-size:15.5px;cursor:pointer;text-decoration:none;transition:transform .13s,background .2s}
+.btn:active{transform:scale(.97)}
+.btn.ouro{background:var(--ouro);color:var(--ameixa)}
+.btn.laranja{background:var(--laranja-2);color:#fff}
+.btn.ameixa{background:var(--ameixa);color:#fff}
+.btn.linha{background:#fff;border:1.5px solid var(--ameixa);color:var(--ameixa)}
+.btn.cheio{width:100%}
+.btn:disabled{opacity:.55;cursor:default}
+
+.grelha{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rec{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--linha);text-decoration:none;display:block}
+.rec img{width:100%;aspect-ratio:3/2;object-fit:cover;background:var(--creme-2)}
+.rec div{padding:9px 11px 11px}
+.rec b{display:block;font-size:14px;line-height:1.25;color:var(--tinta)}
+.rec small{color:var(--suave);font-size:12.5px}
+.prod{background:#fff;border-radius:16px;border:1px solid var(--linha);padding:10px;text-align:center;cursor:pointer}
+.prod img{width:100%;aspect-ratio:1;object-fit:contain}
+.prod b{display:block;font-size:13.5px;line-height:1.25;margin-top:6px}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1.5px solid var(--linha);background:#fff;border-radius:999px;padding:7px 14px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--ameixa);border-color:var(--ameixa);color:#fff}
+.busca{width:100%;border:1.5px solid var(--linha);border-radius:999px;padding:12px 18px;background:#fff;font-size:15.5px;outline:none;margin:6px 0 8px}
+.busca:focus{border-color:var(--laranja-2)}
+
+label.campo{display:block;font-weight:700;font-size:14px;margin:12px 0 5px}
+.campo-in{width:100%;border:1.5px solid var(--linha);border-radius:14px;padding:12px 14px;background:#fff;font-size:16px;outline:none}
+.campo-in:focus{border-color:var(--laranja-2)}
+.erro{color:var(--vermelho);font-weight:700;font-size:14px;margin-top:10px}
+.nota{color:var(--suave);font-size:12.5px;margin-top:10px}
+
+.saldo{font-family:var(--display);font-size:54px;color:var(--ameixa);line-height:1}
+.linha-h{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--linha);font-size:14.5px}
+.linha-h:last-child{border-bottom:0}
+.mais{color:var(--verde);font-weight:800}
+.estado{font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.estado.aprovado{background:#e3f2e8;color:var(--verde)}.estado.revisao{background:#fff3d6;color:#8a5a00}.estado.rejeitado{background:#f8e1e1;color:var(--vermelho)}
+.premio{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--linha)}
+.premio:last-child{border-bottom:0}
+.premio .ic{width:44px;height:44px;border-radius:12px;background:var(--creme-2);display:grid;place-items:center;font-size:22px;flex:0 0 auto}
+
+/* talão */
+.foto-talao{width:100%;max-height:380px;object-fit:contain;border-radius:14px;background:#000;margin:10px 0}
+.passos{counter-reset:p;list-style:none}
+.passos li{counter-increment:p;display:flex;gap:10px;margin:9px 0;font-size:15px}
+.passos li::before{content:counter(p);width:26px;height:26px;border-radius:50%;background:var(--ouro);color:var(--ameixa);font-weight:800;display:grid;place-items:center;flex:0 0 auto;font-size:14px}
+.resultado{text-align:center;padding:22px 16px}
+.resultado .grande{font-family:var(--display);font-size:46px;color:var(--ameixa)}
+.girar{width:46px;height:46px;border-radius:50%;border:5px solid var(--creme-2);border-top-color:var(--laranja-2);animation:g 1s linear infinite;margin:18px auto}
+@keyframes g{to{transform:rotate(360deg)}}
+
+/* folha (produto) */
+.veu{position:fixed;inset:0;background:rgba(36,16,6,.45);z-index:40;display:none}
+.folha{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--creme);border-radius:22px 22px 0 0;max-height:88vh;overflow-y:auto;padding:10px 0 calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.7,.2,1)}
+.folha.on{transform:none}.veu.on{display:block}
+.folha .puxa{width:44px;height:5px;border-radius:3px;background:var(--linha);margin:0 auto 10px}
+.folha .prod-img{width:190px;height:190px;object-fit:contain;margin:0 auto;background:#fff;border-radius:20px;padding:8px}
+.fechar{position:absolute;right:14px;top:12px;width:34px;height:34px;border-radius:50%;border:0;background:var(--creme-2);font-size:15px;cursor:pointer}
+
+/* barra de separadores */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--linha);padding-bottom:env(safe-area-inset-bottom)}
+.tabs .wrap{display:flex;height:var(--tab);align-items:stretch;padding:0 4px}
+.tabs a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;font-size:11.5px;font-weight:700;color:var(--suave)}
+.tabs a .i{font-size:21px;line-height:1;filter:grayscale(1);opacity:.7}
+.tabs a.on{color:var(--ameixa)}.tabs a.on .i{filter:none;opacity:1}
+.tabs a.centro .i{width:50px;height:50px;border-radius:50%;background:var(--laranja-2);display:grid;place-items:center;filter:none;opacity:1;margin-top:-22px;box-shadow:0 8px 20px rgba(204,90,8,.4);font-size:23px;border:4px solid #fff}
+.tabs a.centro{color:var(--laranja)}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--tab) + 24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ameixa);color:#fff;border-radius:999px;padding:11px 20px;font-weight:700;font-size:14.5px;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:92vw;text-align:center}
+
+/* Joaquim (widget do site) dentro da app */
+.bento-btn{display:none!important}
+.bento-panel{position:fixed;left:8px;right:8px;bottom:calc(var(--tab) + 10px + env(safe-area-inset-bottom));z-index:50;max-width:520px;margin:0 auto;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(38,21,10,.34);display:none;flex-direction:column}
+.bento-panel.open{display:flex}
+.bp-head{background:linear-gradient(150deg,var(--ameixa),var(--ameixa-2));color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px}
+.bp-av{width:46px;height:46px;border-radius:50%;background:var(--sun);overflow:hidden;flex:0 0 auto}
+.bp-av img{width:100%;height:100%;object-fit:cover}
+.bp-head b{font-size:16px}.bp-head span{font-size:12.5px;color:#f3dcea;display:block}
+.bp-body{padding:16px;background:var(--cream);max-height:46vh;overflow-y:auto}
+.msg{margin-bottom:12px;font-size:14.5px;line-height:1.45;max-width:85%;padding:11px 14px;border-radius:16px}
+.msg.bot{background:#fff;color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:5px}
+.msg.me{background:var(--orange);color:#fff;margin-left:auto;border-bottom-right-radius:5px}
+.msg a{color:var(--laranja);font-weight:700}
+.qbtns{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 14px;background:var(--cream)}
+.qbtn{background:#fff;border:1.5px solid var(--orange);color:var(--orange-deep);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="topo"><div class="wrap">
+  <img class="logo" src="/assets/logos/logo_white_real.png" alt="Quente e Bom" width="67" height="30">
+  <a class="pts" href="#/pontos" id="topoPts" hidden><b id="topoSaldo">0</b> <span id="topoPal">pontos</span></a>
+  <button class="chef" id="abrirChef" aria-label="Falar com o Chef Joaquim"><img src="/assets/img/bento_face.jpg" alt=""></button>
+</div></header>
+
+<main class="wrap" id="ecra" aria-live="polite"></main>
+
+<div class="veu" id="veu"></div>
+<section class="folha" id="folha" role="dialog" aria-modal="true" aria-label="Produto"></section>
+
+<nav class="tabs" aria-label="Navegação"><div class="wrap">
+  <a href="#/" data-r="inicio"><span class="i">☀️</span>Início</a>
+  <a href="#/receitas" data-r="receitas"><span class="i">🍳</span>Receitas</a>
+  <a href="#/talao" data-r="talao" class="centro"><span class="i">🧾</span>Talão</a>
+  <a href="#/produtos" data-r="produtos"><span class="i">🥖</span>Produtos</a>
+  <a href="#/pontos" data-r="pontos"><span class="i">⭐</span>Pontos</a>
+</div></nav>
+
+<script src="/app/app.js?v=1"></script>
+<script src="/assets/js/bento.js?v=6"></script>
+</body>
+</html>

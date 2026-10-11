@@ -1,0 +1,15 @@
+{
+  "name": "Quente e Bom",
+  "short_name": "Quente e Bom",
+  "description": "Receitas, produtos e pontos com os teus talões. Todos os dias, uma delícia.",
+  "lang": "pt-AO",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "background_color": "#FBF6EE",
+  "theme_color": "#5B2A4A",
+  "icons": [
+    { "src": "/app/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/app/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

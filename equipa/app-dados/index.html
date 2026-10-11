@@ -1,0 +1,67 @@
+<!DOCTYPE html><html lang="pt-AO"><head><meta charset="UTF-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>App Quente e Bom · dados (interno)</title>
+<style>
+*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#FBF6EE;color:#3A2030;margin:0;padding:0 16px 72px;line-height:1.5}
+.wrap{max-width:1000px;margin:0 auto}
+.kick{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#B07A2E;font-weight:700;padding-top:36px}
+h1{font-family:Georgia,serif;font-size:34px;color:#5B2A4A;margin:6px 0}
+h2{font-family:Georgia,serif;font-size:22px;color:#5B2A4A;border-bottom:2px solid #eadbc8;padding-bottom:6px;margin:32px 0 12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{background:#fff;border:1px solid #eee1d6;border-radius:14px;padding:14px 16px}
+.kpi b{display:block;font-size:28px;color:#5B2A4A;font-family:Georgia,serif}
+.kpi span{font-size:13px;color:#8a7157}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border-radius:12px;overflow:hidden}
+th{background:#5B2A4A;color:#fff;text-align:left;padding:9px 11px;font-size:12.5px}
+td{padding:9px 11px;border-bottom:1px solid #f0e6d6;vertical-align:top}
+.card{background:#fff;border:1px solid #eee1d6;border-radius:14px;padding:14px 18px;margin:10px 0}
+button{font:inherit;border:0;border-radius:999px;padding:8px 16px;font-weight:700;cursor:pointer}
+.ok{background:#2E7D4F;color:#fff}.nao{background:#B03030;color:#fff}.ameixa{background:#5B2A4A;color:#fff}
+input{font:inherit;border:1.5px solid #eadbc8;border-radius:10px;padding:9px 12px;width:260px;max-width:100%}
+.linhas{font-size:12.5px;color:#6b5060;margin:6px 0}
+.vazio{color:#9b8290;font-style:italic}
+</style></head><body><div class="wrap">
+<div class="kick">Quente e Bom · App · uso interno</div>
+<h1>Dados da app</h1>
+<div id="entrar" class="card" hidden><p><b>Chave de acesso</b> (pede ao Sandro):</p><input id="chave" type="password" autocomplete="off"> <button class="ameixa" id="btnEntrar">Entrar</button><p id="erro" style="color:#B03030"></p></div>
+<div id="painel"></div>
+</div>
+<script>
+(function(){
+var SB='https://qciagsktkqljvknmahfu.supabase.co', K='sb_publishable_cG_NBNF8YR1gJwyOYg7FAw_qtpKgIaG';
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function kz(n){return Number(n||0).toLocaleString('pt-PT',{maximumFractionDigits:0})+' Kz'}
+function dt(s){return s?new Date(s).toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}
+function rpc(n,a){return fetch(SB+'/rest/v1/rpc/'+n,{method:'POST',headers:{'content-type':'application/json',apikey:K,authorization:'Bearer '+K},body:JSON.stringify(a)}).then(function(r){return r.json()})}
+function chave(){try{return sessionStorage.getItem('qeb_admin')}catch(e){return null}}
+function tabela(cab,linhas){return linhas&&linhas.length?'<div class="tw"><table><tr>'+cab.map(function(c){return'<th>'+c+'</th>'}).join('')+'</tr>'+linhas.map(function(l){return'<tr>'+l.map(function(c){return'<td>'+c+'</td>'}).join('')+'</tr>'}).join('')+'</table></div>':'<p class="vazio">Ainda sem dados.</p>'}
+function carrega(){
+  var k=chave(); if(!k){document.getElementById('entrar').hidden=false;return}
+  rpc('app_painel',{p_key:k}).then(function(d){
+    if(d.erro){try{sessionStorage.removeItem('qeb_admin')}catch(e){} document.getElementById('entrar').hidden=false; document.getElementById('erro').textContent='Chave errada.'; return}
+    document.getElementById('entrar').hidden=true;
+    var est={};(d['talões']||[]).forEach(function(t){est[t.estado]=t});
+    var h='<div class="kpis">'+
+      '<div class="kpi"><b>'+d.utilizadores+'</b><span>contas ('+d.novos_7d+' nos últimos 7 dias)</span></div>'+
+      '<div class="kpi"><b>'+d.ativos_7d+'</b><span>ativos nos últimos 7 dias</span></div>'+
+      '<div class="kpi"><b>'+((est.aprovado||{}).n||0)+'</b><span>talões aprovados</span></div>'+
+      '<div class="kpi"><b>'+kz((est.aprovado||{}).kz)+'</b><span>em produtos QeB nos talões</span></div>'+
+      '<div class="kpi"><b>'+((est.revisao||{}).n||0)+'</b><span>talões por rever</span></div>'+
+      '<div class="kpi"><b>'+d.pontos_emitidos+'</b><span>pontos emitidos</span></div></div>';
+    h+='<h2>Talões por rever</h2>';
+    h+=(d.revisao||[]).map(function(t){
+      var ls=(t.linhas||[]).filter(function(l){return l.qeb!=='nao'}).map(function(l){return esc(l.descricao)+' ('+kz(l.valor)+(l.qeb==='duvida'?', dúvida':'')+')'}).join(' · ');
+      return '<div class="card" data-id="'+esc(t.id)+'"><b>'+esc(t.nome)+'</b> · '+esc(t.telemovel)+' · enviado '+dt(t.criado_em)+'<br>'+esc(t.insignia||'?')+' '+esc(t.loja||'')+' · talão '+esc(t.numero_talao||'?')+' de '+esc(t.data_talao||'?')+' · <b>'+kz(t.total_qeb)+' = '+t.pontos+' pontos</b><div class="linhas">'+(ls||'sem linhas QeB lidas')+'</div><div class="linhas">Motivo: '+esc(t.motivo)+'</div><button class="ok" data-a="1">Aprovar</button> <button class="nao" data-a="0">Rejeitar</button></div>'}).join('')||'<p class="vazio">Nada por rever.</p>';
+    h+='<h2>Não encontrei (rupturas reportadas)</h2>'+tabela(['Produto','Supermercado','Loja','Relatos','Último'],(d.nao_encontrei||[]).map(function(x){return[esc(x.produto),esc(x.insignia),esc(x.loja||''),x.n,dt(x.ultimo)]}));
+    h+='<h2>Talões aprovados por insígnia</h2>'+tabela(['Insígnia','Talões','Kz em QeB'],(d.por_insignia||[]).map(function(x){return[esc(x.insignia||'?'),x.n,kz(x.kz)]}));
+    h+='<h2>Por município do cliente</h2>'+tabela(['Município','Talões','Kz em QeB'],(d.por_municipio||[]).map(function(x){return[esc(x.municipio||'?'),x.n,kz(x.kz)]}));
+    h+='<h2>Talões por semana</h2>'+tabela(['Semana de','Talões','Kz aprovados'],(d['talões_semana']||[]).map(function(x){return[x.semana,x.n,kz(x.kz)]}));
+    var p=document.getElementById('painel'); p.innerHTML=h;
+    p.onclick=function(e){var b=e.target.closest('button[data-a]');if(!b)return;var c=b.closest('[data-id]');b.disabled=true;
+      rpc('app_rever',{p_key:chave(),p_id:c.dataset.id,p_aprovar:b.dataset.a==='1'}).then(function(){carrega()})};
+  });
+}
+document.getElementById('btnEntrar').onclick=function(){try{sessionStorage.setItem('qeb_admin',document.getElementById('chave').value.trim())}catch(e){} carrega()};
+carrega();
+})();
+</script>
+</body></html>
